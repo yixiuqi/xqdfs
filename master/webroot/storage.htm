@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/storage_add.js"></script>
+    <script type="text/javascript" src="js/storage_remove.js"></script>
+    <script type="text/javascript" src="js/storage_init.js"></script>
+</head>
+<body class="easyui-layout">
+    <table class="easyui-datagrid" width="100%" height="100%" 
+        id="tbStorage"
+        toolbar="#tbarStorage"
+        singleSelect="true" 
+        rownumbers="true"
+        pagination="true"
+        pageSize=10
+        pageList="[10,20,30,40,50]"
+        data-options="url:'/storage/getall',method:'post'">
+        <thead>
+            <tr>
+                <th field="id" width="120" align="center">节点编号</th>
+                <th field="addr" width="180" align="center">节点地址</th> 
+                <th field="desc" width="240" align="center">节点描述</th>
+                <th field="total" width="120" align="center">总容量(GB)</th>
+                <th field="used" width="120" align="center">已使用(GB)</th>
+                <th field="util" width="120" align="center">使用率</th>
+                <th field="imageCount" width="120" align="center">图片总数</th>
+                <th data-options="field:'operation',width:110,formatter:storageFormat" align="center">操作</th> 
+            </tr>
+        </thead>
+    </table>
+    
+    <div id="tbarStorage" style="padding:5px;height:auto">
+        <div>
+            <a href="#" class="easyui-linkbutton" onClick="btnStorageAdd()">&nbsp;添加存储节点&nbsp;&nbsp;</a>
+        </div>
+    </div>
+
+    <div id="wndStorage" class="easyui-window" title="添加存储节点" data-options="maximizable:false,minimizable:false,collapsible:false,modal:true,closed:true" style="width:280px;height:160px;padding:5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <form>
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            <label>节点地址:</label>
+                        </td>
+                        <td>
+                            <input class="easyui-textbox" type="text" style="width:150px" id="txtStorageAddr"></input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>节点描述:</label>
+                        </td>
+                        <td>
+                            <input class="easyui-textbox" type="text" style="width:150px" id="txtStorageDesc"></input>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+            <div style="padding:5px;position:absolute;bottom:0;right:0">
+                <a href="#" class="easyui-linkbutton" onclick="doStorageAdd()">&nbsp;&nbsp;确定&nbsp;&nbsp;</a>
+                <a href="#" class="easyui-linkbutton" onclick="$('#wndStorage').window('close')">&nbsp;&nbsp;退出&nbsp;&nbsp;</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function storageFormat(val,row,index){
+            return '<a href="#" onclick="btnStorageRemove('+row.id+')">删除</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageInit('+row.id+')">初始化</a>';  
+        }
+
+        function btnStorageRemove(storageId){
+            $.messager.confirm('提示', '是否删除存储节点?', function(r){
+                if (r){
+                    result = httpStorageRemove(storageId);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbStorage').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+
+        function btnStorageInit(storageId){
+            $.messager.confirm('提示', '是否初始化存储节点?', function(r){
+                if (r){
+                    result = httpStorageInit(storageId);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbStorage').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+        
+        function btnStorageAdd(){
+			$('#wndStorage').window('center');
+		    $('#wndStorage').window('open');
+        }
+		
+		function doStorageAdd(){
+            $('#wndStorage').window('close');
+            
+            var addr=$('#txtStorageAddr').val();
+            if(addr.length==0){
+                $.messager.alert('提示','没有填写地址!','error');
+                return;
+            }
+        
+            var desc=$('#txtStorageDesc').val();
+            if(desc.length==0){
+                $.messager.alert('提示','没有填写描述!','error');
+                return;
+            }
+
+            result = httpStorageAdd(addr,desc);
+            if(result[0]==0){
+                $.messager.alert('提示','操作成功!','info');
+                $('#tbStorage').datagrid('reload');
+            }else{
+                $.messager.alert('提示','操作失败:'+result[1],'error');
+            }
+        }
+    </script>
+</body>
+</html>

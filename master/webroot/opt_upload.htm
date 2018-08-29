@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <link rel="stylesheet" type="text/css" href="themes/JsonFormat.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/json2.js"></script>
+    <script type="text/javascript" src="js/JsonFormat.js"></script>
+	<script type="text/javascript" src="js/jquery.form.js"></script>
+</head>
+<body class="easyui-layout">
+	<style>
+		.file-box{ position:relative;width:300px} 
+		.txt{ height:22px; border:1px solid #C3D9E0; width:74%;background-color:#FFFFFF;color:#0}  
+		.btn{ background-color:#1A7BC9; border:1px solid #1A7BC9;height:26px; width:24%;color:#FFFFFF;float:right} 
+		.file{ position:absolute; top:0; left:0; height:25px; width:300px;filter:alpha(opacity:0);opacity: 0;} 
+	</style>
+
+	<div class="easyui-panel" border=false style="width:100%;height:100%">        
+		<table>
+			<tr>
+				<td valign="top">
+					<img id="imgOptUpload" width="300" height="360" src="">
+				</td>
+				<td width="100%" height="100%" valign="top"> 
+					<div id="txtOptUpload_Info" style="color:#F00;background:#ECECEC;border:1px solid #999;padding:0px;width:450px;height:358px;overflow:auto"/>
+				</td>
+			</tr>
+			<tr width="100%" height="100%">
+				<td>
+					<form id="formImage" style="margin-bottom: 0px; margin-left: 0px; margin-top: 0px; margin-right: 0px;">
+						<div class="file-box"> 
+							<input type='text' id='txtOptUpload' class='txt' /> 
+							<input type='button' class='btn' value='浏览...' />
+							<input  class="file" id="fileOptUpload" name="fileOptUpload" type="file" accept="image/*"/> 
+						</div>
+					</form>						
+					</td>
+				<td>
+					<a href="#" class="easyui-linkbutton" onclick="txtOptUpload_Upload()">&nbsp;图片上传&nbsp;</a>
+				</td>
+			 </tr>      
+		</table>
+	</div>
+	
+	<script>
+		$(function(){
+			$("#fileOptUpload").change(function(){
+				document.getElementById('txtOptUpload').value=this.value;
+				$("#formImage").submit();
+			}) ;
+				
+			$("#formImage").submit(function(){ 
+				$(this).ajaxSubmit({  
+					url:"/system/upload",
+					type:"post",  
+					dataType:"json", 
+					success:function(data){
+						$("#imgOptUpload").attr("src", data.image);
+					}  
+				});  
+				return false; 
+			}); 
+		}) ;
+				
+		function txtOptUpload_Upload() {	
+			var tmp1=$("#imgOptUpload").attr("src");
+			var a1=tmp1.split(",");
+			$.ajax({
+				url: "/opt/upload",
+				type: "POST",
+				data: "img="+encodeURIComponent(a1[1]),
+				success: function( response ) {	
+					var options = {
+						dom : '#txtOptUpload_Info',
+						isCollapsible: false
+					};
+					var jf = new JsonFormater(options);
+					jf.doFormat(response);
+				},
+				error: function( jqXHR, textStatus, errorThrown ) {
+				}
+			});
+			
+			return false;
+		}
+	</script>
+</body>
+</html>

@@ -1,21 +1,40 @@
 package conf
 
 import (
-	"io/ioutil"
 	"os"
-	"github.com/BurntSushi/toml"
 	"fmt"
+	"io/ioutil"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
+	Log		  *Log		`json:"-"`
 	Http	  *Http
+	Configure  *Configure
+	AllocStrategy *AllocStrategy
+}
+
+type Log struct {
+	Level string
 }
 
 type Http struct {
+	Host string
 	Port int
 }
 
-// NewConfig new a config.
+type Configure struct {
+	Param string
+}
+
+type AllocStrategy struct {
+	//Order
+	OrderClearThreshold int		//最少需要多少空闲块
+	OrderMinFreeSpace int64		//卷最少需要多少空间
+	OrderConsumeCount int 		//选择多少个卷进行随机写
+}
+
 func NewConfig(conf string) (c *Config, err error) {
 	var (
 		file *os.File
@@ -25,6 +44,8 @@ func NewConfig(conf string) (c *Config, err error) {
 	if file, err = os.Open(conf); err != nil {
 		return
 	}
+	defer file.Close()
+
 	if blob, err = ioutil.ReadAll(file); err != nil {
 		return
 	}

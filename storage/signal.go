@@ -4,12 +4,14 @@ import (
 	"os/signal"
 	"syscall"
 	"os"
+
 	"xqdfs/utils/log"
 	"xqdfs/storage/store"
-	"xqdfs/storage/server"
+	"xqdfs/storage/service"
+	"xqdfs/storage/replication"
 )
 
-func StartSignal(store *store.Store,httpServer *server.HttpServer) {
+func StartSignal(store *store.Store,replicationServer *replication.ReplicationServer,httpServer *service.HttpServer) {
 	var (
 		c chan os.Signal
 		s os.Signal
@@ -24,6 +26,7 @@ func StartSignal(store *store.Store,httpServer *server.HttpServer) {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGINT:
 			store.Close()
+			replicationServer.Stop()
 			httpServer.Stop()
 			return
 		case syscall.SIGHUP:

@@ -2,32 +2,34 @@ package volume
 
 import (
 	"sync"
+	"fmt"
+	"time"
+	"sync/atomic"
+
+	"xqdfs/utils/log"
+	"xqdfs/errors"
+	"xqdfs/utils/stat"
 	"xqdfs/storage/block"
 	"xqdfs/storage/index"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/needle"
-	"fmt"
-	"time"
-	"xqdfs/utils/log"
-	"xqdfs/errors"
-	"xqdfs/storage/stat"
-	"sync/atomic"
 )
 
 type Volume struct {
 	lock sync.RWMutex
 	// meta
-	Id      int32             `json:"id"`
-	Stats   *stat.Stats       `json:"stats"`
-	Block   *block.SuperBlock `json:"block"`
-	Indexer *index.Indexer    `json:"index"`
+	Id      int32             	`json:"id"`
+	Stats   *stat.Stats       	`json:"stats"`
+	Block   *block.SuperBlock 	`json:"block"`
+	Indexer *index.Indexer    	`json:"index"`
 	// data
+	LastKey	int64				`json:"last_key"`
 	needles map[int64]int64
 	conf    *conf.Config
 	// compact
-	Compact       bool   `json:"compact"`
-	CompactOffset uint32 `json:"compact_offset"`
-	CompactTime   int64  `json:"compact_time"`
+	Compact       bool   		`json:"compact"`
+	CompactOffset uint32 		`json:"compact_offset"`
+	CompactTime   int64  		`json:"compact_time"`
 	compactKeys   []int64
 	// status
 	closed bool
@@ -62,6 +64,10 @@ func NewVolume(id int32, bfile, ifile string, c *conf.Config) (v *Volume, err er
 	return
 }
 
+func (v *Volume) ImageCount() int64 {
+	return int64(len(v.needles))
+}
+
 // Meta get index meta data.
 func (v *Volume) Meta() []byte {
 	return []byte(fmt.Sprintf("%s,%s,%d", v.Block.File, v.Indexer.File, v.Id))
@@ -91,6 +97,7 @@ func (v *Volume) init() (err error) {
 			log.Error("recovery index: %s EOF", ix)
 			return errors.ErrIndexEOF
 		}
+		v.LastKey=ix.Key
 		v.needles[ix.Key] = needle.NewCache(ix.Offset, ix.Size)
 		offset = ix.Offset + needle.NeedleOffset(int64(ix.Size))
 		lastOffset = ix.Offset
@@ -107,6 +114,7 @@ func (v *Volume) init() (err error) {
 		} else {
 			so = needle.CacheDelOffset
 		}
+		v.LastKey=n.Key
 		v.needles[n.Key] = needle.NewCache(so, n.TotalSize)
 		return
 	}); err != nil {
@@ -176,6 +184,7 @@ func (v *Volume) Clear() (err error) {
 
 	v.Stats = &stat.Stats{}
 	v.needles = make(map[int64]int64)
+	v.LastKey=0
 	v.Compact = false
 	v.CompactOffset = 0
 	v.CompactTime = 0
@@ -214,7 +223,6 @@ func (v *Volume) read(n *needle.Needle) (err error) {
 	var (
 		key  = n.Key
 		size = n.TotalSize
-		now  = time.Now().UnixNano()
 	)
 	// pread syscall is atomic, no lock
 	if err = v.Block.ReadAt(n); err != nil {
@@ -234,9 +242,8 @@ func (v *Volume) read(n *needle.Needle) (err error) {
 		v.lock.Unlock()
 		err = errors.ErrNeedleDeleted
 	}else {
-		atomic.AddUint64(&v.Stats.TotalGetProcessed, 1)
+		atomic.AddUint64(&v.Stats.TotalReadProcessed, 1)
 		atomic.AddUint64(&v.Stats.TotalReadBytes, uint64(size))
-		atomic.AddUint64(&v.Stats.TotalGetDelay, uint64(time.Now().UnixNano()-now))
 	}
 	return
 }
@@ -296,14 +303,41 @@ func (v *Volume) Read(key int64, cookie int32) (n *needle.Needle, err error) {
 func (v *Volume) Write(n *needle.Needle) (err error) {
 	var (
 		ok     bool
+	)
+	v.lock.Lock()
+	_, ok = v.needles[n.Key]
+	if ok {
+		err=errors.ErrNeedleExist
+		v.lock.Unlock()
+		return
+	}
+
+	n.Offset = v.Block.Offset
+	if err = v.Block.Write(n); err == nil {
+		if err = v.Indexer.Write(n.Key, n.Offset, n.TotalSize); err == nil {
+			v.LastKey=n.Key
+			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
+		}
+	}
+	v.lock.Unlock()
+	if err == nil {
+		atomic.AddUint64(&v.Stats.TotalWriteProcessed, 1)
+		atomic.AddUint64(&v.Stats.TotalWriteBytes, uint64(n.TotalSize))
+	}
+	return
+}
+
+func (v *Volume) Rewrite(n *needle.Needle) (err error) {
+	var (
+		ok     bool
 		nc     int64
 		offset uint32
-		now    = time.Now().UnixNano()
 	)
 	v.lock.Lock()
 	n.Offset = v.Block.Offset
 	if err = v.Block.Write(n); err == nil {
 		if err = v.Indexer.Write(n.Key, n.Offset, n.TotalSize); err == nil {
+			v.LastKey=n.Key
 			nc, ok = v.needles[n.Key]
 			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
 		}
@@ -317,7 +351,6 @@ func (v *Volume) Write(n *needle.Needle) (err error) {
 		}
 		atomic.AddUint64(&v.Stats.TotalWriteProcessed, 1)
 		atomic.AddUint64(&v.Stats.TotalWriteBytes, uint64(n.TotalSize))
-		atomic.AddUint64(&v.Stats.TotalWriteDelay, uint64(time.Now().UnixNano()-now))
 	}
 	return
 }
@@ -327,14 +360,11 @@ func (v *Volume) del(offset uint32) (err error) {
 	if offset == needle.CacheDelOffset {
 		return
 	}
-	now:= time.Now().UnixNano()
 	if err = v.Block.Delete(offset); err != nil {
 		log.Error("volume delete error")
 		return
 	}
-	atomic.AddUint64(&v.Stats.TotalDelProcessed, 1)
 	atomic.AddUint64(&v.Stats.TotalWriteBytes, 1)
-	atomic.AddUint64(&v.Stats.TotalDelDelay, uint64(time.Now().UnixNano()-now))
 	return
 }
 
@@ -397,7 +427,6 @@ func (v *Volume) StartCompact(nv *Volume) (err error) {
 	if err = v.compact(nv); err != nil {
 		return
 	}
-	atomic.AddUint64(&v.Stats.TotalCompactProcessed, 1)
 	return
 }
 
@@ -415,11 +444,9 @@ func (v *Volume) StopCompact(nv *Volume) (err error) {
 			}
 		}
 
-		// then replace old & new block/index/needles variables
 		v.Block, nv.Block = nv.Block, v.Block
 		v.Indexer, nv.Indexer = nv.Indexer, v.Indexer
 		v.needles, nv.needles = nv.needles, v.needles
-		atomic.AddUint64(&v.Stats.TotalCompactDelay, uint64(time.Now().UnixNano()-v.CompactTime))
 	}
 free:
 	v.Compact = false
@@ -427,4 +454,8 @@ free:
 	v.CompactTime = 0
 	v.compactKeys = v.compactKeys[:0]
 	return
+}
+
+func (v *Volume) IsCompact() bool {
+	return v.Compact
 }

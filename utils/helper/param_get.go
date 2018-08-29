@@ -3,7 +3,8 @@ package helper
 import (
 	"strconv"
 	"encoding/json"
-	"errors"
+
+	"xqdfs/errors"
 )
 
 func GetInt(param interface{}) (int,error){
@@ -23,7 +24,7 @@ func GetInt(param interface{}) (int,error){
 			return 0, err
 		}
 	default:
-		return 0,errors.New("param error")
+		return 0,errors.ErrParameterError
 	}
 }
 
@@ -44,7 +45,7 @@ func GetInt32(param interface{}) (int32,error){
 			return 0, err
 		}
 	default:
-		return 0,errors.New("param error")
+		return 0,errors.ErrParameterError
 	}
 }
 
@@ -65,6 +66,6 @@ func GetInt64(param interface{}) (int64,error){
 			return 0, err
 		}
 	default:
-		return 0,errors.New("param error")
+		return 0,errors.ErrParameterError
 	}
 }

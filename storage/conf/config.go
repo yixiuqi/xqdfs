@@ -1,48 +1,68 @@
 package conf
 
 import (
-	"time"
-	"io/ioutil"
 	"os"
-	"github.com/BurntSushi/toml"
-	"xqdfs/storage/needle"
 	"fmt"
+	"time"
+	"bytes"
+	"io/ioutil"
+	"encoding/json"
+
+	"xqdfs/storage/needle"
+
+	"github.com/BurntSushi/toml"
+	"github.com/Jeffail/gabs"
 )
 
 type Config struct {
-	NeedleMaxSize int
-	Id string
-	Store     *Store
-	Block     *Block
-	Index     *Index
-	Http	  *Http
-	Dir 	  *Dir
+	NeedleMaxSize int	`json:"needle_max_size"`
+	Log		  *Log		`json:"-"`
+	Store     *Store	`json:"store"`
+	Block     *Block	`json:"block"`
+	Index     *Index	`json:"index"`
+	Http	  *Http		`json:"http"`
+	Dir 	  *Dir		`json:"dir"`
+	Configure  *Configure 			`json:"-"`
+	Replication	*Replication		`json:"-"`
+}
+
+type Log struct {
+	Level string
 }
 
 type Store struct {
-	VolumeIndex     string
-	FreeVolumeIndex string
+	VolumeIndex     string	`json:"volume_index"`
+	FreeVolumeIndex string	`json:"free_volume_index"`
 }
 
 type Block struct {
-	BufferSize    int
-	SyncWrite     int
-	Syncfilerange bool
+	BufferSize    int	`json:"buffer_size"`
+	SyncWrite     int	`json:"sync_write"`
+	Syncfilerange bool	`json:"sync_file_range"`
 }
 
 type Index struct {
-	BufferSize    int
-	SyncWrite     int
-	Syncfilerange bool
+	BufferSize    int	`json:"buffer_size"`
+	SyncWrite     int	`json:"sync_write"`
+	Syncfilerange bool	`json:"sync_file_range"`
 }
 
 type Http struct {
-	Port int
+	Host string			`json:"host"`
+	Port int			`json:"port"`
 }
 
 type Dir struct {
-	Path []string
-	Capacity []int	//GB
+	Path []string		`json:"path"`
+	Capacity []int		`json:"capacity"`		//GB
+}
+
+type Configure struct {
+	Param string
+}
+
+type Replication struct {
+	Path string
 }
 
 type Duration struct {
@@ -65,6 +85,8 @@ func NewConfig(conf string) (c *Config, err error) {
 	if file, err = os.Open(conf); err != nil {
 		return
 	}
+	defer file.Close()
+
 	if blob, err = ioutil.ReadAll(file); err != nil {
 		return
 	}
@@ -93,4 +115,20 @@ Path[%v],Capacity[%v]
 		c.Block.BufferSize,c.Block.SyncWrite,c.Block.Syncfilerange,
 		c.Index.BufferSize,c.Index.SyncWrite,c.Index.Syncfilerange,
 		c.Dir.Path,c.Dir.Capacity)
+}
+
+func (c *Config) Json() (*gabs.Container,error) {
+	j,err:=json.Marshal(c)
+	if err!=nil{
+		return nil,err
+	}
+
+	dec := json.NewDecoder(bytes.NewBuffer(j))
+	dec.UseNumber()
+	jsonObj,err:=gabs.ParseJSONDecoder(dec)
+	if err!=nil{
+		return nil,err
+	}else{
+		return jsonObj,nil
+	}
 }

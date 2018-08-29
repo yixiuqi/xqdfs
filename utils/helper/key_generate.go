@@ -1,81 +1,28 @@
 package helper
 
 import (
-	"sync"
 	"time"
+	"os"
+	"sync/atomic"
+	"fmt"
 )
 
+var start uint32 = uint32(os.Getpid())+uint32(time.Now().UnixNano() / 1000000 / 1000)
 func KeyGenerate() int64 {
-	t := time.Now()
-	time:=t.UnixNano() / 1000 / 1000 / 1000
-	rand:=Uint32()
-	ret:= (time<<32)| int64(rand)
-	return ret
+	value:=atomic.AddUint32(&start,1)
+	timestamp := time.Now().UnixNano() / 1000000 / 1000
+	r:=Uint32() + value
+	var v int64
+	v=int64(r) | (timestamp<<32)
+	return v
 }
 
-func KeyGetTime(key int64) int32 {
-	return int32(key>>32)
+func TimeFromKey(key int64) int32 {
+	v:=key>>32
+	return int32(v)
 }
 
-// Uint32 returns pseudorandom uint32.
-//
-// It is safe calling this function from concurrent goroutines.
-func Uint32() uint32 {
-	v := rngPool.Get()
-	if v == nil {
-		v = &RNG{}
-	}
-	r := v.(*RNG)
-	x := r.Uint32()
-	rngPool.Put(r)
-	return x
-}
-
-var rngPool sync.Pool
-
-// Uint32n returns pseudorandom uint32 in the range [0..maxN).
-//
-// It is safe calling this function from concurrent goroutines.
-func Uint32n(maxN uint32) uint32 {
-	x := Uint32()
-	// See http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-	return uint32((uint64(x) * uint64(maxN)) >> 32)
-}
-
-// RNG is a pseudorandom number generator.
-//
-// It is unsafe to call RNG methods from concurrent goroutines.
-type RNG struct {
-	x uint32
-}
-
-// Uint32 returns pseudorandom uint32.
-//
-// It is unsafe to call this method from concurrent goroutines.
-func (r *RNG) Uint32() uint32 {
-	for r.x == 0 {
-		r.x = getRandomUint32()
-	}
-
-	// See https://en.wikipedia.org/wiki/Xorshift
-	x := r.x
-	x ^= x << 13
-	x ^= x >> 17
-	x ^= x << 5
-	r.x = x
-	return x
-}
-
-// Uint32n returns pseudorandom uint32 in the range [0..maxN).
-//
-// It is unsafe to call this method from concurrent goroutines.
-func (r *RNG) Uint32n(maxN uint32) uint32 {
-	x := r.Uint32()
-	// See http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-	return uint32((uint64(x) * uint64(maxN)) >> 32)
-}
-
-func getRandomUint32() uint32 {
-	x := time.Now().UnixNano()
-	return uint32((x >> 32) ^ x)
+func TimeStringFromKey(key int64) string {
+	date_time := time.Unix(int64(TimeFromKey(key)), 0)
+	return fmt.Sprintf("%v", date_time)
 }

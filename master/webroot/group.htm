@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/group_readonly.js"></script>
+    <script type="text/javascript" src="js/group_add.js"></script>
+    <script type="text/javascript" src="js/group_remove.js"></script>
+    <script type="text/javascript" src="js/group_add_storage.js"></script>
+    <script type="text/javascript" src="js/group_remove_storage.js"></script>
+    <script type="text/javascript" src="js/storage_getall.js"></script>
+</head>
+<body class="easyui-layout">
+    <table class="easyui-datagrid" width="100%" height="100%" 
+        id="tbGroup"
+        toolbar="#tbarGroup"
+        singleSelect="true" 
+        rownumbers="true"
+        pagination="true"
+        pageSize=10
+        pageList="[10,20,30,40,50]"
+        data-options="url:'/group/getall',method:'post'">
+        <thead>
+            <tr>
+                <th field="groupId" width="70" align="left">组编号</th>
+                <th field="groupReadOnly" width="60" align="left">组只读</th>
+                <th data-options="field:'group_read_only_operate',width:110,formatter:readOnlyFormat" align="center">操作</th> 
+                <th field="groupInfo" width="150" align="left">组容量信息</th>
+                <th field="groupThroughput" width="150" align="left">组吞吐</th>
+                <th field="storageId" width="70" align="left">节点编号</th>
+                <th field="storageAddr" width="180" align="left">节点地址</th>
+                <th field="storageOnline" width="60" align="left">在线</th>
+                <th field="storageInfo" width="150" align="left">节点容量信息</th>
+                <th field="storageThroughput" width="150" align="left">节点吞吐</th>
+                <th data-options="field:'volume_info',width:100,formatter:volumeInfoFormat" align="center">卷详细信息</th> 
+            </tr>
+        </thead>
+    </table>
+    
+    <div id="tbarGroup" style="padding:5px;height:auto">
+        <div>
+            <a href="#" class="easyui-linkbutton" onClick="btnGroupAdd()">&nbsp;添加组&nbsp;&nbsp;</a>
+            <a href="#" class="easyui-linkbutton" onClick="btnStorageAdd()">&nbsp;&nbsp;添加存储节点&nbsp;</a>
+            <a href="#" class="easyui-linkbutton" onClick="btnStorageRemove()">&nbsp;&nbsp;删除存储节点&nbsp;</a>
+            <label>&nbsp;&nbsp;&nbsp;实时刷新:</label><input id="switchEdit" class="easyui-switchbutton" data-options="onText:'Yes',offText:'No'">
+        </div>
+    </div>
+
+    <div id="wndGroupAddStorage" class="easyui-window" title="添加存储节点" data-options="maximizable:false,minimizable:false,collapsible:false,modal:true,closed:true" style="width:1000px;height:400px;padding:5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center',iconCls:'icon-ok'">
+                <table class="easyui-datagrid" width="100%" height="100%" 
+                    id="tbStorage"
+                    singleSelect="true" 
+                    rownumbers="true"
+                    pagination="true"
+                    pageSize=10
+                    pageList="[10,20,30,40,50]"
+                    data-options="url:'/storage/getall',method:'post'">
+                    <thead>
+                        <tr>
+                            <th field="id" width="120" align="center">节点编号</th>
+                            <th field="addr" width="180" align="center">节点地址</th> 
+                            <th field="desc" width="240" align="center">节点描述</th>
+                            <th field="total" width="120" align="center">总容量(GB)</th>
+                            <th field="used" width="120" align="center">已使用(GB)</th>
+                            <th field="util" width="120" align="center">使用率</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div data-options="region:'south'" style="height:40px;">
+                <div style="padding:5px;position:absolute;bottom:0;right:0">
+                    <a href="#" class="easyui-linkbutton" onclick="doStorageAdd()">&nbsp;&nbsp;添加&nbsp;&nbsp;</a>
+                    <a href="#" class="easyui-linkbutton" onclick="$('#wndGroupAddStorage').window('close')">&nbsp;&nbsp;退出&nbsp;&nbsp;</a>
+                </div>    
+            </div>
+        </div>
+    </div>
+
+    <div id="wndVolumeInfo" class="easyui-window" title="卷详细信息查看" data-options="maximizable:false,minimizable:false,collapsible:false,modal:true,closed:true" style="width:1000px;height:400px;">
+        <div id="wndVolumeInfoPanel" data-options="region:'center'" style="width:100%;height:100%">  
+        </div> 
+    </div>
+    
+    <script>
+        function readOnlyFormat(val,row,index){
+            return '<a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',true)">只读</a>&nbsp;&nbsp;<a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',false)">可写</a>&nbsp;&nbsp;<a href="#" onclick="btnGroupRemove('+row.groupId+')">删除</a>';  
+        }
+
+        function volumeInfoFormat(val,row,index){
+            if(row.storageId){
+                return '<a href="#" onclick="btnVolumeInfo('+index+','+row.groupId+','+row.storageId+')">卷详情</a>';  
+            }else{
+                return ""
+            }            
+        }
+        
+        function btnGroupReadOnly(index,groupId,readOnly){
+            $.messager.confirm('提示', '是否进行变更?', function(r){
+                if (r){
+                    result = httpGroupReadOnly(groupId,readOnly);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbGroup').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+        
+        function btnGroupAdd(){
+            $.messager.confirm('提示', '是否添加组?', function(r){
+                if (r){
+                    result = httpGroupAdd();
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbGroup').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+
+        function btnGroupRemove(groupId){
+            $.messager.confirm('提示', '是否删除组?', function(r){
+                if (r){
+                    result = httpGroupRemove(groupId);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbGroup').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+
+        function btnStorageAdd(){
+            var row = $('#tbGroup').datagrid('getSelected');
+            if (row==null){
+                $.messager.alert('提示','没有选择组!','error');
+                return;    
+            }
+            $('#wndGroupAddStorage').window('center');
+		    $('#wndGroupAddStorage').window('open');
+        }
+
+        function doStorageAdd(){
+            $('#wndGroupAddStorage').window('close');
+            var rowGroup = $('#tbGroup').datagrid('getSelected');
+            if (rowGroup==null){
+                $.messager.alert('提示','没有选择组!','error');
+                return;    
+            }
+
+            var rowStorage = $('#tbStorage').datagrid('getSelected');
+            if (rowStorage==null){
+                $.messager.alert('提示','没有选择存储节点!','error');
+                return;    
+            }
+            
+            result = httpGroupAddStorage(rowGroup.groupId,rowStorage.id,rowStorage.addr);
+            if(result[0]==0){
+                $.messager.alert('提示','操作成功!','info');
+                $('#tbGroup').datagrid('reload');
+            }else{
+                $.messager.alert('提示','操作失败:'+result[1],'error');
+            }
+        }
+
+        function btnStorageRemove(){
+            var row = $('#tbGroup').datagrid('getSelected');
+            if (row){
+                $.messager.confirm('组编号['+row.groupId+'] 节点编号['+row.storageId+']', '是否删除存储节点 '+row.storageAddr, function(r){
+                    if (r){
+                        result = httpGroupRemoveStorage(row.groupId,row.storageId);
+                        if(result[0]==0){
+                            $.messager.alert('提示','操作成功!','info');
+                            $('#tbGroup').datagrid('reload');
+                        }else{
+                            $.messager.alert('提示','操作失败:'+result[1],'error');
+                        }
+                    }
+                });
+            }   
+        }
+
+        function btnVolumeInfo(index,groupId,storageId){
+            var hrefs='<iframe width="100%" height="100%" frameborder="0"  src="group_storage_volume.htm?groupId='+groupId+'&storageId='+storageId+'" style="width:100%;height:100%;"></iframe>';
+            $("#wndVolumeInfoPanel").html(hrefs);  
+            $('#wndVolumeInfo').window('center');
+            $('#wndVolumeInfo').window('open');
+        }
+
+        function autoMergeCells(target,fields) {
+            var rows = target.datagrid("getRows");
+            var i = 0,
+            j = 0,
+            temp = {};
+            for (i; i < rows.length; i++) {
+                var row = rows[i];
+                j = 0;
+                for (j; j < fields.length; j++) {
+                    var field = fields[j];
+                    var tf = temp[field];
+                    if (!tf) {
+                        tf = temp[field] = {};
+                        tf[row[field]] = [i];
+                    } else {
+                        var tfv = tf[row[field]];
+                        if (tfv) {
+                            tfv.push(i);
+                        } else {
+                            tfv = tf[row[field]] = [i];
+                        }
+                    }
+                }
+            }
+            $.each(temp,
+            function(field, colunm) {
+                $.each(colunm,
+                function() {
+                    var group = this;
+
+                    if (group.length > 1) {
+                        var before, after, megerIndex = group[0];
+                        for (var i = 0; i < group.length; i++) {
+                            before = group[i];
+                            after = group[i + 1];
+                            if (after && (after - before) == 1) {
+                                continue;
+                            }
+                            var rowspan = before - megerIndex + 1;
+                            if (rowspan > 1) {
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: field,
+                                    rowspan: rowspan
+                                });
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: 'groupReadOnly',
+                                    rowspan: rowspan
+                                });
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: 'group_read_only_operate',
+                                    rowspan: rowspan
+                                });
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: 'groupInfo',
+                                    rowspan: rowspan
+                                });
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: 'groupThroughput',
+                                    rowspan: rowspan
+                                });
+                            }
+                            if (after && (after - before) != 1) {
+                                megerIndex = after;
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadData(){
+            $('#tbGroup').datagrid('reload');    
+        }
+
+        var idInterval
+        $(function(){
+            $('#tbGroup').datagrid({ 
+                onLoadSuccess:function (data) {
+                    autoMergeCells($(this), ['groupId']);
+                }
+            });
+
+            $('#switchEdit').switchbutton({
+                onChange: function(checked){
+                    if(checked){
+                        idInterval=setInterval(loadData,3000);       
+                    }else{
+                        clearInterval(idInterval)
+                        idInterval=0
+                    }
+                    
+                }
+            })
+        });
+    </script>
+</body>
+</html>

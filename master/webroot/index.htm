@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north'" style="width:100%;height:60px;padding:0px 0px 0px 0px;">
+    	<img src="image/logo.png"/>
+    </div>
+    <div data-options="region:'west',split:true,title:'导航列表'" style="width:170px;">
+        <div class="easyui-accordion" data-options="fit:true,border:false">
+            <div title="存储节点管理" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeStorage" class="easyui-tree">
+                    <li data-options="iconCls:'icon-ok',title:'存储节点配置',page:'storage.htm',isOpen:1"><span>存储节点配置</span></li>
+                </ul>
+            </div>
+            <div title="存储组管理" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeGroup" class="easyui-tree">
+                    <li data-options="iconCls:'icon-ok',title:'存储组配置',page:'group.htm',isOpen:1"><span>存储组配置</span></li>
+                </ul>
+            </div>
+            <div title="存储操作" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeOpt" class="easyui-tree">
+                    <li data-options="iconCls:'icon-ok',title:'文件上传',page:'opt_upload.htm',isOpen:1"><span>文件上传</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'文件下载',page:'opt_get.htm',isOpen:1"><span>文件下载</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'center',iconCls:'icon-ok'">
+        <div id="tabMain" class="easyui-tabs" data-options="fit:true,border:false,plain:true">
+            <div title="Home" style="padding:15px 15px 15px 15px">
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function tabAdd(text,path,type){
+        if ($('#tabMain').tabs('exists',text)){ 
+            $('#tabMain').tabs('select',text); 
+        } 
+        else{
+            if(type==0){
+                $('#tabMain').tabs('add',{
+                    title: text,
+                    selected: true,
+                    closable:true,
+                    href:path+'?id='+Math.random()
+                });
+            }
+            else{
+                var rand = Math.random();
+                var content='<iframe width="100%" height="100%" frameborder="0"  src="'+path+'?id='+rand+'" style="width:100%;height:100%;"></iframe>';
+                
+                $('#tabMain').tabs('add',{
+                    title: text,
+                    selected: true,
+                    closable:true,
+                    content:content
+                });	
+            }
+        }
+    }
+      
+    $('#treeStorage').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeGroup').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeOpt').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+</script>
+</html>

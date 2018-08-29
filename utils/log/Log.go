@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
 	"xqdfs/utils/log/impl"
 )
 
@@ -35,10 +36,10 @@ func systemInfo() string {
 		funcName = funcName
 		//str.WriteString(runtime.FuncForPC(funcName).Name())
 		//str.WriteString(" ")
-		if len(file)<24{
+		if len(file)<48{
 			str.WriteString(file)
 		}else{
-			file = string([]byte(file)[len(file)-24:len(file)])
+			file = string([]byte(file)[len(file)-48:len(file)])
 			str.WriteString(".."+file)
 		}
 		str.WriteString(" ")

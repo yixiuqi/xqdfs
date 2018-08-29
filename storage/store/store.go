@@ -3,20 +3,20 @@ package store
 import (
 	"sync"
 	"os"
-	"xqdfs/storage/volume"
-	"xqdfs/storage/conf"
 	"io/ioutil"
 	"strings"
 	"strconv"
 	"fmt"
 	"path/filepath"
-	myos "xqdfs/storage/os"
+	"time"
+
+	"xqdfs/storage/block"
+	"xqdfs/storage/volume"
+	"xqdfs/storage/conf"
 	"xqdfs/utils/log"
 	"xqdfs/errors"
-	"xqdfs/storage/needle"
-	"sort"
-	"xqdfs/storage/stat"
-	"time"
+	"xqdfs/utils/stat"
+	myos "xqdfs/storage/os"
 )
 
 // Store get all volume meta data from a index file. index contains volume id,
@@ -37,12 +37,6 @@ import (
 // volume -> super block -> needle -> photo info
 //        -> block index -> needle -> photo info without raw data
 
-// int32Slice deleted offset sort.
-type int32Slice []int32
-func (p int32Slice) Len() int           { return len(p) }
-func (p int32Slice) Less(i, j int) bool { return p[i] < p[j] }
-func (p int32Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-
 const (
 	FreeVolumePrefix = "free_block_"
 	VolumeIndexExt   = ".idx"
@@ -56,7 +50,6 @@ type Store struct {
 	Volumes     map[int32]*volume.Volume // split volumes lock
 	FreeVolumes []*volume.Volume
 	conf        *conf.Config
-	last_vid	int32
 	flock       sync.Mutex // protect FreeId & saveIndex
 	vlock       sync.Mutex // protect Volumes map
 	Stats 		*stat.Stats
@@ -82,6 +75,52 @@ func NewStore(c *conf.Config) (s *Store, err error) {
 		s.Close()
 		return nil, err
 	}
+	return
+}
+
+func (s *Store) Init() (err error) {
+	path:=s.conf.Dir.Path
+	capacity:=s.conf.Dir.Capacity
+
+	if len(path)==0 || len(capacity)==0 {
+		log.Error("path or capacity is null")
+		err=errors.ErrStoreInitFailed
+		return
+	}
+
+	pos:=int32(0)
+	for p:=0;p<len(path);p++ {
+		count:=int(int64(capacity[p])*1024*1024*1024/block.MaxSize)
+		log.Infof("Storage Init path:[%s] count:[%d]",path[p],count)
+		for i:=0;i<count;i++{
+			pos++
+
+			if v:= s.Volumes[pos]; v != nil {
+				err=errors.ErrVolumeExist
+				return
+			}
+
+			_,err=s.AddFreeVolume(1,path[p],path[p])
+			if err!=nil{
+				log.Error("Storage Init error[%v]",err)
+				return
+			}
+			_,err=s.AddVolume(pos)
+			if err!=nil{
+				log.Error("Storage Init error[%v]",err)
+				return
+			}
+		}
+	}
+
+	for p:=0;p<len(path);p++ {
+		_,err=s.AddFreeVolume(1,path[p],path[p])
+		if err!=nil{
+			log.Error("Storage Init error[%v]",err)
+			return
+		}
+	}
+
 	return
 }
 
@@ -435,48 +474,6 @@ func (s *Store) freeVolume(id int32) (v *volume.Volume, err error) {
 	return
 }
 
-func (s *Store) Write(n *needle.Needle) (vid int32,err error) {
-	if len(s.Volumes) == 0 {
-		err=errors.ErrStoreNoVolume
-		return
-	}
-
-	if s.last_vid == 0 {
-		id:=make([]int32,0)
-		for k,_:= range s.Volumes {
-			id=append(id,k)
-		}
-		sort.Sort(int32Slice(id))
-		s.last_vid=id[0]
-		log.Debug("set last_vid:",s.last_vid)
-	}
-
-	v:= s.Volumes[s.last_vid]
-	err = v.Write(n)
-	if err == errors.ErrSuperBlockNoSpace {
-		id:=make([]int32,0)
-		for k,_:= range s.Volumes {
-			id=append(id,k)
-		}
-		sort.Sort(int32Slice(id))
-		for _,item:=range id {
-			v:= s.Volumes[item]
-			err = v.Write(n)
-			if err ==nil{
-				if s.last_vid!=item{
-					s.last_vid=item
-					log.Debug("set last_vid:",s.last_vid)
-				}
-				vid=s.last_vid
-				return
-			}
-		}
-	}else{
-		vid=s.last_vid
-	}
-	return
-}
-
 func (s *Store) CompactVolume(id int32) (err error) {
 	var (
 		v, nv      *volume.Volume
@@ -488,7 +485,7 @@ func (s *Store) CompactVolume(id int32) (err error) {
 			return errors.ErrVolumeInCompact
 		}
 	} else {
-		return errors.ErrVolumeExist
+		return errors.ErrVolumeNotExist
 	}
 	// find a free volume
 	if nv, err = s.freeVolume(id); err != nil {
@@ -509,7 +506,7 @@ func (s *Store) CompactVolume(id int32) (err error) {
 		}
 	} else {
 		// never happen
-		err = errors.ErrVolumeExist
+		err = errors.ErrVolumeNotExist
 		log.Errorf("compact volume: %d not exist(may bug)", id)
 	}
 	s.vlock.Unlock()

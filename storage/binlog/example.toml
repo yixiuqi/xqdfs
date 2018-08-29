@@ -1,0 +1,4 @@
+StorageId = 123
+StorageAddr = "192.168.10.25:10086"
+BinlogFile = "2.log"
+BinlogLine = 1110

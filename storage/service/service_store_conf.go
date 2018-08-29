@@ -1,14 +1,16 @@
 package service
 
 import (
-	"github.com/Jeffail/gabs"
 	"xqdfs/utils/helper"
+	"xqdfs/errors"
+	"xqdfs/utils/log"
+	"xqdfs/constant"
 )
 
 /**
- * @api {post} /store/conf 查询配置
- * @apiDescription 查询配置
- * @apiGroup Info
+ * @api {post} /store/conf [Store]查询配置
+ * @apiDescription [Store]查询配置
+ * @apiGroup Storage
  * @apiVersion 1.0.0
  * @apiParam {string} [seq] 会话序号(非必填)
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
@@ -32,15 +34,11 @@ import (
 }
 * */
 func ServiceStoreConf(context *Context,m map[string]interface{}) interface{}{
-	json:=gabs.New()
-	json.Array("dir")
-	for i:=0;i<len(context.Conf.Dir.Path);i++ {
-		item:=gabs.New()
-		item.Set(context.Conf.Dir.Path[i],"path")
-		item.Set(context.Conf.Dir.Capacity[i],"capacity")
-		json.ArrayAppend(item.Data(),"dir")
+	json,err:=context.Conf.Json()
+	if err!=nil{
+		log.Error(err)
+		return helper.ResultBuildWithExtInfo(errors.RetStoreConfigure,err.Error())
+	}else{
+		return helper.ResultBuildWithBody(constant.Success,json)
 	}
-	json.Set(context.Conf.Id,"id")
-	result:=helper.ResultBuildWithBody(Success,json)
-	return result
 }

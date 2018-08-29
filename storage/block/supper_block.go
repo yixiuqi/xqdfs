@@ -3,15 +3,16 @@ package block
 import (
 	"bytes"
 	"syscall"
-	"xqdfs/storage/needle"
 	"os"
-	"xqdfs/storage/conf"
-	myos "xqdfs/storage/os"
 	"bufio"
 	"io"
 	"fmt"
+
 	"xqdfs/utils/log"
 	"xqdfs/errors"
+	"xqdfs/storage/conf"
+	myos "xqdfs/storage/os"
+	"xqdfs/storage/needle"
 )
 
 // Super block has a header.
@@ -39,7 +40,7 @@ const (
 	Ver1 = byte(1)
 	// limits
 	// offset aligned 8 bytes, 4GB * needle_padding_size
-	MaxSize   = 4 * 1024 * 1024 * 1024 * needle.PaddingSize / 16
+	MaxSize   = 4 * 1024 * 1024 * 1024 * needle.PaddingSize
 	MaxOffset = MaxSize / needle.PaddingSize -1
 )
 
@@ -58,10 +59,10 @@ type SuperBlock struct {
 	File    string `json:"file"`
 	Offset  uint32 `json:"offset"`		//needle offset
 	Size    int64  `json:"size"`			//文件大小
-	LastErr error  `json:"last_err"`
-	Ver     byte   `json:"ver"`
+	LastErr error  `json:"-"`
+	Ver     byte   `json:"-"`
 	magic   []byte
-	Padding uint32 `json:"padding"`
+	Padding uint32 `json:"-"`
 	// status
 	closed     bool
 	write      int

@@ -4,11 +4,20 @@ import (
 	"os/signal"
 	"syscall"
 	"os"
+
 	"xqdfs/utils/log"
-	"xqdfs/master/server"
+	"xqdfs/master/service"
+	"xqdfs/configure"
+	"xqdfs/discovery"
+	"xqdfs/proxy"
+	"xqdfs/master/strategy"
 )
 
-func StartSignal(httpServer *server.HttpServer) {
+func StartSignal(httpServer *service.HttpServer,
+								configureServer *configure.ConfigureServer,
+								discoveryServer *discovery.DiscoveryServer,
+								strategyServer *strategy.AllocStrategyServer,
+								proxyStorage *proxy.ProxyStorage) {
 	var (
 		c chan os.Signal
 		s os.Signal
@@ -22,6 +31,10 @@ func StartSignal(httpServer *server.HttpServer) {
 		log.Infof("get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGINT:
+			strategyServer.Stop()
+			proxyStorage.Stop()
+			discoveryServer.Stop()
+			configureServer.Stop()
 			httpServer.Stop()
 			return
 		case syscall.SIGHUP:

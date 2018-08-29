@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/group_readonly.js"></script>
+    <script type="text/javascript" src="js/group_add.js"></script>
+    <script type="text/javascript" src="js/group_remove.js"></script>
+    <script type="text/javascript" src="js/group_add_storage.js"></script>
+    <script type="text/javascript" src="js/group_remove_storage.js"></script>
+    <script type="text/javascript" src="js/storage_volume_clear.js"></script>
+    <script type="text/javascript" src="js/storage_volume_compact.js"></script>
+</head>
+<body class="easyui-layout">
+    <table class="easyui-datagrid" width="100%" height="100%" 
+        id="tbVolumeInfo"
+        toolbar="#tbarVolumeInfo"
+        singleSelect="true" 
+        rownumbers="true"
+        pagination="true"
+        pageSize=10
+        pageList="[10,20,40,100]"
+        data-options="method:'post'">
+        <thead>
+            <tr> 
+                <th field="id" width="90" align="center">卷编号</th>
+                <th field="total" width="100" align="center">总容量(GB)</th>
+                <th field="used" width="100" align="center">已使用(GB)</th>
+                <th field="util" width="100" align="center">使用率</th>
+                <th field="writeTps" width="100" align="center">写Tps</th>
+                <th field="readQps" width="100" align="center">读Qps</th>
+                <th field="compact" width="100" align="center">是否正在压缩</th>
+                <th field="imageCount" width="120" align="center">图片总数</th>
+                <th data-options="field:'operation',width:110,formatter:storageFormat" align="center">操作</th> 
+            </tr>
+        </thead>
+    </table>
+
+    <div id="tbarVolumeInfo" style="padding:5px;height:auto">
+        <label>排序:</label>
+        <select id="comboVolumeInfo" class="easyui-combobox" style="width:200px;height:26px;" data-options="editable:false">
+            <option value="byId">Sort By Id</option>
+            <option value="byUtil">Sort By Usage Rate</option>
+        </select>
+    </div>
+
+    <script>
+        function storageFormat(val,row,index){
+            return '<a href="#" onclick="btnStorageVolumeClear('+row.id+')">清空</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageVolumeCompact('+row.id+')">压缩</a>';  
+        }
+        
+        function btnStorageVolumeClear(volumeId){
+            $.messager.confirm('提示', '是否删除清空卷?', function(r){
+                if (r){
+                    result = httpStorageVolumeClear(getUrlParam('storageId'),volumeId);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbVolumeInfo').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+
+        function btnStorageVolumeCompact(volumeId){
+            $.messager.confirm('提示', '是否压缩清空卷?', function(r){
+                if (r){
+                    result = httpStorageVolumeCompact(getUrlParam('storageId'),volumeId);
+                    if(result[0]==0){
+                        $.messager.alert('提示','操作成功!','info');
+                        $('#tbVolumeInfo').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','操作失败:'+result[1],'error');
+                    }
+                }
+            });
+        }
+
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r != null) return unescape(r[2]); return null; //返回参数值
+        }
+
+        $(function(){
+            var url='/storage/volume/getall?groupId='+getUrlParam('groupId')+'&storageId='+getUrlParam('storageId')
+            $('#tbVolumeInfo').datagrid('options').url = url;
+            $('#tbVolumeInfo').datagrid('load');
+
+            
+            $('#comboVolumeInfo').combobox({
+                onChange:function(newValue,oldValue){
+                    var url='/storage/volume/getall?groupId='+getUrlParam('groupId')+'&storageId='+getUrlParam('storageId')+'&sort='+newValue
+                    $('#tbVolumeInfo').datagrid('options').url = url;
+                    $('#tbVolumeInfo').datagrid('load');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

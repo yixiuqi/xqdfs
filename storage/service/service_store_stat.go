@@ -1,16 +1,20 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
-	"github.com/Jeffail/gabs"
 	"encoding/json"
+	"bytes"
+
+	"xqdfs/utils/helper"
 	"xqdfs/utils/log"
+	"xqdfs/constant"
+
+	"github.com/Jeffail/gabs"
 )
 
 /**
- * @api {post} /store/stat 查询状态
- * @apiDescription 查询状态
- * @apiGroup Info
+ * @api {post} /store/stat [Store]查询状态
+ * @apiDescription [Store]查询状态
+ * @apiGroup Storage
  * @apiVersion 1.0.0
  * @apiParam {string} [seq] 会话序号(非必填)
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
@@ -41,7 +45,10 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 	for _,v:=range context.Store.Volumes{
 		b,err:=json.Marshal(v)
 		if err==nil{
-			item,err:=gabs.ParseJSON(b)
+			dec := json.NewDecoder(bytes.NewBuffer(b))
+			dec.UseNumber()
+			item,err:=gabs.ParseJSONDecoder(dec)
+			item.Set(v.ImageCount(),"image_count")
 			if err==nil {
 				jsonStat.ArrayAppend(item.Data(), "volumes")
 			}
@@ -54,7 +61,9 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 	for _,v:=range context.Store.FreeVolumes{
 		b,err:=json.Marshal(v)
 		if err==nil{
-			item,err:=gabs.ParseJSON(b)
+			dec := json.NewDecoder(bytes.NewBuffer(b))
+			dec.UseNumber()
+			item,err:=gabs.ParseJSONDecoder(dec)
 			if err==nil{
 				jsonStat.ArrayAppend(item.Data(),"freeVolumes")
 			}
@@ -65,14 +74,16 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 
 	stat,err:=json.Marshal(context.Store.Stats)
 	if err==nil{
-		item,err:=gabs.ParseJSON(stat)
+		dec := json.NewDecoder(bytes.NewBuffer(stat))
+		dec.UseNumber()
+		item,err:=gabs.ParseJSONDecoder(dec)
 		if err==nil{
-			jsonStat.Set(item.Data(),"stat")
+			jsonStat.Set(item.Data(),"stats")
 		}
 	}else{
 		log.Error(err)
 	}
 
-	result:=helper.ResultBuildWithBody(Success,jsonStat)
+	result:=helper.ResultBuildWithBody(constant.Success,jsonStat)
 	return result
 }

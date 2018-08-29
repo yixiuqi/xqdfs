@@ -2,15 +2,16 @@ package index
 
 import (
 	"os"
-	"xqdfs/storage/conf"
-	"xqdfs/utils/encoding/binary"
 	"fmt"
-	myos "xqdfs/storage/os"
 	"bufio"
 	"io"
+
 	"xqdfs/storage/needle"
 	"xqdfs/utils/log"
 	"xqdfs/errors"
+	"xqdfs/storage/conf"
+	"xqdfs/utils/encoding/binary"
+	myos "xqdfs/storage/os"
 )
 
 // Index for fast recovery super block needle cache in memory, index is async
@@ -58,7 +59,7 @@ type Indexer struct {
 	bn  int
 	//
 	File    string `json:"file"`
-	LastErr error  `json:"last_err"`
+	LastErr error  `json:"-"`
 	Offset  int64  `json:"offset"`
 	conf    *conf.Config
 	// status
