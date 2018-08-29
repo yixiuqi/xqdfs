@@ -1,0 +1,22 @@
+{
+  "name": "XQDFS API说明",
+  "version": "1.0.0",
+  "description": "XQDFS API是HTTP API,常用的编程语言都能发起HTTP请求。",
+  "title": "XQDFS接口文档",
+  "url" : "http://ip:port",
+  "sampleUrl" : "http://ip:port",
+  "header": {
+    "title": "Overview",
+    "filename": "header.md"
+  },
+  "footer": {
+    "title": "Copyright",
+    "filename": "footer.md"
+  },
+  "template": {
+    "withCompare": true,
+    "withGenerator": false
+  }
+}
+
+

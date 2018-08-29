@@ -1,0 +1,27 @@
+# This is a TOML document. Boom.
+
+NeedleMaxSize  = 10485760
+Id = "1"
+
+[Store]
+VolumeIndex      = "volume_data/volume.idx"
+FreeVolumeIndex  = "volume_data/free_volume.idx"
+
+[Block]
+BufferSize      = 4194304
+SyncWrite       = 1
+Syncfilerange   = true
+
+[Index]
+BufferSize = 4096
+SyncWrite   = 1
+Syncfilerange = true
+
+[Http]
+Port = 10086
+
+[Dir]
+Path = ["volume_data/data1","volume_data/data2"]
+Capacity = [256,128]
+
+
