@@ -15,7 +15,9 @@ BufferSize = 4096
 SyncWrite   = 1
 Syncfilerange = true
 
-[Http]
+[Server]
+Id = 1
+Desc = "test[25]"
 Host = "192.168.10.25"
 Port = 10086
 

@@ -198,6 +198,6 @@ func (this *ProxyHttp) StorageGetConfigure(host string) (*gabs.Container,error) 
 }
 
 func (this *ProxyHttp) Stop() {
-	log.Info("ProxyHttp Stop")
+	log.Info("proxy http Stop")
 }
 

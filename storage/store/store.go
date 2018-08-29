@@ -91,7 +91,7 @@ func (s *Store) Init() (err error) {
 	pos:=int32(0)
 	for p:=0;p<len(path);p++ {
 		count:=int(int64(capacity[p])*1024*1024*1024/block.MaxSize)
-		log.Infof("Storage Init path:[%s] count:[%d]",path[p],count)
+		log.Infof("storage init path:[%s] count:[%d]",path[p],count)
 		for i:=0;i<count;i++{
 			pos++
 
@@ -102,12 +102,12 @@ func (s *Store) Init() (err error) {
 
 			_,err=s.AddFreeVolume(1,path[p],path[p])
 			if err!=nil{
-				log.Error("Storage Init error[%v]",err)
+				log.Error("storage init error[%v]",err)
 				return
 			}
 			_,err=s.AddVolume(pos)
 			if err!=nil{
-				log.Error("Storage Init error[%v]",err)
+				log.Error("storage init error[%v]",err)
 				return
 			}
 		}
@@ -116,7 +116,7 @@ func (s *Store) Init() (err error) {
 	for p:=0;p<len(path);p++ {
 		_,err=s.AddFreeVolume(1,path[p],path[p])
 		if err!=nil{
-			log.Error("Storage Init error[%v]",err)
+			log.Error("storage init error[%v]",err)
 			return
 		}
 	}

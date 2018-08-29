@@ -3,7 +3,7 @@
 [Log]
 Level = "debug"
 
-[Http]
+[Server]
 Host = "192.168.10.25"
 Port = 10087
 

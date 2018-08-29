@@ -30,13 +30,7 @@ type ReplicationServer struct {
 	task map[int32]*process.ReplicationTask
 }
 
-func NewReplicationServer(conf *conf.Config,s *store.Store) (*ReplicationServer,error) {
-	configureServer,err:= configure.NewConfigureServer(conf.Configure.Param)
-	if err != nil {
-		log.Errorf("create configure server error[%v]",err)
-		return nil,err
-	}
-
+func NewReplicationServer(conf *conf.Config,s *store.Store,configureServer *configure.ConfigureServer) (*ReplicationServer,error) {
 	discoveryServer,err:= discovery.NewDiscoveryServer(configureServer)
 	if err != nil {
 		log.Errorf("create discovery server error[%v]",err)
@@ -93,14 +87,10 @@ func (this *ReplicationServer) Stop() {
 	for _,v:=range this.task {
 		v.Stop()
 	}
-	defer this.taskLock.RUnlock()
+	this.taskLock.RUnlock()
 
 	if this.discoveryServer!=nil {
 		this.discoveryServer.Stop()
-	}
-
-	if this.configureServer!=nil {
-		this.configureServer.Stop()
 	}
 
 	if this.proxyStorage!=nil {
@@ -109,7 +99,7 @@ func (this *ReplicationServer) Stop() {
 }
 
 func (this *ReplicationServer) probe() {
-	me:=fmt.Sprintf("%s:%d",this.conf.Http.Host,this.conf.Http.Port)
+	me:=fmt.Sprintf("%s:%d",this.conf.Server.Host,this.conf.Server.Port)
 	var storages []*configuredef.StorageDal
 
 	groups,err:=this.configureServer.GroupGetAll()

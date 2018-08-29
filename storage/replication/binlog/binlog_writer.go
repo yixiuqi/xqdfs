@@ -24,10 +24,10 @@ func NewBinlogWriter(path string) (*BinlogWriter,error) {
 	l,err:=f.Seek(0,io.SeekEnd)
 	if err!=nil{
 		f.Close()
-		log.Errorf("Seek(\"%s\") error(%v)", path, err)
+		log.Errorf("seek(\"%s\") error(%v)", path, err)
 		return nil,err
 	}else{
-		log.Infof("Seek end(\"%s\") (%v)", path, l)
+		log.Infof("seek end(\"%s\") (%v)", path, l)
 	}
 
 	binlog:=&BinlogWriter{

@@ -72,7 +72,6 @@ func NewReplicationTask(path string,s *store.Store,proxyStorage *proxy.ProxyStor
 		isRun:true,
 		signal:make(chan int, 1),
 	}
-	log.Infof("Create ReplicationTask id[%d] line[%d]",sync.StorageId,sync.curBinlogLine)
 	go sync.start()
 	return sync,nil
 }
@@ -95,7 +94,7 @@ func (this *ReplicationTask) start() {
 			}
 		}()
 	}
-	log.Infof("ReplicationTask exit [%d][%s]",this.StorageId,this.StorageAddr)
+	log.Infof("replication task exit [%d][%s]",this.StorageId,this.StorageAddr)
 	this.wg.Done()
 }
 
@@ -155,7 +154,7 @@ func (this *ReplicationTask) compressFile() {
 }
 
 func (this *ReplicationTask) Stop() {
-	log.Infof("ReplicationTask stop [%d]",this.StorageId)
+	log.Infof("replication task stop [%d]",this.StorageId)
 
 	this.wg.Add(1)
 	this.isRun=false
@@ -177,7 +176,7 @@ func (this *ReplicationTask) Stop() {
 }
 
 func (this *ReplicationTask) Destroy() {
-	log.Infof("ReplicationTask destroy [%d][%s]",this.StorageId,this.StorageAddr)
+	log.Infof("replication task destroy [%d][%s]",this.StorageId,this.StorageAddr)
 
 	this.wg.Add(1)
 	this.isRun=false

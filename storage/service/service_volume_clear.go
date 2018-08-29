@@ -56,7 +56,6 @@ func ServiceVolumeClear(context *Context,m map[string]interface{}) interface{}{
 		}else{
 			replication,ok:=m["replication"]
 			if ok && replication==true {
-				log.Debug("ReplicationStorageVolumeClear")
 				p:=&process.ReplicationStorageVolumeClear{
 					Vid:vid,
 				}

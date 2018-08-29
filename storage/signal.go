@@ -9,9 +9,10 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/service"
 	"xqdfs/storage/replication"
+	"xqdfs/configure"
 )
 
-func StartSignal(store *store.Store,replicationServer *replication.ReplicationServer,httpServer *service.HttpServer) {
+func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,replicationServer *replication.ReplicationServer,httpServer *service.HttpServer) {
 	var (
 		c chan os.Signal
 		s os.Signal
@@ -19,19 +20,18 @@ func StartSignal(store *store.Store,replicationServer *replication.ReplicationSe
 	c = make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM,
 		syscall.SIGINT, syscall.SIGSTOP)
-	// Block until a signal is received.
 	for {
 		s = <-c
 		log.Infof("get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGINT:
-			store.Close()
 			replicationServer.Stop()
+			store.Close()
+			configureServer.Stop()
 			httpServer.Stop()
 			return
 		case syscall.SIGHUP:
 			// TODO reload
-			//return
 		default:
 			return
 		}

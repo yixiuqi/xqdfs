@@ -11,7 +11,7 @@ func HandleErr() {
 		const size = 64 << 10
 		buf := make([]byte, size)
 		buf = buf[:runtime.Stack(buf, false)]
-		log.Error(NewStringBuilder().Append("处理中出现异常[").Append(err).Append("]").ToString())
-		log.Error(NewStringBuilder().Append("堆栈信息:\n").Append(string(buf[:])).ToString())
+		log.Error(NewStringBuilder().Append("exception[").Append(err).Append("]").ToString())
+		log.Error(NewStringBuilder().Append("exception info:\n").Append(string(buf[:])).ToString())
 	}
 }

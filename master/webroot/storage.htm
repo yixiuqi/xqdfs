@@ -41,38 +41,9 @@
         </div>
     </div>
 
-    <div id="wndStorage" class="easyui-window" title="添加存储节点" data-options="maximizable:false,minimizable:false,collapsible:false,modal:true,closed:true" style="width:280px;height:160px;padding:5px;">
-        <div class="easyui-layout" data-options="fit:true">
-            <form>
-                <table cellpadding="5">
-                    <tr>
-                        <td>
-                            <label>节点地址:</label>
-                        </td>
-                        <td>
-                            <input class="easyui-textbox" type="text" style="width:150px" id="txtStorageAddr"></input>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>节点描述:</label>
-                        </td>
-                        <td>
-                            <input class="easyui-textbox" type="text" style="width:150px" id="txtStorageDesc"></input>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-            <div style="padding:5px;position:absolute;bottom:0;right:0">
-                <a href="#" class="easyui-linkbutton" onclick="doStorageAdd()">&nbsp;&nbsp;确定&nbsp;&nbsp;</a>
-                <a href="#" class="easyui-linkbutton" onclick="$('#wndStorage').window('close')">&nbsp;&nbsp;退出&nbsp;&nbsp;</a>
-            </div>
-        </div>
-    </div>
-
     <script>
         function storageFormat(val,row,index){
-            return '<a href="#" onclick="btnStorageRemove('+row.id+')">删除</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageInit('+row.id+')">初始化</a>';  
+            return '<a href="#" onclick="btnStorageRemove('+row.id+')">删除</a>';  
         }
 
         function btnStorageRemove(storageId){
@@ -87,49 +58,6 @@
                     }
                 }
             });
-        }
-
-        function btnStorageInit(storageId){
-            $.messager.confirm('提示', '是否初始化存储节点?', function(r){
-                if (r){
-                    result = httpStorageInit(storageId);
-                    if(result[0]==0){
-                        $.messager.alert('提示','操作成功!','info');
-                        $('#tbStorage').datagrid('reload');
-                    }else{
-                        $.messager.alert('提示','操作失败:'+result[1],'error');
-                    }
-                }
-            });
-        }
-        
-        function btnStorageAdd(){
-			$('#wndStorage').window('center');
-		    $('#wndStorage').window('open');
-        }
-		
-		function doStorageAdd(){
-            $('#wndStorage').window('close');
-            
-            var addr=$('#txtStorageAddr').val();
-            if(addr.length==0){
-                $.messager.alert('提示','没有填写地址!','error');
-                return;
-            }
-        
-            var desc=$('#txtStorageDesc').val();
-            if(desc.length==0){
-                $.messager.alert('提示','没有填写描述!','error');
-                return;
-            }
-
-            result = httpStorageAdd(addr,desc);
-            if(result[0]==0){
-                $.messager.alert('提示','操作成功!','info');
-                $('#tbStorage').datagrid('reload');
-            }else{
-                $.messager.alert('提示','操作失败:'+result[1],'error');
-            }
         }
     </script>
 </body>

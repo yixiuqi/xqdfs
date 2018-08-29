@@ -49,7 +49,7 @@ func (this *HttpServer) process(c *conf.Config,s *store.Store,replicationServer 
 	router.POST(constant.HttpStoreStat, NewHttpWrap(context,ServiceStoreStat).Handler)
 	router.POST(constant.HttpStoreConf, NewHttpWrap(context,ServiceStoreConf).Handler)
 
-	err:= router.Run(fmt.Sprintf(":%d",context.Conf.Http.Port))
+	err:= router.Run(fmt.Sprintf(":%d",context.Conf.Server.Port))
 	if err != nil {
 		log.Errorf("http error[%v]",err)
 		os.Exit(1)

@@ -20,7 +20,7 @@ type Config struct {
 	Store     *Store	`json:"store"`
 	Block     *Block	`json:"block"`
 	Index     *Index	`json:"index"`
-	Http	  *Http		`json:"http"`
+	Server	  *Server	`json:"http"`
 	Dir 	  *Dir		`json:"dir"`
 	Configure  *Configure 			`json:"-"`
 	Replication	*Replication		`json:"-"`
@@ -47,7 +47,9 @@ type Index struct {
 	Syncfilerange bool	`json:"sync_file_range"`
 }
 
-type Http struct {
+type Server struct {
+	Id int				`json:"id"`
+	Desc string			`json:"desc"`
 	Host string			`json:"host"`
 	Port int			`json:"port"`
 }
