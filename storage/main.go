@@ -10,6 +10,7 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
 	"xqdfs/storage/service"
+	"xqdfs/errors"
 )
 
 const(
@@ -38,6 +39,11 @@ func main() {
 	if s, err = store.NewStore(config); err != nil {
 		log.Errorf("store init error[%v]",err)
 		return
+	}else{
+		err=s.Init()
+		if err==errors.ErrVolumeExist{
+			log.Info("already init")
+		}
 	}
 
 	if replicationServer, err = replication.NewReplicationServer(config,s); err != nil {
