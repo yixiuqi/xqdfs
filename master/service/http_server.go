@@ -63,7 +63,7 @@ func (this *HttpServer) process(context *Context) {
 	router.POST(constant.HttpOptDelete, NewHttpWrap(context,ServiceOptDelete).Handler)
 
 	router.POST("/system/upload", this.uploadFile)
-	err:= router.Run(fmt.Sprintf(":%d",context.Conf.Http.Port))
+	err:= router.Run(fmt.Sprintf(":%d",context.Conf.Server.Port))
 	if err != nil {
 		log.Errorf("http error[%v]",err)
 		os.Exit(1)

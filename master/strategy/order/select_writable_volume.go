@@ -34,6 +34,10 @@ func (this *SelectWritableVolume) getGroupUsage() *usage.GroupsUsage {
 		this.ptrTime=curTime
 		this.groupUsage=usage.GetGroupsUsageSortById(this.discoveryServer.Groups())
 	}
+	if this.groupUsage==nil{
+		log.Debug("groupUsage==null")
+		return nil
+	}
 
 	for i := len(this.groupUsage.Usage) - 1; i > 0; i-- {
 		num := helper.Uint32n(uint32(i + 1))
@@ -50,7 +54,6 @@ func (this *SelectWritableVolume) SelectWritableVolume(conf *conf.Config,fileSiz
 	availableVolumeAll:=make([]*strategydef.WritableVolume,0)
 	u:=this.getGroupUsage()
 	if u==nil {
-		log.Debug("groups is null")
 		return nil,errors.ErrGroupIsEmpty
 	}
 

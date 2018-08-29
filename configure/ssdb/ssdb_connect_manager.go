@@ -21,7 +21,7 @@ var gSSDBConnectMgr *SSDBConnectMgr
 func SSDBConnectMgrInstance() *SSDBConnectMgr {
 	if gSSDBConnectMgr == nil {
 		gSSDBConnectMgr = new(SSDBConnectMgr)
-		log.Info(helper.NewStringBuilder().Append("创建SSDBConnectMgr").ToString())
+		log.Info(helper.NewStringBuilder().Append("create SSDBConnectMgr").ToString())
 	}
 
 	return gSSDBConnectMgr

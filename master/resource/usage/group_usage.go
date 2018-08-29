@@ -9,6 +9,7 @@ import (
 	"xqdfs/discovery/defines"
 
 	"github.com/Jeffail/gabs"
+	"xqdfs/utils/log"
 )
 
 /*
@@ -82,6 +83,7 @@ func (this *GroupsUsage) Json() (*gabs.Container,error) {
 */
 func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 	if groups==nil||len(groups)==0{
+		log.Debug("groups==null")
 		return nil
 	}
 

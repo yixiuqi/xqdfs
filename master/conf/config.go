@@ -9,8 +9,8 @@ import (
 )
 
 type Config struct {
-	Log		  *Log		`json:"-"`
-	Http	  *Http
+	Log		  *Log
+	Server	  *Server
 	Configure  *Configure
 	AllocStrategy *AllocStrategy
 }
@@ -19,7 +19,7 @@ type Log struct {
 	Level string
 }
 
-type Http struct {
+type Server struct {
 	Host string
 	Port int
 }
@@ -59,5 +59,5 @@ func (c *Config) String() string {
 Http:
 Port[%d]
 -----------------------------`,
-		c.Http.Port)
+		c.Server.Port)
 }

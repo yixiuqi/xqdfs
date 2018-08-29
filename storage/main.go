@@ -75,7 +75,7 @@ func main() {
 	}
 
 	if httpServer, err = service.NewHttpServer(config,s,replicationServer); err != nil {
-		log.Errorf("Http server init error[%v]",err)
+		log.Errorf("http server init error[%v]",err)
 		return
 	}
 

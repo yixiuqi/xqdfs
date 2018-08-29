@@ -3,7 +3,6 @@ package configure
 import (
 	"xqdfs/configure/defines"
 	"xqdfs/configure/ssdb"
-	"xqdfs/utils/log"
 )
 
 type ConfigureServer struct {
@@ -11,7 +10,6 @@ type ConfigureServer struct {
 }
 
 func NewConfigureServer(param string) (*ConfigureServer,error) {
-	log.Infof("Configure server param[%s]",param)
 	s:=&ConfigureServer{
 		configure:ssdb.NewGroupConfSSDB(param),
 	}

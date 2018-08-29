@@ -78,7 +78,6 @@ func (this *OrderClearTask) process() {
 		return
 	}
 	if u.Total==0 {
-		log.Debug("当前没有配置存储")
 		return
 	}
 
@@ -114,17 +113,15 @@ func (this *OrderClearTask) process() {
 		}
 	}
 
-	log.Debugf("当前可用卷数:%d 使用率:%v",free,u.Util)
+	log.Debugf("available volume count[%d] util[%v]",free,u.Util)
 	if free>this.conf.AllocStrategy.OrderClearThreshold {
 		return
 	}
 
-	log.Debugf("自动清除 group[%d] storage[%d][%s] volume[%d][%s]",groupId,storageId,storageAddr,volumeId,timeString)
+	log.Debugf("auto clear group[%d] storage[%d][%s] volume[%d][%s]",groupId,storageId,storageAddr,volumeId,timeString)
 	err:=this.proxyStorage.StorageVolumeClear(storageAddr,volumeId,true)
 	if err!=nil {
-		log.Errorf("发送自动清除命令失败[%v]",err)
-	}else{
-		log.Debug("发送自动清除命令成功")
+		log.Errorf("send auto clear command error[%v]",err)
 	}
 }
 
