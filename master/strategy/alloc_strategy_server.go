@@ -1,15 +1,15 @@
 package strategy
 
 import (
+	"xqdfs/proxy"
+	"xqdfs/discovery"
 	"xqdfs/master/conf"
 	"xqdfs/master/strategy/order"
-	strategydef "xqdfs/master/strategy/defines"
-	"xqdfs/discovery"
-	"xqdfs/proxy"
+	"xqdfs/master/strategy/defines"
 )
 
 type AllocStrategyServer struct {
-	allocStrategy strategydef.AllocStrategy
+	allocStrategy defines.AllocStrategy
 }
 
 func NewAllocStrategyServer(conf *conf.Config,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocStrategyServer,error){

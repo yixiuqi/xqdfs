@@ -1,20 +1,18 @@
 package helper
 
 import (
-	"time"
 	"os"
-	"sync/atomic"
 	"fmt"
+	"time"
+	"sync/atomic"
 )
 
-var start uint32 = uint32(os.Getpid())+uint32(time.Now().UnixNano() / 1000000 / 1000)
+var start uint32 = uint32(os.Getpid())
 func KeyGenerate() int64 {
-	value:=atomic.AddUint32(&start,1)
-	timestamp := time.Now().UnixNano() / 1000000 / 1000
-	r:=Uint32() + value
-	var v int64
-	v=int64(r) | (timestamp<<32)
-	return v
+	second:= time.Now().UnixNano() / 1000000 / 1000
+	key:=atomic.AddUint32(&start,Uint32())
+	random:=int64(key) | (second<<32)
+	return random
 }
 
 func TimeFromKey(key int64) int32 {

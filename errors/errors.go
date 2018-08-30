@@ -50,7 +50,7 @@ var (
 		RetNeedleFull:        	"needle full",
 		// store
 		RetStoreVolumeIndex:  	"store volume index",
-		RetStoreNoFreeVolume: 	"store no free volume",
+		RetStoreNoFreeVolume: 	"store has no free volume",
 		RetStoreFileExist:    	"store rename file exist",
 		RetStoreInitFailed:	 	"store init failed",
 		RetStoreConfigure:		"store configure error",
