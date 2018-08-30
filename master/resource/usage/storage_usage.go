@@ -17,12 +17,13 @@ type StorageUsage struct {
 	Total int64					`json:"total"`	//总空间
 	Used int64					`json:"used"`		//已经使用空间
 	Util float32				`json:"util"`		//使用率
-	ImageCount int64			`json:"image_count"`
-	ReadQps uint64				`json:"read_qps"`
-	ReadFlow uint64				`json:"read_flow"`
-	WriteTps uint64				`json:"write_tps"`
-	WriteFlow uint64			`json:"write_flow"`
+	ReadQps uint64				`json:"readQPS"`
+	ReadFlow uint64				`json:"readFlow"`
+	WriteTps uint64				`json:"writeTPS"`
+	WriteFlow uint64			`json:"writeFlow"`
 	VolumeUsage []*VolumeUsage	`json:"volume"`
+	ImageCount uint64			`json:"imageCount"`
+	ImageDelCount uint64 		`json:"imageDelCount"`
 }
 
 func GetStorageUsage(storage *defines.Storage) *StorageUsage {
@@ -43,6 +44,7 @@ func GetStorageUsage(storage *defines.Storage) *StorageUsage {
 			su.Total+=vu.Total
 			su.Used+=vu.Used
 			su.ImageCount+=vu.ImageCount
+			su.ImageDelCount+=vu.ImageDelCount
 			su.WriteTps+=vu.WriteTps
 			su.ReadQps+=vu.ReadQps
 			su.WriteFlow+=vu.WriteFlow

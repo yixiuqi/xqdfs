@@ -3,6 +3,7 @@ package helper
 import (
 	"testing"
 	"fmt"
+	"time"
 )
 
 func TestKeyGenerate(t *testing.T) {
@@ -12,3 +13,5 @@ func TestKeyGenerate(t *testing.T) {
 	fmt.Println(time)
 	fmt.Println(TimeStringFromKey(key))
 }
+
+

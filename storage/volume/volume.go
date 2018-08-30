@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"sync/atomic"
+	"os"
 
 	"xqdfs/utils/log"
 	"xqdfs/errors"
@@ -13,6 +14,10 @@ import (
 	"xqdfs/storage/index"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/needle"
+	"path/filepath"
+	myos "xqdfs/storage/os"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Volume struct {
@@ -23,13 +28,13 @@ type Volume struct {
 	Block   *block.SuperBlock 	`json:"block"`
 	Indexer *index.Indexer    	`json:"index"`
 	// data
-	LastKey	int64				`json:"last_key"`
+	LastKey	int64				`json:"lastKey"`
 	needles map[int64]int64
 	conf    *conf.Config
 	// compact
 	Compact       bool   		`json:"compact"`
-	CompactOffset uint32 		`json:"compact_offset"`
-	CompactTime   int64  		`json:"compact_time"`
+	CompactOffset uint32 		`json:"compactOffset"`
+	CompactTime   int64  		`json:"compactTime"`
 	compactKeys   []int64
 	// status
 	closed bool
@@ -37,19 +42,17 @@ type Volume struct {
 
 // NewVolume new a volume and init it.
 func NewVolume(id int32, bfile, ifile string, c *conf.Config) (v *Volume, err error) {
-	v = &Volume{}
-	v.Id = id
-	v.Stats = &stat.Stats{}
-	// data
-	v.needles = make(map[int64]int64)
-	v.conf = c
-	// compact
-	v.Compact = false
-	v.CompactOffset = 0
-	v.CompactTime = 0
-	v.compactKeys = []int64{}
-	// status
-	v.closed = false
+	v = &Volume{
+		Id:id,
+		Stats:&stat.Stats{},
+		needles:make(map[int64]int64),
+		conf:c,
+		Compact:false,
+		CompactOffset:0,
+		CompactTime:0,
+		compactKeys:[]int64{},
+		closed:false,
+	}
 	if v.Block, err = block.NewSuperBlock(bfile, c); err != nil {
 		return nil, err
 	}
@@ -64,8 +67,73 @@ func NewVolume(id int32, bfile, ifile string, c *conf.Config) (v *Volume, err er
 	return
 }
 
-func (v *Volume) ImageCount() int64 {
-	return int64(len(v.needles))
+func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
+	if vid==-1{
+		return &stat.Stats{}
+	}
+	path:=fmt.Sprintf("%s/%d.toml",filepath.Dir(ifile),vid)
+	log.Debugf("storeStats [%s] vid[%d]",path,vid)
+
+	stat:=&stat.Stats{}
+	if myos.Exist(path) == false {
+		f, err:= os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0664)
+		if err != nil {
+			log.Errorf("os.OpenFile(\"%s\") error(%v)", path, err)
+			return nil
+		}
+		defer f.Close()
+		enc:=toml.NewEncoder(f)
+		err=enc.Encode(stat)
+		if err!=nil{
+			log.Error(err)
+			return nil
+		}else{
+			return stat
+		}
+	}else{
+		f, err:= os.OpenFile(path, os.O_RDONLY, 0664)
+		if err != nil {
+			log.Errorf("os.OpenFile(\"%s\") error(%v)", path, err)
+			return nil
+		}
+		defer f.Close()
+
+		_,err=toml.DecodeReader(f,stat)
+		if err!=nil{
+			log.Error(err)
+			return nil
+		}else{
+			return stat
+		}
+	}
+}
+
+func (v *Volume) StoreStats() error {
+	path:=fmt.Sprintf("%s/%d.toml",filepath.Dir(v.Indexer.File),v.Id)
+	log.Debugf("storeStats [%s] vid[%d]",path,v.Id)
+
+	f, err:= os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0664)
+	if err != nil {
+		log.Errorf("os.OpenFile(\"%s\") error(%v)", path, err)
+		return err
+	}
+	defer f.Close()
+	if v.Stats==nil{
+		return nil
+	}
+
+	enc:=toml.NewEncoder(f)
+	err=enc.Encode(v.Stats)
+	if err!=nil{
+		log.Error(err)
+		return err
+	}else{
+		return nil
+	}
+}
+
+func (v *Volume) ImageCount() uint64 {
+	return uint64(len(v.needles))
 }
 
 // Meta get index meta data.
@@ -85,6 +153,9 @@ func (v *Volume) init() (err error) {
 		offset     uint32
 		lastOffset uint32
 	)
+
+	v.Stats = v.loadStats(v.Id,v.Indexer.File)
+
 	// recovery from index
 	if err = v.Indexer.Recovery(func(ix *index.Index) error {
 		// must no less than last offset
@@ -167,6 +238,7 @@ func (v *Volume) Close() {
 func (v *Volume) Clear() (err error) {
 	v.lock.Lock()
 	defer v.lock.Unlock()
+
 	if v.closed {
 		return
 	}
@@ -183,6 +255,7 @@ func (v *Volume) Clear() (err error) {
 	}
 
 	v.Stats = &stat.Stats{}
+	v.StoreStats()
 	v.needles = make(map[int64]int64)
 	v.LastKey=0
 	v.Compact = false
@@ -364,6 +437,7 @@ func (v *Volume) del(offset uint32) (err error) {
 		log.Error("volume delete error")
 		return
 	}
+	atomic.AddUint64(&v.Stats.TotalDelProcessed, 1)
 	atomic.AddUint64(&v.Stats.TotalWriteBytes, 1)
 	return
 }
@@ -447,6 +521,9 @@ func (v *Volume) StopCompact(nv *Volume) (err error) {
 		v.Block, nv.Block = nv.Block, v.Block
 		v.Indexer, nv.Indexer = nv.Indexer, v.Indexer
 		v.needles, nv.needles = nv.needles, v.needles
+
+		atomic.StoreUint64(&v.Stats.TotalDelProcessed,0)
+		v.StoreStats()
 	}
 free:
 	v.Compact = false

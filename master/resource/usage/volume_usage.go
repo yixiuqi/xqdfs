@@ -13,18 +13,19 @@ import (
  */
 
 type VolumeUsage struct {
-	Id int32			`json:"id"`
-	Total int64			`json:"total"`	//总空间
-	Used int64			`json:"used"`		//已经使用空间
-	Util float32		`json:"util"`		//使用率
-	ReadQps uint64		`json:"read_qps"`
-	ReadFlow uint64		`json:"read_flow"`
-	WriteTps uint64		`json:"write_tps"`
-	WriteFlow uint64	`json:"write_flow"`
-	LastKey	int64		`json:"last_key"`
-	LastTime string		`json:"last_time"`
-	Compact	bool		`json:"compact"`
-	ImageCount int64	`json:"image_count"`
+	Id int32				`json:"id"`
+	Total int64				`json:"total"`	//总空间
+	Used int64				`json:"used"`		//已经使用空间
+	Util float32			`json:"util"`		//使用率
+	ReadQps uint64			`json:"readQPS"`
+	ReadFlow uint64			`json:"readFlow"`
+	WriteTps uint64			`json:"writeTPS"`
+	WriteFlow uint64		`json:"writeFlow"`
+	LastKey	int64			`json:"lastKey"`
+	LastTime string			`json:"last_time"`
+	Compact	bool			`json:"compact"`
+	ImageCount uint64		`json:"imageCount"`
+	ImageDelCount uint64 	`json:"imageDelCount"`
 }
 
 func GetVolumeUsage(volume *defines.Volume) *VolumeUsage {
@@ -46,6 +47,7 @@ func GetVolumeUsage(volume *defines.Volume) *VolumeUsage {
 	v.LastTime=helper.TimeStringFromKey(v.LastKey)
 	v.Compact=volume.Compact
 	v.ImageCount=volume.ImageCount
+	v.ImageDelCount=volume.Stat.TotalDelProcessed
 
 	if v.Total==0{
 		v.Util=0

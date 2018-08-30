@@ -29,12 +29,13 @@ type GroupUsage struct {
 	Total int64						`json:"total"`	//总空间
  	Used int64						`json:"used"`		//已经使用空间
 	Util float32					`json:"util"`		//使用率
-	ImageCount int64				`json:"image_count"`
-	ReadQps uint64					`json:"read_qps"`
-	ReadFlow uint64					`json:"read_flow"`
-	WriteTps uint64					`json:"write_tps"`
-	WriteFlow uint64				`json:"write_flow"`
+	ReadQps uint64					`json:"readQPS"`
+	ReadFlow uint64					`json:"readFlow"`
+	WriteTps uint64					`json:"writeTPS"`
+	WriteFlow uint64				`json:"writeFlow"`
 	StorageUsage []*StorageUsage	`json:"storage"`
+	ImageCount uint64				`json:"imageCount"`
+	ImageDelCount uint64 			`json:"imageDelCount"`
 }
 
 func (this *GroupsUsage) GetGroupUsage(groupId int32) *GroupUsage {
@@ -107,6 +108,7 @@ func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 				gu.ReadFlow+=su.ReadFlow
 				gu.WriteFlow+=su.WriteFlow
 				gu.ImageCount+=su.ImageCount
+				gu.ImageDelCount+=su.ImageDelCount
 				gu.StorageUsage=append(gu.StorageUsage,su)
 			}
 		}
@@ -114,7 +116,8 @@ func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 		if len(g.Storage)!=0 {
 			gu.Total=gu.Total/int64(len(g.Storage))
 			gu.Used=gu.Used/int64(len(g.Storage))
-			gu.ImageCount=gu.ImageCount/int64(len(g.Storage))
+			gu.ImageCount=gu.ImageCount/uint64(len(g.Storage))
+			gu.ImageDelCount=gu.ImageDelCount/uint64(len(g.Storage))
 		}
 		if gu.Total==0{
 			gu.Util=0

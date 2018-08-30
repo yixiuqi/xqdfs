@@ -57,6 +57,7 @@ func ServiceVolumeCompact(context *Context,m map[string]interface{}) interface{}
 	}
 
 	if len(context.Store.FreeVolumes) == 0 {
+		log.Error(errors.ErrStoreNoFreeVolume.Error())
 		return helper.ResultBuildWithExtInfo(errors.RetStoreNoFreeVolume,errors.ErrStoreNoFreeVolume.Error())
 	}
 

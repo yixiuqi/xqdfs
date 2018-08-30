@@ -3,22 +3,23 @@ package stat
 import "encoding/json"
 
 type Stats struct {
-	// qps & tps
-	TotalWriteProcessed     uint64 `json:"-"`
-	WriteTPS                uint64 `json:"write_tps"`
+	TotalWriteProcessed     uint64 `json:"totalWrite"`
+	WriteTPS                uint64 `json:"writeTPS"`
 	lastTotalWriteProcessed uint64 `json:"-"`
 
-	TotalReadProcessed       uint64 `json:"-"`
-	ReadQPS                  uint64 `json:"read_qps"`
+	TotalReadProcessed       uint64 `json:"totalRead"`
+	ReadQPS                  uint64 `json:"readQPS"`
 	lastTotalReadProcessed   uint64 `json:"-"`
 
 	TotalReadBytes           uint64 `json:"-"`
-	ReadFlow                 uint64 `json:"read_flow"`
+	ReadFlow                 uint64 `json:"readFlow"`
 	lastTotalReadBytes       uint64 `json:"-"`
 
 	TotalWriteBytes          uint64 `json:"-"`
-	WriteFlow                uint64 `json:"write_flow"`
+	WriteFlow                uint64 `json:"writeFlow"`
 	lastTotalWriteBytes      uint64 `json:"-"`
+
+	TotalDelProcessed       uint64 `json:"totalDel"`
 }
 
 func (s *Stats) Calc() {
@@ -40,6 +41,7 @@ func (s *Stats) Merge(s1 *Stats) {
 	// qps & tps
 	s.TotalWriteProcessed += s1.TotalWriteProcessed
 	s.TotalReadProcessed += s1.TotalReadProcessed
+	s.TotalDelProcessed += s1.TotalDelProcessed
 	// bytes
 	s.TotalReadBytes += s1.TotalReadBytes
 	s.TotalWriteBytes += s1.TotalWriteBytes
@@ -50,6 +52,7 @@ func (s *Stats) Reset() {
 	// qps & tps
 	s.TotalWriteProcessed = 0
 	s.TotalReadProcessed = 0
+	s.TotalDelProcessed = 0
 	// bytes
 	s.TotalReadBytes = 0
 	s.TotalWriteBytes = 0

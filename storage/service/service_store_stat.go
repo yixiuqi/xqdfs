@@ -48,7 +48,7 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 			dec := json.NewDecoder(bytes.NewBuffer(b))
 			dec.UseNumber()
 			item,err:=gabs.ParseJSONDecoder(dec)
-			item.Set(v.ImageCount(),"image_count")
+			item.Set(v.ImageCount(),"imageCount")
 			if err==nil {
 				jsonStat.ArrayAppend(item.Data(), "volumes")
 			}

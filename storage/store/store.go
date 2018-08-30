@@ -17,6 +17,7 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/stat"
 	myos "xqdfs/storage/os"
+	"xqdfs/utils/helper"
 )
 
 // Store get all volume meta data from a index file. index contains volume id,
@@ -53,14 +54,20 @@ type Store struct {
 	flock       sync.Mutex // protect FreeId & saveIndex
 	vlock       sync.Mutex // protect Volumes map
 	Stats 		*stat.Stats
+	isRun 		bool
+	wg   sync.WaitGroup
+	signal      chan int
 }
 
 func NewStore(c *conf.Config) (s *Store, err error) {
-	s = &Store{}
-	s.conf = c
-	s.FreeId = 0
-	s.Stats=&stat.Stats{}
-	s.Volumes = make(map[int32]*volume.Volume)
+	s = &Store{
+		signal:make(chan int, 1),
+		isRun:true,
+		conf:c,
+		FreeId:0,
+		Stats:&stat.Stats{},
+		Volumes:make(map[int32]*volume.Volume),
+	}
 	if s.vf, err = os.OpenFile(c.Store.VolumeIndex, os.O_RDWR|os.O_CREATE|myos.O_NOATIME, 0664); err != nil {
 		log.Errorf("os.OpenFile(\"%s\") error(%v)", c.Store.VolumeIndex, err)
 		s.Close()
@@ -128,29 +135,60 @@ func (s *Store) init() (err error) {
 	if err = s.parseFreeVolumeIndex(); err == nil {
 		err = s.parseVolumeIndex()
 	}
-	go s.statproc()
+	go s.statsProc()
+	go s.volumeStatsUpdateProc()
 	return
 }
 
-func (s *Store) statproc() {
+func (s *Store) statsProc() {
 	var (
 		v    *volume.Volume
 		olds *stat.Stats
 		news = new(stat.Stats)
 	)
-	for {
+	for s.isRun {
+		startTime:=helper.CurrentTime()
+
 		olds = s.Stats
 		*news = *olds
 		s.Stats = news // use news instead, for current display
 		olds.Reset()
+		s.vlock.Lock()
 		for _, v = range s.Volumes {
 			v.Stats.Calc()
 			olds.Merge(v.Stats)
 		}
+		s.vlock.Unlock()
 		olds.Calc()
 		s.Stats = olds
-		time.Sleep(time.Second)
+
+		endTime:=helper.CurrentTime()
+		time.Sleep(time.Millisecond*1000-time.Duration(endTime-startTime))
 	}
+	s.wg.Done()
+	log.Debug("Store.statsProc exit")
+}
+
+func (s *Store) volumeStatsUpdateProc() {
+	for s.isRun {
+		volumes:=make(map[int32]*volume.Volume)
+		s.vlock.Lock()
+		for k,v:= range s.Volumes {
+			volumes[k]=v
+		}
+		s.vlock.Unlock()
+
+		for _,v:= range volumes {
+			v.StoreStats()
+		}
+
+		select {
+		case <-time.After(time.Second * 5):
+		case <-s.signal:
+		}
+	}
+	s.wg.Done()
+	log.Debug("Store.volumeStatsUpdateProc exit")
 }
 
 func (s *Store) parseIndex(lines []string) (im map[int32]struct{}, ids []int32, bfs, ifs []string, err error) {
@@ -287,6 +325,11 @@ func (s *Store) fileFreeId(file string) (id int32) {
 
 func (s *Store) Close() {
 	log.Info("store close")
+	s.wg.Add(2)
+	s.isRun=false
+	s.signal<-1
+	s.wg.Wait()
+
 	var v *volume.Volume
 	if s.vf != nil {
 		s.vf.Close()
@@ -294,10 +337,12 @@ func (s *Store) Close() {
 	if s.fvf != nil {
 		s.fvf.Close()
 	}
+	s.vlock.Lock()
 	for _, v = range s.Volumes {
 		log.Infof("volume[%d] close", v.Id)
 		v.Close()
 	}
+	s.vlock.Unlock()
 	return
 }
 
@@ -377,7 +422,10 @@ func (s *Store) addVolume(id int32, nv *volume.Volume) {
 func (s *Store) AddVolume(id int32) (v *volume.Volume, err error) {
 	var ov *volume.Volume
 	// try check exists
-	if ov = s.Volumes[id]; ov != nil {
+	s.vlock.Lock()
+	ov = s.Volumes[id]
+	s.vlock.Unlock()
+	if ov != nil {
 		return nil, errors.ErrVolumeExist
 	}
 	// find a free volume
@@ -480,7 +528,10 @@ func (s *Store) CompactVolume(id int32) (err error) {
 		bdir, idir string
 	)
 	// try check volume
-	if v = s.Volumes[id]; v != nil {
+	s.vlock.Lock()
+	v = s.Volumes[id]
+	s.vlock.Unlock()
+	if v != nil {
 		if v.Compact {
 			return errors.ErrVolumeInCompact
 		}

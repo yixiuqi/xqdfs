@@ -99,6 +99,7 @@ func ServiceStorageVolumeGetAll(context *Context,m map[string]interface{}) inter
 		jsonV.Set(storage.VolumeUsage[pos].ReadQps,"readQps")
 		jsonV.Set(storage.VolumeUsage[pos].Compact,"compact")
 		jsonV.Set(storage.VolumeUsage[pos].ImageCount,"imageCount")
+		jsonV.Set(storage.VolumeUsage[pos].ImageDelCount,"imageDelCount")
 		jsonAll.ArrayAppend(jsonV.Data(),"rows")
 	}
 	return helper.ResultBuildWithBody(constant.Success,jsonAll)
