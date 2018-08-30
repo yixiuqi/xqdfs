@@ -181,9 +181,9 @@ func (s *Store) volumeStatsUpdateProc() {
 		for _,v:= range volumes {
 			v.StoreStats()
 		}
-
+		log.Debug("store stats")
 		select {
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 60):
 		case <-s.signal:
 		}
 	}
