@@ -7,9 +7,9 @@ import (
 	"math"
 
 	"xqdfs/discovery/defines"
+	"xqdfs/utils/log"
 
 	"github.com/Jeffail/gabs"
-	"xqdfs/utils/log"
 )
 
 /*
@@ -38,6 +38,9 @@ type GroupUsage struct {
 	ImageDelCount uint64 			`json:"imageDelCount"`
 }
 
+/*
+
+ */
 func (this *GroupsUsage) GetGroupUsage(groupId int32) *GroupUsage {
 	for _,g:=range this.Usage {
 		if g.Id==groupId {

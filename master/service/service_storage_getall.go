@@ -8,7 +8,6 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/constant"
 	"xqdfs/master/resource/usage"
-	discoverydef "xqdfs/discovery/defines"
 
 	"github.com/Jeffail/gabs"
 )
@@ -56,21 +55,13 @@ func ServiceStorageGetAll(context *Context,m map[string]interface{}) interface{}
 		jsonStorage.Set(storagesDal[pos].Addr,"addr")
 		jsonStorage.Set(storagesDal[pos].Desc,"desc")
 
-		var storage *discoverydef.Storage
-		for _,s:=range storages {
-			if s.Id==storagesDal[pos].Id {
-				storage=s
-				break
-			}
-		}
-
-		if storage==nil{
+		su:=usage.GetStorageUsageFromArray(storages,storagesDal[pos].Id)
+		if su==nil{
 			jsonStorage.Set("","total")
 			jsonStorage.Set("","used")
 			jsonStorage.Set("","util")
 			jsonStorage.Set("","imageCount")
 		}else{
-			su:=usage.GetStorageUsage(storage)
 			vTotal:=float32(math.Trunc(float64(su.Total)/1024/1024/1024*1e3) * 1e-3)
 			jsonStorage.Set(vTotal,"total")
 			vUsed:=float32(math.Trunc(float64(su.Used)/1024/1024/1024*1e3) * 1e-3)

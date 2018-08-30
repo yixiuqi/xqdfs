@@ -62,3 +62,18 @@ func GetStorageUsage(storage *defines.Storage) *StorageUsage {
 
 	return su
 }
+
+func GetStorageUsageFromArray(storages []*defines.Storage,id int32) *StorageUsage {
+	var storage *defines.Storage
+	for _,s:=range storages {
+		if s.Id==id {
+			storage=s
+			break
+		}
+	}
+	if storage==nil{
+		return nil
+	}else{
+		return GetStorageUsage(storage)
+	}
+}

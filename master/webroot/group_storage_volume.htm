@@ -89,14 +89,14 @@
         }
 
         $(function(){
-            var url='/storage/volume/getall?groupId='+getUrlParam('groupId')+'&storageId='+getUrlParam('storageId')
+            var url='/storage/volume/getall?storageId='+getUrlParam('storageId')
             $('#tbVolumeInfo').datagrid('options').url = url;
             $('#tbVolumeInfo').datagrid('load');
 
             
             $('#comboVolumeInfo').combobox({
                 onChange:function(newValue,oldValue){
-                    var url='/storage/volume/getall?groupId='+getUrlParam('groupId')+'&storageId='+getUrlParam('storageId')+'&sort='+newValue
+                    var url='/storage/volume/getall?storageId='+getUrlParam('storageId')+'&sort='+newValue
                     $('#tbVolumeInfo').datagrid('options').url = url;
                     $('#tbVolumeInfo').datagrid('load');
                 }

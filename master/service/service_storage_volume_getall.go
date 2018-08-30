@@ -13,23 +13,12 @@ import (
 )
 
 func ServiceStorageVolumeGetAll(context *Context,m map[string]interface{}) interface{}{
-	var groupId int32
 	var storageId int32
 	var page int32
 	var rows int32
 	var sortType string
 
-	value,ok:=m["groupId"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			groupId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"groupId missing")
-	}
-
-	value,ok=m["storageId"]
+	value,ok:=m["storageId"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
 		if err==nil{
@@ -64,42 +53,37 @@ func ServiceStorageVolumeGetAll(context *Context,m map[string]interface{}) inter
 		sortType=value.(string)
 	}
 
-	gu:=usage.GetGroupsUsage(context.DiscoveryServer.Groups())
-	if gu==nil{
-		return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,errors.ErrGroupIsEmpty.Error())
-	}
-
-	storage:=gu.GetStorageUsage(groupId,storageId)
-	if storage==nil{
+	su:=usage.GetStorageUsageFromArray(context.DiscoveryServer.Storages(),storageId)
+	if su==nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageNotExist,errors.ErrStorageNotExist.Error())
 	}
 
 	if sortType=="byId"{
-		sort.Sort(usage.VolumeUsageSortById(storage.VolumeUsage))
+		sort.Sort(usage.VolumeUsageSortById(su.VolumeUsage))
 	}else if sortType=="byUtil"{
-		sort.Sort(usage.VolumeUsageSortByUtil(storage.VolumeUsage))
+		sort.Sort(usage.VolumeUsageSortByUtil(su.VolumeUsage))
 	}else{
-		sort.Sort(usage.VolumeUsageSortById(storage.VolumeUsage))
+		sort.Sort(usage.VolumeUsageSortById(su.VolumeUsage))
 	}
 
 	jsonAll:=gabs.New()
 	jsonAll.Array("rows")
-	jsonAll.Set(len(storage.VolumeUsage),"total")
+	jsonAll.Set(len(su.VolumeUsage),"total")
 	start:=(page-1)*rows
 	end:=start+rows
-	for pos:=start;pos<end&&pos<int32(len(storage.VolumeUsage));pos++ {
+	for pos:=start;pos<end&&pos<int32(len(su.VolumeUsage));pos++ {
 		jsonV:=gabs.New()
-		jsonV.Set(storage.VolumeUsage[pos].Id,"id")
-		vTotal:=float32(math.Trunc(float64(storage.VolumeUsage[pos].Total)/1024/1024/1024*1e3) * 1e-3)
+		jsonV.Set(su.VolumeUsage[pos].Id,"id")
+		vTotal:=float32(math.Trunc(float64(su.VolumeUsage[pos].Total)/1024/1024/1024*1e3) * 1e-3)
 		jsonV.Set(vTotal,"total")
-		vUsed:=float32(math.Trunc(float64(storage.VolumeUsage[pos].Used)/1024/1024/1024*1e3) * 1e-3)
+		vUsed:=float32(math.Trunc(float64(su.VolumeUsage[pos].Used)/1024/1024/1024*1e3) * 1e-3)
 		jsonV.Set(vUsed,"used")
-		jsonV.Set(storage.VolumeUsage[pos].Util,"util")
-		jsonV.Set(storage.VolumeUsage[pos].WriteTps,"writeTps")
-		jsonV.Set(storage.VolumeUsage[pos].ReadQps,"readQps")
-		jsonV.Set(storage.VolumeUsage[pos].Compact,"compact")
-		jsonV.Set(storage.VolumeUsage[pos].ImageCount,"imageCount")
-		jsonV.Set(storage.VolumeUsage[pos].ImageDelCount,"imageDelCount")
+		jsonV.Set(su.VolumeUsage[pos].Util,"util")
+		jsonV.Set(su.VolumeUsage[pos].WriteTps,"writeTps")
+		jsonV.Set(su.VolumeUsage[pos].ReadQps,"readQps")
+		jsonV.Set(su.VolumeUsage[pos].Compact,"compact")
+		jsonV.Set(su.VolumeUsage[pos].ImageCount,"imageCount")
+		jsonV.Set(su.VolumeUsage[pos].ImageDelCount,"imageDelCount")
 		jsonAll.ArrayAppend(jsonV.Data(),"rows")
 	}
 	return helper.ResultBuildWithBody(constant.Success,jsonAll)

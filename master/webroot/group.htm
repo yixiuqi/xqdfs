@@ -26,14 +26,14 @@
         data-options="url:'/group/getall',method:'post'">
         <thead>
             <tr>
-                <th field="groupId" width="70" align="left">组编号</th>
-                <th field="groupReadOnly" width="60" align="left">组只读</th>
-                <th data-options="field:'group_read_only_operate',width:110,formatter:readOnlyFormat" align="center">操作</th> 
+                <th field="groupId" width="70" align="center">组编号</th>
+                <th field="groupReadOnly" width="60" align="center">组只读</th>
+                <th data-options="field:'group_operate',width:90,formatter:operationFormat" align="center">操作</th> 
                 <th field="groupInfo" width="150" align="left">组容量信息</th>
                 <th field="groupThroughput" width="150" align="left">组吞吐</th>
-                <th field="storageId" width="70" align="left">节点编号</th>
-                <th field="storageAddr" width="180" align="left">节点地址</th>
-                <th field="storageOnline" width="60" align="left">在线</th>
+                <th field="storageId" width="70" align="center">节点编号</th>
+                <th field="storageAddr" width="180" align="center">节点地址</th>
+                <th field="storageOnline" width="70" align="center">是否在线</th>
                 <th field="storageInfo" width="150" align="left">节点容量信息</th>
                 <th field="storageThroughput" width="150" align="left">节点吞吐</th>
                 <th data-options="field:'volume_info',width:100,formatter:volumeInfoFormat" align="center">卷详细信息</th> 
@@ -88,13 +88,13 @@
     </div>
     
     <script>
-        function readOnlyFormat(val,row,index){
-            return '<a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',true)">只读</a>&nbsp;&nbsp;<a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',false)">可写</a>&nbsp;&nbsp;<a href="#" onclick="btnGroupRemove('+row.groupId+')">删除</a>';  
+        function operationFormat(val,row,index){
+            return '<a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',true)">设置为只读</a><br><a href="#" onclick="btnGroupReadOnly('+index+','+row.groupId+',false)">设置为可写</a><br><a href="#" onclick="btnGroupRemove('+row.groupId+')">删除组</a>';  
         }
 
         function volumeInfoFormat(val,row,index){
             if(row.storageId){
-                return '<a href="#" onclick="btnVolumeInfo('+index+','+row.groupId+','+row.storageId+')">卷详情</a>';  
+                return '<a href="#" onclick="btnVolumeInfo('+index+','+row.storageId+')">卷详情</a>';  
             }else{
                 return ""
             }            
@@ -192,8 +192,8 @@
             }   
         }
 
-        function btnVolumeInfo(index,groupId,storageId){
-            var hrefs='<iframe width="100%" height="100%" frameborder="0"  src="group_storage_volume.htm?groupId='+groupId+'&storageId='+storageId+'" style="width:100%;height:100%;"></iframe>';
+        function btnVolumeInfo(index,storageId){
+            var hrefs='<iframe width="100%" height="100%" frameborder="0"  src="group_storage_volume.htm?storageId='+storageId+'" style="width:100%;height:100%;"></iframe>';
             $("#wndVolumeInfoPanel").html(hrefs);  
             $('#wndVolumeInfo').window('center');
             $('#wndVolumeInfo').window('open');
@@ -251,7 +251,7 @@
                                 });
                                 target.datagrid('mergeCells', {
                                     index: megerIndex,
-                                    field: 'group_read_only_operate',
+                                    field: 'group_operate',
                                     rowspan: rowspan
                                 });
                                 target.datagrid('mergeCells', {
