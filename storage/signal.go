@@ -29,6 +29,7 @@ func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,r
 			store.Close()
 			configureServer.Stop()
 			httpServer.Stop()
+			log.Info("system stop")
 			return
 		case syscall.SIGHUP:
 			// TODO reload

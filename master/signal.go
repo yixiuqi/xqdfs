@@ -36,6 +36,7 @@ func StartSignal(httpServer *channel.HttpServer,
 			discoveryServer.Stop()
 			configureServer.Stop()
 			httpServer.Stop()
+			log.Info("system stop")
 			return
 		case syscall.SIGHUP:
 			// TODO reload

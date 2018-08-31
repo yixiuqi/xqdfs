@@ -110,8 +110,6 @@ func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
 
 func (v *Volume) StoreStats() error {
 	path:=fmt.Sprintf("%s/%d.toml",filepath.Dir(v.Indexer.File),v.Id)
-	log.Debugf("storeStats [%s] vid[%d]",path,v.Id)
-
 	f, err:= os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0664)
 	if err != nil {
 		log.Errorf("os.OpenFile(\"%s\") error(%v)", path, err)

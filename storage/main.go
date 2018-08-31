@@ -85,7 +85,7 @@ func main() {
 		log.Errorf("http server init error[%v]",err)
 		return
 	}
-
+	log.Info("system start")
 	log.SetLevel(config.Log.Level)
 	go logo()
 	StartSignal(configureServer,s,replicationServer,httpServer)
@@ -93,6 +93,7 @@ func main() {
 
 func logo(){
 	time.Sleep(time.Millisecond*500)
+	fmt.Println("")
 	fmt.Println(" #     #    ###    #####    #######   #####  ");time.Sleep(time.Millisecond*100)
 	fmt.Println("  #   #    #   #   #    #   #        #     # ");time.Sleep(time.Millisecond*100)
 	fmt.Println("   # #    #     #  #     #  #        #       ");time.Sleep(time.Millisecond*100)

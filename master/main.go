@@ -75,7 +75,7 @@ func main() {
 		log.Errorf("create http server error[%v]",err)
 		return
 	}
-
+	log.Info("system start")
 	log.SetLevel(config.Log.Level)
 	go logo()
 	StartSignal(httpServer,configureServer,discoveryServer,strategyServer,proxyStorage)
@@ -83,6 +83,7 @@ func main() {
 
 func logo(){
 	time.Sleep(time.Millisecond*500)
+	fmt.Println("")
 	fmt.Println(" #     #    ###    #####    #######   #####  ");time.Sleep(time.Millisecond*100)
 	fmt.Println("  #   #    #   #   #    #   #        #     # ");time.Sleep(time.Millisecond*100)
 	fmt.Println("   # #    #     #  #     #  #        #       ");time.Sleep(time.Millisecond*100)
