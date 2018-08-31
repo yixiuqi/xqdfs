@@ -42,6 +42,7 @@ func init() {
 func ServiceStoreConf(m map[string]interface{}) interface{}{
 	var config *conf.Config
 	if c:=plugin.PluginGetObject(plugin.PluginLocalConfig);c==nil {
+		log.Errorf("%s no support",plugin.PluginLocalConfig)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		config=c.(*conf.Config)

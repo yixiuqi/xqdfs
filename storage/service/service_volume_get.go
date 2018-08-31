@@ -51,6 +51,7 @@ func init() {
 func ServiceVolumeGet(m map[string]interface{}) interface{}{
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		log.Errorf("%s no support",plugin.PlugineStorage)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		storage=s.(*store.Store)

@@ -44,6 +44,7 @@ func init() {
 func ServiceStoreInit(m map[string]interface{}) interface{}{
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		log.Errorf("%s no support",plugin.PlugineStorage)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		storage=s.(*store.Store)
@@ -51,6 +52,7 @@ func ServiceStoreInit(m map[string]interface{}) interface{}{
 
 	var replicationServer *replication.ReplicationServer
 	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		log.Errorf("%s no support",plugin.PluginReplicationServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		replicationServer=r.(*replication.ReplicationServer)
