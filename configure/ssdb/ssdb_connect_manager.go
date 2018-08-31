@@ -82,8 +82,6 @@ func (this *SSDBConnectMgr) getConnect() (*SSDBConnect, error) {
 			return conn,err
 		}
 	}else{
-		debug:=helper.NewStringBuilder().Append("获取连接").Append(this.addr[pos]).Append(":").Append(this.port[pos]).ToString()
-		log.Trace(debug)
 		return conn,err
 	}
 }

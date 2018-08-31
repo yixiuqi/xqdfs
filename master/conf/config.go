@@ -12,7 +12,6 @@ type Config struct {
 	Log		  *Log
 	Server	  *Server
 	Configure  *Configure
-	AllocStrategy *AllocStrategy
 }
 
 type Log struct {
@@ -26,13 +25,6 @@ type Server struct {
 
 type Configure struct {
 	Param string
-}
-
-type AllocStrategy struct {
-	//Order
-	OrderClearThreshold int		//最少需要多少空闲块
-	OrderMinFreeSpace int64		//卷最少需要多少空间
-	OrderConsumeCount int 		//选择多少个卷进行随机写
 }
 
 func NewConfig(conf string) (c *Config, err error) {

@@ -6,13 +6,17 @@ import (
 	"math"
 
 	"xqdfs/proxy"
+	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
 	"xqdfs/configure"
-	"xqdfs/master/conf"
 	"xqdfs/utils/helper"
 	"xqdfs/storage/block"
 	"xqdfs/master/resource/usage"
+)
+
+const(
+	OrderClearThreshold = "OrderClearThreshold"		// 最少预留多少卷 default:5
 )
 
 type VolumeItem struct {
@@ -25,26 +29,47 @@ type VolumeItem struct {
 }
 
 type ClearTimeOld struct {
-	conf *conf.Config
 	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
+	orderClearThreshold int
 }
 
-func NewClearTimeOld(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *ClearTimeOld {
+func NewClearTimeOld(configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*ClearTimeOld,error) {
+	orderClearThreshold:=5
+	value,err:=configureServer.ParamGet(OrderClearThreshold)
+	if err!=nil{
+		if err==errors.ErrParamNotExist{
+			err=configureServer.ParamSet(OrderClearThreshold,"5")
+			if err!=nil{
+				return nil,err
+			}
+		}else{
+			log.Error(err)
+			return nil,err
+		}
+	}else{
+		orderClearThreshold,err=helper.StringToInt(value)
+		if err!=nil{
+			log.Error(err)
+			return nil,err
+		}
+	}
+
+	log.Infof("%s[%d]",OrderClearThreshold,orderClearThreshold)
 	t:=&ClearTimeOld{
-		conf:conf,
 		configureServer:configureServer,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		signal:make(chan int, 1),
 		isRun:true,
+		orderClearThreshold:orderClearThreshold,
 	}
 	go t.task()
-	return t
+	return t,nil
 }
 
 func (this *ClearTimeOld) task() {
@@ -116,7 +141,7 @@ func (this *ClearTimeOld) process() {
 	}
 
 	log.Debugf("available volume count[%d] util[%v]",free,u.Util)
-	if free>this.conf.AllocStrategy.OrderClearThreshold {
+	if free>this.orderClearThreshold {
 		return
 	}
 

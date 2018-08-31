@@ -6,7 +6,6 @@ import (
 	"xqdfs/errors"
 	"xqdfs/discovery"
 	"xqdfs/utils/log"
-	"xqdfs/master/conf"
 	"xqdfs/utils/helper"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/resource/usage"
@@ -47,7 +46,7 @@ func (this *SelectWritableVolume) getGroupUsage() *usage.GroupsUsage {
 	return this.groupUsage
 }
 
-func (this *SelectWritableVolume) SelectWritableVolume(conf *conf.Config,fileSize int32,removeVolumes []*strategydef.WritableVolume) (*strategydef.WritableVolume,error) {
+func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,orderConsumeCount int,fileSize int32,removeVolumes []*strategydef.WritableVolume) (*strategydef.WritableVolume,error) {
 	this.groupUsageLock.Lock()
 	defer this.groupUsageLock.Unlock()
 
@@ -94,7 +93,7 @@ func (this *SelectWritableVolume) SelectWritableVolume(conf *conf.Config,fileSiz
 				continue
 			}
 
-			free:=objStorage.VolumeUsage[vid].Total - objStorage.VolumeUsage[vid].Used - conf.AllocStrategy.OrderMinFreeSpace
+			free:=objStorage.VolumeUsage[vid].Total - objStorage.VolumeUsage[vid].Used - orderMinFreeSpace
 			if int64(size) < free {
 				availableVolume:=&strategydef.WritableVolume{
 					GroupId:g.Id,
@@ -105,12 +104,12 @@ func (this *SelectWritableVolume) SelectWritableVolume(conf *conf.Config,fileSiz
 				availableVolumeAll=append(availableVolumeAll,availableVolume)
 			}
 
-			if len(availableVolumeAll) >= conf.AllocStrategy.OrderConsumeCount {
+			if len(availableVolumeAll) >= orderConsumeCount {
 				break
 			}
 		}
 
-		if len(availableVolumeAll) >= conf.AllocStrategy.OrderConsumeCount {
+		if len(availableVolumeAll) >= orderConsumeCount {
 			break
 		}
 	}

@@ -5,36 +5,85 @@ import (
 
 	"xqdfs/proxy"
 	"xqdfs/errors"
-	"xqdfs/configure"
 	"xqdfs/discovery"
+	"xqdfs/configure"
 	"xqdfs/utils/log"
-	"xqdfs/master/conf"
+	"xqdfs/utils/helper"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
 )
 
+const(
+	OrderMinFreeSpace = "OrderMinFreeSpace"			// 每个卷预留多少空间 default:104857600
+	OrderConsumeCount = "OrderConsumeCount"			// 同时default:3
+)
+
 type AllocOrder struct {
-	conf *conf.Config
 	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	selectWritableVolume *SelectWritableVolume
+	orderMinFreeSpace int64
+	orderConsumeCount int
 }
 
-func NewAllocOrder(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *AllocOrder {
+func NewAllocOrder(configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocOrder,error) {
+	var orderMinFreeSpace int64=104857600
+	value,err:=configureServer.ParamGet(OrderMinFreeSpace)
+	if err!=nil{
+		if err==errors.ErrParamNotExist{
+			err=configureServer.ParamSet(OrderMinFreeSpace,"104857600")
+			if err!=nil{
+				return nil,err
+			}
+		}else{
+			log.Error(err)
+			return nil,err
+		}
+	}else{
+		orderMinFreeSpace,err=helper.StringToInt64(value)
+		if err!=nil{
+			log.Error(err)
+			return nil,err
+		}
+	}
+
+	orderConsumeCount:=3
+	value,err=configureServer.ParamGet(OrderConsumeCount)
+	if err!=nil{
+		if err==errors.ErrParamNotExist{
+			err=configureServer.ParamSet(OrderConsumeCount,"3")
+			if err!=nil{
+				return nil,err
+			}
+		}else{
+			log.Error(err)
+			return nil,err
+		}
+	}else{
+		orderConsumeCount,err=helper.StringToInt(value)
+		if err!=nil{
+			log.Error(err)
+			return nil,err
+		}
+	}
+
+	log.Infof("%s[%d]",OrderMinFreeSpace,orderMinFreeSpace)
+	log.Infof("%s[%d]",OrderConsumeCount,orderConsumeCount)
 	s:=&AllocOrder{
-		conf:conf,
 		configureServer:configureServer,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		selectWritableVolume:NewSelectWritableVolume(discoveryServer),
+		orderMinFreeSpace:orderMinFreeSpace,
+		orderConsumeCount:orderConsumeCount,
 	}
-	return s
+	return s,nil
 }
 
 func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) {
 	removeVolumes:=make([]*defines.WritableVolume,0)
-	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.conf,int32(len(img)),removeVolumes)
+	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,int32(len(img)),removeVolumes)
 	if err!=nil {
 		log.Debug(err)
 		return "",err
@@ -46,11 +95,11 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 
 	//try three times
 	count:=0
-	for err==errors.ErrSuperBlockNoSpace&&count<this.conf.AllocStrategy.OrderConsumeCount*2 {
+	for err==errors.ErrSuperBlockNoSpace&&count<this.orderConsumeCount*2 {
 		removeVolumes=append(removeVolumes,volume)
 		count++
 		log.Debugf("[%s][%v] ErrSuperBlockNoSpace try[%d][%v] [%v]",host,vid,count,volume,removeVolumes)
-		volume,err=this.selectWritableVolume.SelectWritableVolume(this.conf,int32(len(img)),removeVolumes)
+		volume,err=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,int32(len(img)),removeVolumes)
 		if err!=nil {
 			log.Debug(err)
 			return "",err

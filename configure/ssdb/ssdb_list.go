@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"xqdfs/utils/helper"
+	"xqdfs/errors"
 )
 
 type SSDBList struct{
@@ -43,7 +44,7 @@ func (this *SSDBList) QPop(name string) (string,error){
 		return resp[1], nil
 	}
 	if resp[0] == "not_found" {
-		return "", fmt.Errorf("not_found")
+		return "", errors.ErrParamNotExist
 	}
 	return "", fmt.Errorf("bad response")
 }
@@ -60,7 +61,7 @@ func (this *SSDBList) QFront(name string) (string,error){
 		return resp[1], nil
 	}
 	if resp[0] == "not_found" {
-		return "", fmt.Errorf("not_found")
+		return "", errors.ErrParamNotExist
 	}
 	return "", fmt.Errorf("bad response")
 }
@@ -78,7 +79,7 @@ func (this *SSDBList) QSize(name string) (int64,error){
 		return size, nil
 	}
 	if resp[0] == "not_found" {
-		return 0, fmt.Errorf("not_found")
+		return 0, errors.ErrParamNotExist
 	}
 	return 0, fmt.Errorf("bad response")
 }

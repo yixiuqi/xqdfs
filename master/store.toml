@@ -10,9 +10,4 @@ Port = 10087
 [Configure]
 Param = "192.168.10.25:18888,192.168.10.31:18888"
 
-[AllocStrategy]
-OrderClearThreshold = 5
-OrderMinFreeSpace = 104857600
-OrderConsumeCount = 3
-
 

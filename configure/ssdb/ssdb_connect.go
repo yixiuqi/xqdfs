@@ -5,6 +5,7 @@ import (
 	"net"
 	"fmt"
 	"strconv"
+	"xqdfs/errors"
 )
 
 type SSDBConnect struct {
@@ -59,7 +60,7 @@ func (this *SSDBConnect) get(key string) (string, error) {
 		return resp[1], nil
 	}
 	if resp[0] == "not_found" {
-		return "", fmt.Errorf("not_found")
+		return "", errors.ErrParamNotExist
 	}
 	return "", fmt.Errorf("bad response")
 }

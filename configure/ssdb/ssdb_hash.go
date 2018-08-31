@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"xqdfs/utils/helper"
+	"xqdfs/errors"
 )
 
 type SSDBHashItem struct{
@@ -48,7 +49,7 @@ func (this *SSDBHash) HGet(name string,key string) (string,error){
 		return resp[1], nil
 	}
 	if resp[0] == "not_found" {
-		return "", nil
+		return "", errors.ErrParamNotExist
 	}
 	return "", fmt.Errorf("bad response")
 }
@@ -116,7 +117,7 @@ func (this *SSDBHash) HGetAll(name string) ([]SSDBHashItem,error){
 		return items, nil
 	}
 	if resp[0] == "not_found" {
-		return nil, nil
+		return nil, errors.ErrParamNotExist
 	}
 	return nil, fmt.Errorf("bad response")
 }
