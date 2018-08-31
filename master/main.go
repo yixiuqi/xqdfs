@@ -64,7 +64,7 @@ func main() {
 		plugin.PluginAddObject(plugin.PluginDiscoveryServer,discoveryServer)
 	}
 
-	if strategyServer,err = strategy.NewAllocStrategyServer(config,configureServer,discoveryServer,proxyStorage); err != nil {
+	if strategyServer,err = strategy.NewAllocStrategyServer(); err != nil {
 		log.Errorf("create alloc strategy error[%v]",err)
 		return
 	}else{

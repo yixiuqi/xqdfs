@@ -7,6 +7,7 @@ import (
 	"xqdfs/configure"
 	"xqdfs/utils/plugin"
 	"xqdfs/proxy"
+	"xqdfs/utils/log"
 )
 
 func init() {
@@ -16,6 +17,7 @@ func init() {
 func ServiceStorageInit(m map[string]interface{}) interface{}{
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		log.Errorf("%s no support",plugin.PluginConfigure)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		conf=s.(*configure.ConfigureServer)
@@ -23,6 +25,7 @@ func ServiceStorageInit(m map[string]interface{}) interface{}{
 
 	var proxyStorage *proxy.ProxyStorage
 	if p:=plugin.PluginGetObject(plugin.PluginProxyStorage);p==nil {
+		log.Errorf("%s no support",plugin.PluginProxyStorage)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		proxyStorage=p.(*proxy.ProxyStorage)

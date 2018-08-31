@@ -46,6 +46,7 @@ func init() {
 func ServiceOptGet(m map[string]interface{}) interface{}{
 	var strategyServer *strategy.AllocStrategyServer
 	if s:=plugin.PluginGetObject(plugin.PluginStrategyServer);s==nil {
+		log.Errorf("%s no support",plugin.PluginStrategyServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		strategyServer=s.(*strategy.AllocStrategyServer)

@@ -12,6 +12,7 @@ import (
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
+	"xqdfs/utils/log"
 )
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 func ServiceStorageVolumeGetAll(m map[string]interface{}) interface{}{
 	var discoveryServer *discovery.DiscoveryServer
 	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		discoveryServer=d.(*discovery.DiscoveryServer)

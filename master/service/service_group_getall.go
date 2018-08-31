@@ -25,6 +25,7 @@ func init() {
 func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		log.Errorf("%s no support",plugin.PluginConfigure)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		conf=s.(*configure.ConfigureServer)
@@ -32,6 +33,7 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 
 	var discoveryServer *discovery.DiscoveryServer
 	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		discoveryServer=d.(*discovery.DiscoveryServer)

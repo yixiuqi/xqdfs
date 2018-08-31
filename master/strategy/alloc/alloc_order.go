@@ -11,6 +11,7 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
+	"xqdfs/utils/plugin"
 )
 
 const(
@@ -27,12 +28,36 @@ type AllocOrder struct {
 	orderConsumeCount int
 }
 
-func NewAllocOrder(configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocOrder,error) {
+func NewAllocOrder() (*AllocOrder,error) {
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		log.Errorf("%s no support",plugin.PluginConfigure)
+		return nil,errors.ErrNoSupport
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
+		return nil,errors.ErrNoSupport
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
+	var proxyStorage *proxy.ProxyStorage
+	if p:=plugin.PluginGetObject(plugin.PluginProxyStorage);p==nil {
+		log.Errorf("%s no support",plugin.PluginProxyStorage)
+		return nil,errors.ErrNoSupport
+	}else{
+		proxyStorage=p.(*proxy.ProxyStorage)
+	}
+
 	var orderMinFreeSpace int64=104857600
-	value,err:=configureServer.ParamGet(OrderMinFreeSpace)
+	value,err:=conf.ParamGet(OrderMinFreeSpace)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=configureServer.ParamSet(OrderMinFreeSpace,"104857600")
+			err=conf.ParamSet(OrderMinFreeSpace,"104857600")
 			if err!=nil{
 				return nil,err
 			}
@@ -49,10 +74,10 @@ func NewAllocOrder(configureServer *configure.ConfigureServer,discoveryServer *d
 	}
 
 	orderConsumeCount:=3
-	value,err=configureServer.ParamGet(OrderConsumeCount)
+	value,err=conf.ParamGet(OrderConsumeCount)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=configureServer.ParamSet(OrderConsumeCount,"3")
+			err=conf.ParamSet(OrderConsumeCount,"3")
 			if err!=nil{
 				return nil,err
 			}
@@ -71,7 +96,7 @@ func NewAllocOrder(configureServer *configure.ConfigureServer,discoveryServer *d
 	log.Infof("%s[%d]",OrderMinFreeSpace,orderMinFreeSpace)
 	log.Infof("%s[%d]",OrderConsumeCount,orderConsumeCount)
 	s:=&AllocOrder{
-		configureServer:configureServer,
+		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		selectWritableVolume:NewSelectWritableVolume(discoveryServer),

@@ -13,6 +13,7 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/storage/block"
 	"xqdfs/master/resource/usage"
+	"xqdfs/utils/plugin"
 )
 
 const(
@@ -38,12 +39,36 @@ type ClearTimeOld struct {
 	orderClearThreshold int
 }
 
-func NewClearTimeOld(configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*ClearTimeOld,error) {
+func NewClearTimeOld() (*ClearTimeOld,error) {
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		log.Errorf("%s no support",plugin.PluginConfigure)
+		return nil,errors.ErrNoSupport
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
+		return nil,errors.ErrNoSupport
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
+	var proxyStorage *proxy.ProxyStorage
+	if p:=plugin.PluginGetObject(plugin.PluginProxyStorage);p==nil {
+		log.Errorf("%s no support",plugin.PluginProxyStorage)
+		return nil,errors.ErrNoSupport
+	}else{
+		proxyStorage=p.(*proxy.ProxyStorage)
+	}
+
 	orderClearThreshold:=5
-	value,err:=configureServer.ParamGet(OrderClearThreshold)
+	value,err:=conf.ParamGet(OrderClearThreshold)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=configureServer.ParamSet(OrderClearThreshold,"5")
+			err=conf.ParamSet(OrderClearThreshold,"5")
 			if err!=nil{
 				return nil,err
 			}
@@ -61,7 +86,7 @@ func NewClearTimeOld(configureServer *configure.ConfigureServer,discoveryServer 
 
 	log.Infof("%s[%d]",OrderClearThreshold,orderClearThreshold)
 	t:=&ClearTimeOld{
-		configureServer:configureServer,
+		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		signal:make(chan int, 1),

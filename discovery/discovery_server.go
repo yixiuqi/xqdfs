@@ -10,8 +10,8 @@ type DiscoveryServer struct {
 	discovery defines.Discovery
 }
 
-func NewDiscoveryServer(configureServer *configure.ConfigureServer) (*DiscoveryServer,error){
-	d,err:=http.NewDiscoveryHttp(configureServer)
+func NewDiscoveryServer(conf *configure.ConfigureServer) (*DiscoveryServer,error){
+	d,err:=http.NewDiscoveryHttp(conf)
 	if err!=nil {
 		return nil,err
 	}

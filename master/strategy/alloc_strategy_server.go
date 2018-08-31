@@ -1,10 +1,6 @@
 package strategy
 
 import (
-	"xqdfs/proxy"
-	"xqdfs/discovery"
-	"xqdfs/configure"
-	"xqdfs/master/conf"
 	"xqdfs/master/strategy/alloc"
 	"xqdfs/master/strategy/clear"
 	"xqdfs/master/strategy/defines"
@@ -16,14 +12,14 @@ type AllocStrategyServer struct {
 	clearStrategy defines.ClearStrategy
 }
 
-func NewAllocStrategyServer(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocStrategyServer,error){
-	clear,err:=clear.NewClearTimeOld(configureServer,discoveryServer,proxyStorage)
+func NewAllocStrategyServer() (*AllocStrategyServer,error){
+	clear,err:=clear.NewClearTimeOld()
 	if err!=nil{
 		log.Error(err)
 		return nil,err
 	}
 
-	alloc,err:=order.NewAllocOrder(configureServer,discoveryServer,proxyStorage)
+	alloc,err:=order.NewAllocOrder()
 	if err!=nil{
 		log.Error(err)
 		return nil,err

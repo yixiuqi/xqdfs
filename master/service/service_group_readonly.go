@@ -16,6 +16,7 @@ func init() {
 func ServiceGroupReadOnly(m map[string]interface{}) interface{}{
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		log.Errorf("%s no support",plugin.PluginConfigure)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		conf=s.(*configure.ConfigureServer)

@@ -48,6 +48,7 @@ func init() {
 func ServiceUsageGroups(m map[string]interface{}) interface{}{
 	var discoveryServer *discovery.DiscoveryServer
 	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		discoveryServer=d.(*discovery.DiscoveryServer)
