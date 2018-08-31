@@ -91,8 +91,8 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 			jsonGroup.Set(info,"groupInfo")
 			info="写TPS:0"+"<br>"
 			info+="读QPS:0"+"<br>"
-			info+="写吞吐:0 MB/s"+"<br>"
-			info+="读吞吐:0 MB/s"
+			info+="写入量:0 MB/s"+"<br>"
+			info+="读取量:0 MB/s"
 			jsonGroup.Set(info,"groupThroughput")
 			jsonGroup.Set("","storageId")
 			jsonGroup.Set("","storageAddr")
@@ -127,9 +127,9 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 					info=fmt.Sprintf("写TPS:%v<br>",su.WriteTps)
 					info+=fmt.Sprintf("读QPS:%v<br>",su.ReadQps)
 					vWriteFlow:=float32(math.Trunc(float64(su.WriteFlow)/1024/1024*1e3) * 1e-3)
-					info+=fmt.Sprintf("写吞吐:%v MB/s<br>",vWriteFlow)
+					info+=fmt.Sprintf("写入量:%v MB/s<br>",vWriteFlow)
 					vReadFlow:=float32(math.Trunc(float64(su.ReadFlow)/1024/1024*1e3) * 1e-3)
-					info+=fmt.Sprintf("读吞吐:%v MB/s<br>",vReadFlow)
+					info+=fmt.Sprintf("读取量:%v MB/s<br>",vReadFlow)
 					jsonGroup.Set(info,"storageThroughput")
 				}else{
 					jsonGroup.Set("","storageOnline")
@@ -139,8 +139,8 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 					jsonGroup.Set(info,"storageInfo")
 					info="写TPS:0"+"<br>"
 					info+="读QPS:0"+"<br>"
-					info+="写吞吐:0 MB/s"+"<br>"
-					info+="读吞吐:0 MB/s"
+					info+="写入量:0 MB/s"+"<br>"
+					info+="读取量:0 MB/s"
 					jsonGroup.Set(info,"storageThroughput")
 				}
 
@@ -154,9 +154,9 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 					info=fmt.Sprintf("写TPS:%v<br>",gu.WriteTps)
 					info+=fmt.Sprintf("读QPS:%v<br>",gu.ReadQps)
 					vWriteFlow:=float32(math.Trunc(float64(gu.WriteFlow)/1024/1024*1e3) * 1e-3)
-					info+=fmt.Sprintf("写吞吐:%v MB/s<br>",vWriteFlow)
+					info+=fmt.Sprintf("写入量:%v MB/s<br>",vWriteFlow)
 					vReadFlow:=float32(math.Trunc(float64(gu.ReadFlow)/1024/1024*1e3) * 1e-3)
-					info+=fmt.Sprintf("读吞吐:%v MB/s<br>",vReadFlow)
+					info+=fmt.Sprintf("读取量:%v MB/s<br>",vReadFlow)
 					jsonGroup.Set(info,"groupThroughput")
 				}else{
 					info:="总容量:0 GB"+"<br>"
@@ -165,8 +165,8 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 					jsonGroup.Set(info,"groupInfo")
 					info="写TPS:0"+"<br>"
 					info+="读QPS:0"+"<br>"
-					info+="写吞吐:0 MB/s"+"<br>"
-					info+="读吞吐:0 MB/s"
+					info+="写入量:0 MB/s"+"<br>"
+					info+="读取量:0 MB/s"
 					jsonGroup.Set(info,"groupThroughput")
 				}
 

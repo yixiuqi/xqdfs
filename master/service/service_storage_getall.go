@@ -83,6 +83,7 @@ func ServiceStorageGetAll(m map[string]interface{}) interface{}{
 			jsonStorage.Set("","used")
 			jsonStorage.Set("","util")
 			jsonStorage.Set("","imageCount")
+			jsonStorage.Set("","imageDelCount")
 		}else{
 			vTotal:=float32(math.Trunc(float64(su.Total)/1024/1024/1024*1e3) * 1e-3)
 			jsonStorage.Set(vTotal,"total")
@@ -90,6 +91,7 @@ func ServiceStorageGetAll(m map[string]interface{}) interface{}{
 			jsonStorage.Set(vUsed,"used")
 			jsonStorage.Set(su.Util,"util")
 			jsonStorage.Set(su.ImageCount,"imageCount")
+			jsonStorage.Set(su.ImageDelCount,"imageDelCount")
 		}
 		jsonStorages.ArrayAppend(jsonStorage.Data(),"rows")
 	}

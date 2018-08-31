@@ -23,14 +23,15 @@
         data-options="url:'/storage/getall',method:'post'">
         <thead>
             <tr>
-                <th field="id" width="120" align="center">节点编号</th>
+                <th field="id" width="80" align="center">节点编号</th>
                 <th field="addr" width="180" align="center">节点地址</th> 
                 <th field="desc" width="240" align="center">节点描述</th>
-                <th field="total" width="120" align="center">总容量(GB)</th>
-                <th field="used" width="120" align="center">已使用(GB)</th>
-                <th field="util" width="120" align="center">使用率</th>
-                <th field="imageCount" width="120" align="center">图片总数</th>
-                <th data-options="field:'operation',width:110,formatter:storageFormat" align="center">操作</th> 
+                <th field="total" width="100" align="center">总容量(GB)</th>
+                <th field="used" width="100" align="center">已使用(GB)</th>
+                <th field="util" width="100" align="center">使用率</th>
+                <th field="imageCount" width="110" align="center">图片总数</th>
+                <th field="imageDelCount" width="110" align="center">图片删除总数</th>
+                <th data-options="field:'operation',width:80,formatter:storageFormat" align="center">操作</th> 
             </tr>
         </thead>
     </table>
