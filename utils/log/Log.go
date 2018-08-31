@@ -27,6 +27,7 @@ var items *list.List
 func init() {
 	items = list.New()
 	items.PushBack(impl.NewStdOut())
+	items.PushBack(impl.NewFileOut())
 }
 
 func systemInfo() string {

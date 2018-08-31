@@ -3,14 +3,14 @@ package order
 import (
 	"sync"
 
-	"xqdfs/master/resource/usage"
 	"xqdfs/errors"
-	"xqdfs/master/strategy/tool"
-	"xqdfs/utils/helper"
+	"xqdfs/discovery"
 	"xqdfs/utils/log"
 	"xqdfs/master/conf"
+	"xqdfs/utils/helper"
+	"xqdfs/master/strategy/tool"
+	"xqdfs/master/resource/usage"
 	strategydef "xqdfs/master/strategy/defines"
-	"xqdfs/discovery"
 )
 
 type SelectWritableVolume struct {

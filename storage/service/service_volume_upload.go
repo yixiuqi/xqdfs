@@ -87,7 +87,7 @@ func ServiceVolumeUpload(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"cookie missing")
 	}
 
-	log.Tracef("upload volume[%d] key[%d] cookie[%d]",vid,key,cookie)
+	log.Debugf("upload volume[%d] key[%d] cookie[%d]",vid,key,cookie)
 
 	v:= context.Store.Volumes[vid]
 	if v != nil {

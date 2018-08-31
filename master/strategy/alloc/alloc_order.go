@@ -1,44 +1,38 @@
 package order
 
-/*
-* @brief 所有组、Storage、卷按Id排序，只要空间足够就写入
-* @author    yimin
-* @email     yimin@cloudwalk.cn
-* @date      2018/08/06
-*/
-
 import (
 	"fmt"
 
-	"xqdfs/master/conf"
-	"xqdfs/utils/log"
+	"xqdfs/proxy"
 	"xqdfs/errors"
+	"xqdfs/configure"
+	"xqdfs/discovery"
+	"xqdfs/utils/log"
+	"xqdfs/master/conf"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
-	"xqdfs/discovery"
-	"xqdfs/proxy"
 )
 
-type AllocStrategyOrder struct {
+type AllocOrder struct {
 	conf *conf.Config
+	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
-	orderClearTask *OrderClearTask
 	selectWritableVolume *SelectWritableVolume
 }
 
-func NewAllocStrategyOrder(conf *conf.Config,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *AllocStrategyOrder {
-	s:=&AllocStrategyOrder{
+func NewAllocOrder(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *AllocOrder {
+	s:=&AllocOrder{
 		conf:conf,
+		configureServer:configureServer,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
-		orderClearTask:NewOrderClearTask(conf,discoveryServer,proxyStorage),
 		selectWritableVolume:NewSelectWritableVolume(discoveryServer),
 	}
 	return s
 }
 
-func (this *AllocStrategyOrder) Write(key int64,cookie int32,img []byte) (string,error) {
+func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) {
 	removeVolumes:=make([]*defines.WritableVolume,0)
 	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.conf,int32(len(img)),removeVolumes)
 	if err!=nil {
@@ -75,7 +69,7 @@ func (this *AllocStrategyOrder) Write(key int64,cookie int32,img []byte) (string
 	}
 }
 
-func (this *AllocStrategyOrder) Read(url string) ([]byte,error) {
+func (this *AllocOrder) Read(url string) ([]byte,error) {
 	groups:=this.discoveryServer.Groups()
 	if groups==nil {
 		log.Debug("groups is null")
@@ -106,7 +100,7 @@ func (this *AllocStrategyOrder) Read(url string) ([]byte,error) {
 	}
 }
 
-func (this *AllocStrategyOrder) Delete(url string) error {
+func (this *AllocOrder) Delete(url string) error {
 	groups:=this.discoveryServer.Groups()
 	if groups==nil {
 		log.Debug("groups is null")
@@ -137,7 +131,6 @@ func (this *AllocStrategyOrder) Delete(url string) error {
 	}
 }
 
-func (this *AllocStrategyOrder) Stop() {
-	log.Info("AllocStrategyOrder stop")
-	this.orderClearTask.Stop()
+func (this *AllocOrder) Stop() {
+	log.Info("AllocOrder stop")
 }

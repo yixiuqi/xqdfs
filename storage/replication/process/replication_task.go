@@ -160,6 +160,7 @@ func (this *ReplicationTask) Stop() {
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
+	close(this.signal)
 
 	this.lock.Lock()
 	defer this.lock.Unlock()
@@ -182,6 +183,7 @@ func (this *ReplicationTask) Destroy() {
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
+	close(this.signal)
 
 	this.lock.Lock()
 	defer this.lock.Unlock()

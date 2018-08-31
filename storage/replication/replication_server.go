@@ -82,6 +82,7 @@ func (this *ReplicationServer) Stop() {
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
+	close(this.signal)
 
 	this.taskLock.RLock()
 	for _,v:=range this.task {

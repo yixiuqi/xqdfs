@@ -6,14 +6,22 @@ import (
 )
 
 type ConfigureServer struct {
-	configure defines.GroupConf
+	configure defines.Configure
 }
 
 func NewConfigureServer(param string) (*ConfigureServer,error) {
 	s:=&ConfigureServer{
-		configure:ssdb.NewGroupConfSSDB(param),
+		configure:ssdb.NewConfigureSSDB(param),
 	}
 	return s,nil
+}
+
+func (this *ConfigureServer) ParamGet(key string) (string,error) {
+	return this.configure.ParamGet(key)
+}
+
+func (this *ConfigureServer) ParamSet(key string,value string) error {
+	return this.configure.ParamSet(key,value)
 }
 
 func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {

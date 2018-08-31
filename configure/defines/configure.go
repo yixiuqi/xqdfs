@@ -1,6 +1,13 @@
 package defines
 
-type GroupConf interface {
+const(
+	HashNameGroup 	= "xqdfs_group"
+	HashNameStorage 	= "xqdfs_storage"
+)
+
+type Configure interface {
+	ParamGet(key string) (string,error)
+	ParamSet(key string,value string) error
 	StorageAdd(s *StorageDal) error
 	StorageRemove(sid int32) error
 	StorageGet(sid int32) (*StorageDal,error)

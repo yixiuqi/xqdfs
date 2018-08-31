@@ -1,17 +1,18 @@
-package order
+package clear
 
 import (
 	"sync"
 	"time"
 	"math"
 
-	"xqdfs/master/conf"
-	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
-	"xqdfs/master/resource/usage"
-	"xqdfs/storage/block"
-	"xqdfs/discovery"
 	"xqdfs/proxy"
+	"xqdfs/utils/log"
+	"xqdfs/discovery"
+	"xqdfs/configure"
+	"xqdfs/master/conf"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/block"
+	"xqdfs/master/resource/usage"
 )
 
 type VolumeItem struct {
@@ -23,8 +24,9 @@ type VolumeItem struct {
 	used int64
 }
 
-type OrderClearTask struct {
+type ClearTimeOld struct {
 	conf *conf.Config
+	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	wg sync.WaitGroup
@@ -32,9 +34,10 @@ type OrderClearTask struct {
 	signal chan int
 }
 
-func NewOrderClearTask(conf *conf.Config,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *OrderClearTask {
-	t:=&OrderClearTask{
+func NewClearTimeOld(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) *ClearTimeOld {
+	t:=&ClearTimeOld{
 		conf:conf,
+		configureServer:configureServer,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		signal:make(chan int, 1),
@@ -44,7 +47,7 @@ func NewOrderClearTask(conf *conf.Config,discoveryServer *discovery.DiscoverySer
 	return t
 }
 
-func (this *OrderClearTask) task() {
+func (this *ClearTimeOld) task() {
 	for this.isRun {
 		this.process()
 		select {
@@ -56,17 +59,16 @@ func (this *OrderClearTask) task() {
 	this.wg.Done()
 }
 
-func (this *OrderClearTask) Stop() {
+func (this *ClearTimeOld) Stop() {
+	log.Info("ClearTimeOld stop")
 	this.wg.Add(1)
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
 	close(this.signal)
-
-	log.Info("OrderClearTask stop")
 }
 
-func (this *OrderClearTask) process() {
+func (this *ClearTimeOld) process() {
 	defer helper.HandleErr()
 
 	groups:=this.discoveryServer.Groups()

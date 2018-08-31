@@ -3,18 +3,22 @@ package strategy
 import (
 	"xqdfs/proxy"
 	"xqdfs/discovery"
+	"xqdfs/configure"
 	"xqdfs/master/conf"
-	"xqdfs/master/strategy/order"
+	"xqdfs/master/strategy/alloc"
+	"xqdfs/master/strategy/clear"
 	"xqdfs/master/strategy/defines"
 )
 
 type AllocStrategyServer struct {
 	allocStrategy defines.AllocStrategy
+	clearStrategy defines.ClearStrategy
 }
 
-func NewAllocStrategyServer(conf *conf.Config,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocStrategyServer,error){
+func NewAllocStrategyServer(conf *conf.Config,configureServer *configure.ConfigureServer,discoveryServer *discovery.DiscoveryServer,proxyStorage *proxy.ProxyStorage) (*AllocStrategyServer,error){
 	s:=&AllocStrategyServer{
-		allocStrategy:order.NewAllocStrategyOrder(conf,discoveryServer,proxyStorage),
+		allocStrategy:order.NewAllocOrder(conf,configureServer,discoveryServer,proxyStorage),
+		clearStrategy:clear.NewClearTimeOld(conf,configureServer,discoveryServer,proxyStorage),
 	}
 
 	return s,nil
@@ -34,4 +38,5 @@ func (this *AllocStrategyServer) Delete(url string) error {
 
 func (this *AllocStrategyServer) Stop() {
 	this.allocStrategy.Stop()
+	this.clearStrategy.Stop()
 }

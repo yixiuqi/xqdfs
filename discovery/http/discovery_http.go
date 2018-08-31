@@ -62,10 +62,10 @@ func (this *DiscoveryHttp) start() {
 }
 
 func (this *DiscoveryHttp) Stop() {
+	log.Info("DiscoveryHttp stop")
 	this.wg.Add(1)
 	this.isRun=false
 	this.wg.Wait()
-	log.Info("DiscoveryHttp stop")
 }
 
 func (this* DiscoveryHttp) task() (groups []*defines.Group,storages []*defines.Storage,err error){

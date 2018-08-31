@@ -54,7 +54,7 @@ func main() {
 		return
 	}
 
-	if strategyServer,err = strategy.NewAllocStrategyServer(config,discoveryServer,proxyStorage); err != nil {
+	if strategyServer,err = strategy.NewAllocStrategyServer(config,configureServer,discoveryServer,proxyStorage); err != nil {
 		log.Errorf("create alloc strategy error[%v]",err)
 		return
 	}
