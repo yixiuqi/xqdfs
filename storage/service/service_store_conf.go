@@ -1,11 +1,17 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/plugin"
+	"xqdfs/storage/conf"
+	"xqdfs/utils/helper"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpStoreConf,ServiceStoreConf)
+}
 
 /**
  * @api {post} /store/conf [Store]查询配置
@@ -33,8 +39,15 @@ import (
     "result": 0
 }
 * */
-func ServiceStoreConf(context *Context,m map[string]interface{}) interface{}{
-	json,err:=context.Conf.Json()
+func ServiceStoreConf(m map[string]interface{}) interface{}{
+	var config *conf.Config
+	if c:=plugin.PluginGetObject(plugin.PluginLocalConfig);c==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		config=c.(*conf.Config)
+	}
+
+	json,err:=config.Json()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStoreConfigure,err.Error())

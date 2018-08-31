@@ -5,11 +5,23 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
 )
 
-func ServiceStorageRemove(context *Context,m map[string]interface{}) interface{}{
-	var id int32
+func init() {
+	plugin.PluginAddService(constant.HttpStorageRemove,ServiceStorageRemove)
+}
 
+func ServiceStorageRemove(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var id int32
 	value,ok:=m["id"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -20,7 +32,7 @@ func ServiceStorageRemove(context *Context,m map[string]interface{}) interface{}
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"id missing")
 	}
 
-	err:=context.ConfigureServer.StorageRemove(id)
+	err:=conf.StorageRemove(id)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageRemove,err.Error())

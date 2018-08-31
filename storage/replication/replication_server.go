@@ -5,15 +5,15 @@ import (
 	"sync"
 	"fmt"
 
-	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
+	"xqdfs/proxy"
 	"xqdfs/configure"
 	"xqdfs/discovery"
-	"xqdfs/proxy"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/store"
-	configuredef "xqdfs/configure/defines"
 	"xqdfs/storage/replication/process"
+	configuredef "xqdfs/configure/defines"
 )
 
 type ReplicationServer struct {

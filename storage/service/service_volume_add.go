@@ -5,7 +5,13 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeAdd,ServiceVolumeAdd)
+}
 
 /**
  * @api {post} /volume/add [Volume]块启用
@@ -34,7 +40,14 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeAdd(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeAdd(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
 	var vid int32
 	value,ok:=m["vid"]
 	if ok {
@@ -46,7 +59,7 @@ func ServiceVolumeAdd(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
 	}
 
-	_,err:=context.Store.AddVolume(vid)
+	_,err:=storage.AddVolume(vid)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetVolumeAdd,err.Error())

@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	_"xqdfs/master/service"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
 	"xqdfs/proxy"
 	"xqdfs/configure"
 	"xqdfs/master/conf"
 	"xqdfs/master/strategy"
-	"xqdfs/master/service"
+	"xqdfs/utils/plugin"
+	"xqdfs/channel"
 )
 
 const(
@@ -27,7 +29,7 @@ func main() {
 		configureServer *configure.ConfigureServer
 		discoveryServer *discovery.DiscoveryServer
 		strategyServer *strategy.AllocStrategyServer
-		httpServer *service.HttpServer
+		httpServer *channel.HttpServer
 	)
 
 	flag.StringVar(&configFile, "c", "./store.toml", " set master config file path")
@@ -37,29 +39,39 @@ func main() {
 	if config, err = conf.NewConfig(configFile); err != nil {
 		log.Errorf("create config(\"%s\") error(%v)", configFile, err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginLocalConfig,config)
 	}
 
 	if proxyStorage,err = proxy.NewProxyStorage(); err != nil {
 		log.Errorf("create proxy error[%v]",err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginProxyStorage,proxyStorage)
 	}
 
 	if configureServer,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
 		log.Errorf("create configure server error[%v]",err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginConfigure,configureServer)
 	}
 
 	if discoveryServer,err = discovery.NewDiscoveryServer(configureServer); err != nil {
 		log.Errorf("create discovery server error[%v]",err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginDiscoveryServer,discoveryServer)
 	}
 
 	if strategyServer,err = strategy.NewAllocStrategyServer(config,configureServer,discoveryServer,proxyStorage); err != nil {
 		log.Errorf("create alloc strategy error[%v]",err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginStrategyServer,strategyServer)
 	}
 
-	if httpServer, err = service.NewHttpServer(config,configureServer,discoveryServer,strategyServer,proxyStorage); err != nil {
+	if httpServer, err = channel.NewHttpServer(config.Server.Port); err != nil {
 		log.Errorf("create http server error[%v]",err)
 		return
 	}

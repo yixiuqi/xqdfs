@@ -5,13 +5,25 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
-	configuredef "xqdfs/configure/defines"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/configure/defines"
 )
 
-func ServiceGroupRemoveStorage(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpGroupRemoveStorage,ServiceGroupRemoveStorage)
+}
+
+func ServiceGroupRemoveStorage(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
 	var groupId int32
 	var storageId int32
-
 	value,ok:=m["groupId"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -32,7 +44,7 @@ func ServiceGroupRemoveStorage(context *Context,m map[string]interface{}) interf
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageId missing")
 	}
 
-	group,err:=context.ConfigureServer.GroupGet(groupId)
+	group,err:=conf.GroupGet(groupId)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGet,err.Error())
@@ -41,7 +53,7 @@ func ServiceGroupRemoveStorage(context *Context,m map[string]interface{}) interf
 		return helper.ResultBuildWithExtInfo(errors.RetGroupNotExist,errors.ErrGroupNotExist.Error())
 	}
 
-	newStorageArray:=make([]*configuredef.StorageDal,0)
+	newStorageArray:=make([]*defines.StorageDal,0)
 	for _,s:=range group.Storage {
 		if s.Id!=storageId {
 			newStorageArray=append(newStorageArray,s)
@@ -49,7 +61,7 @@ func ServiceGroupRemoveStorage(context *Context,m map[string]interface{}) interf
 	}
 
 	group.Storage=newStorageArray
-	err=context.ConfigureServer.GroupEdit(group)
+	err=conf.GroupEdit(group)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupRemoveStorage,err.Error())

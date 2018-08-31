@@ -1,29 +1,29 @@
-package service
+package channel
 
 import (
 	"bytes"
-	"encoding/json"
-	"net/http"
 	"strings"
+	"net/http"
+	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 
 	"github.com/gin-gonic/gin"
 	"github.com/Jeffail/gabs"
 )
 
 type HttpWrap struct {
-	context *Context
-	handle HandlerFunc
+	handle plugin.HandlerFunc
 }
 
-func NewHttpWrap(context *Context,handle HandlerFunc) *HttpWrap {
-	item:=new(HttpWrap)
-	item.context=context
-	item.handle=handle
-	return item
+func NewHttpWrap(handle plugin.HandlerFunc) *HttpWrap {
+	wrap:=&HttpWrap{
+		handle:handle,
+	}
+	return wrap
 }
 
 func (this *HttpWrap) Handler(c *gin.Context) {
@@ -68,7 +68,7 @@ func (this *HttpWrap) Handler(c *gin.Context) {
 	m["http_contentType"]=contentType
 	m["http_method"]=method
 	m["http_context"]=c
-	ret:=this.handle(this.context,m)
+	ret:=this.handle(m)
 	if ret!=nil{
 		json:=ret.(*gabs.Container)
 		c.JSON(http.StatusOK, json.Data())

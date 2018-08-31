@@ -7,15 +7,35 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/helper"
 	"xqdfs/constant"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/discovery"
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
 )
 
-func ServiceStorageGetAll(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpStorageGetAll,ServiceStorageGetAll)
+}
+
+func ServiceStorageGetAll(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
 	var page int32
 	var rows int32
-
 	value,ok:=m["page"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -36,12 +56,12 @@ func ServiceStorageGetAll(context *Context,m map[string]interface{}) interface{}
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"rows missing")
 	}
 
-	storagesDal,err:=context.ConfigureServer.StorageGetAll()
+	storagesDal,err:=conf.StorageGetAll()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGetAll,err.Error())
 	}
-	storages:=context.DiscoveryServer.Storages()
+	storages:=discoveryServer.Storages()
 
 	jsonStorages:=gabs.New()
 	jsonStorages.Array("rows")

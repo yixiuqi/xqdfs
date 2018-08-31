@@ -5,9 +5,15 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
 
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeAddFree,ServiceVolumeAddFree)
+}
 
 /**
  * @api {post} /volume/addfree [Volume]块创建
@@ -38,7 +44,14 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeAddFree(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeAddFree(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
 	var count int = 1
 	var bdir string
 	var idir string
@@ -67,7 +80,7 @@ func ServiceVolumeAddFree(context *Context,m map[string]interface{}) interface{}
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"idir missing")
 	}
 
-	sn,err:=context.Store.AddFreeVolume(count,bdir,idir)
+	sn,err:=storage.AddFreeVolume(count,bdir,idir)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetVolumeAddFree,err.Error())

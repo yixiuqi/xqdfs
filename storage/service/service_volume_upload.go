@@ -9,7 +9,14 @@ import (
 	"xqdfs/utils/log"
 	"xqdfs/constant"
 	"xqdfs/storage/replication/process"
+	"xqdfs/storage/store"
+	"xqdfs/storage/replication"
+	"xqdfs/utils/plugin"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeUpload,ServiceVolumeUpload)
+}
 
 /**
  * @api {post} /volume/upload [Volume]图片上传
@@ -41,12 +48,25 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeUpload(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeUpload(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
+	var replicationServer *replication.ReplicationServer
+	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		replicationServer=r.(*replication.ReplicationServer)
+	}
+
 	var img []byte
 	var vid int32
 	var key int64
 	var cookie int32
-
 	value,ok:=m["img"]
 	if ok {
 		img=helper.ImageGet("",value.(string))
@@ -89,7 +109,7 @@ func ServiceVolumeUpload(context *Context,m map[string]interface{}) interface{}{
 
 	log.Debugf("upload volume[%d] key[%d] cookie[%d]",vid,key,cookie)
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		n:= needle.NewWriter(key, int32(cookie), int32(len(img)))
 		defer n.Close()
@@ -121,7 +141,7 @@ func ServiceVolumeUpload(context *Context,m map[string]interface{}) interface{}{
 					Cookie:cookie,
 					Image:img,
 				}
-				context.ReplicationServer.Replication(p)
+				replicationServer.Replication(p)
 			}else{
 				log.Debugf("receive replication request vid[%d] key[%d]",vid,key)
 			}

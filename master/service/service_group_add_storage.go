@@ -5,14 +5,26 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
-	configuredef "xqdfs/configure/defines"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/configure/defines"
 )
 
-func ServiceGroupAddStorage(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpGroupAddStorage,ServiceGroupAddStorage)
+}
+
+func ServiceGroupAddStorage(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
 	var groupId int32
 	var storageId int32
 	var storageAddr string
-
 	value,ok:=m["groupId"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -43,7 +55,7 @@ func ServiceGroupAddStorage(context *Context,m map[string]interface{}) interface
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,"storageAddr param error")
 	}
 
-	group,err:=context.ConfigureServer.GroupGet(groupId)
+	group,err:=conf.GroupGet(groupId)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGet,err.Error())
@@ -53,7 +65,7 @@ func ServiceGroupAddStorage(context *Context,m map[string]interface{}) interface
 	}
 
 	//判断节点是否已经使用
-	groups,err:=context.ConfigureServer.GroupGetAll()
+	groups,err:=conf.GroupGetAll()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGetAll,err.Error())
@@ -67,11 +79,11 @@ func ServiceGroupAddStorage(context *Context,m map[string]interface{}) interface
 		}
 	}
 
-	newStorage:=configuredef.NewStorageDal()
+	newStorage:=defines.NewStorageDal()
 	newStorage.Id=storageId
 	newStorage.Addr=storageAddr
 	group.Storage=append(group.Storage,newStorage)
-	err=context.ConfigureServer.GroupEdit(group)
+	err=conf.GroupEdit(group)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupAddStorage,err.Error())

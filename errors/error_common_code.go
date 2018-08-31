@@ -9,6 +9,7 @@ const(
 	RetOptUpload				= 2005
 	RetOptGet					= 2006
 	RetOptDelete				= 2007
+	RetNoSupport				= 2008
 )
 
 var(
@@ -20,4 +21,5 @@ var(
 	ErrOptUpload				= Error(RetOptUpload)
 	ErrOptGet					= Error(RetOptGet)
 	ErrOptDelete				= Error(RetOptDelete)
+	ErrNoSupport				= Error(RetNoSupport)
 )

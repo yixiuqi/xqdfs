@@ -9,16 +9,36 @@ import (
 	"xqdfs/utils/log"
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/discovery"
+	"xqdfs/configure/defines"
 	"xqdfs/master/resource/usage"
-	configuredef "xqdfs/configure/defines"
 
 	"github.com/Jeffail/gabs"
 )
 
-func ServiceGroupGetAll(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpGroupGetAll,ServiceGroupGetAll)
+}
+
+func ServiceGroupGetAll(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
 	var page int32
 	var rows int32
-
 	value,ok:=m["page"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -39,7 +59,7 @@ func ServiceGroupGetAll(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"rows missing")
 	}
 
-	groups,err:=context.ConfigureServer.GroupGetAll()
+	groups,err:=conf.GroupGetAll()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGetAll,err.Error())
@@ -47,10 +67,10 @@ func ServiceGroupGetAll(context *Context,m map[string]interface{}) interface{}{
 
 	//sort
 	for _,g:=range groups {
-		sort.Sort(configuredef.StorageDalSortById(g.Storage))
+		sort.Sort(defines.StorageDalSortById(g.Storage))
 	}
-	sort.Sort(configuredef.GroupDalSortById(groups))
-	groupsUsage:=usage.GetGroupsUsage(context.DiscoveryServer.Groups())
+	sort.Sort(defines.GroupDalSortById(groups))
+	groupsUsage:=usage.GetGroupsUsage(discoveryServer.Groups())
 
 	jsonGroups:=gabs.New()
 	jsonGroups.Array("rows")

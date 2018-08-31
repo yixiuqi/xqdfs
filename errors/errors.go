@@ -17,6 +17,7 @@ var (
 		RetOptUpload:				"upload opt error",
 		RetOptGet:					"get opt error",
 		RetOptDelete:				"delete opt error",
+		RetNoSupport:				"no support",
 		// block
 		RetSuperBlockMagic:		"super block magic not match",
 		RetSuperBlockVer:			"super block ver not match",

@@ -7,9 +7,16 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
+	"xqdfs/errors"
 
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpStoreStat,ServiceStoreStat)
+}
 
 /**
  * @api {post} /store/stat [Store]查询状态
@@ -37,12 +44,19 @@ import (
     "result": 0
 }
 * */
-func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
+func ServiceStoreStat(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
 	jsonStat:=gabs.New()
-	jsonStat.Set(context.Store.FreeId,"freeId")
+	jsonStat.Set(storage.FreeId,"freeId")
 
 	jsonStat.Array("volumes")
-	for _,v:=range context.Store.Volumes{
+	for _,v:=range storage.Volumes{
 		b,err:=json.Marshal(v)
 		if err==nil{
 			dec := json.NewDecoder(bytes.NewBuffer(b))
@@ -58,7 +72,7 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 	}
 
 	jsonStat.Array("freeVolumes")
-	for _,v:=range context.Store.FreeVolumes{
+	for _,v:=range storage.FreeVolumes{
 		b,err:=json.Marshal(v)
 		if err==nil{
 			dec := json.NewDecoder(bytes.NewBuffer(b))
@@ -72,7 +86,7 @@ func ServiceStoreStat(context *Context,m map[string]interface{}) interface{}{
 		}
 	}
 
-	stat,err:=json.Marshal(context.Store.Stats)
+	stat,err:=json.Marshal(storage.Stats)
 	if err==nil{
 		dec := json.NewDecoder(bytes.NewBuffer(stat))
 		dec.UseNumber()

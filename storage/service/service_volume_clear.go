@@ -6,7 +6,14 @@ import (
 	"xqdfs/utils/log"
 	"xqdfs/constant"
 	"xqdfs/storage/replication/process"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
+	"xqdfs/storage/replication"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeClear,ServiceVolumeClear)
+}
 
 /**
  * @api {post} /volume/clear [Volume]块清空
@@ -35,7 +42,21 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeClear(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeClear(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
+	var replicationServer *replication.ReplicationServer
+	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		replicationServer=r.(*replication.ReplicationServer)
+	}
+
 	var vid int32
 	value,ok:=m["vid"]
 	if ok {
@@ -47,7 +68,7 @@ func ServiceVolumeClear(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
 	}
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		err:= v.Clear()
 		if err!=nil{
@@ -59,7 +80,7 @@ func ServiceVolumeClear(context *Context,m map[string]interface{}) interface{}{
 				p:=&process.ReplicationStorageVolumeClear{
 					Vid:vid,
 				}
-				context.ReplicationServer.Replication(p)
+				replicationServer.Replication(p)
 			}else{
 				log.Debug("receive replication request")
 			}

@@ -5,14 +5,14 @@ import (
 	"syscall"
 	"os"
 
+	"xqdfs/channel"
 	"xqdfs/utils/log"
-	"xqdfs/storage/store"
-	"xqdfs/storage/service"
-	"xqdfs/storage/replication"
 	"xqdfs/configure"
+	"xqdfs/storage/store"
+	"xqdfs/storage/replication"
 )
 
-func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,replicationServer *replication.ReplicationServer,httpServer *service.HttpServer) {
+func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,replicationServer *replication.ReplicationServer,httpServer *channel.HttpServer) {
 	var (
 		c chan os.Signal
 		s os.Signal

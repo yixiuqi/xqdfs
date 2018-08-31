@@ -4,9 +4,30 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/proxy"
 )
 
-func ServiceStorageGetConfigure(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpStorageGetConfigure,ServiceStorageGetConfigure)
+}
+
+func ServiceStorageGetConfigure(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	var proxyStorage *proxy.ProxyStorage
+	if p:=plugin.PluginGetObject(plugin.PluginProxyStorage);p==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		proxyStorage=p.(*proxy.ProxyStorage)
+	}
+
 	var storageId int32
 	value,ok:=m["storageId"]
 	if ok {
@@ -18,7 +39,7 @@ func ServiceStorageGetConfigure(context *Context,m map[string]interface{}) inter
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageId missing")
 	}
 
-	storage,err:=context.ConfigureServer.StorageGet(storageId)
+	storage,err:=conf.StorageGet(storageId)
 	if err!=nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGet,err.Error())
 	}
@@ -26,7 +47,7 @@ func ServiceStorageGetConfigure(context *Context,m map[string]interface{}) inter
 		return helper.ResultBuildWithExtInfo(errors.RetStorageNotExist,errors.ErrStorageNotExist.Error())
 	}
 
-	json,err:=context.ProxyStorage.StorageGetConfigure(storage.Addr)
+	json,err:=proxyStorage.StorageGetConfigure(storage.Addr)
 	if err!=nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStoreConfigure,err.Error())
 	}else{

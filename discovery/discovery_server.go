@@ -1,9 +1,9 @@
 package discovery
 
 import (
+	"xqdfs/configure"
 	"xqdfs/discovery/http"
 	"xqdfs/discovery/defines"
-	"xqdfs/configure"
 )
 
 type DiscoveryServer struct {

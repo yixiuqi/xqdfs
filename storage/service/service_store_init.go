@@ -1,12 +1,19 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/plugin"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/store"
+	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpStoreInit,ServiceStoreInit)
+}
 
 /**
  * @api {post} /store/init [Store]初始化
@@ -34,8 +41,22 @@ import (
     "result": 0
 }
 * */
-func ServiceStoreInit(context *Context,m map[string]interface{}) interface{}{
-	err:=context.Store.Init()
+func ServiceStoreInit(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
+	var replicationServer *replication.ReplicationServer
+	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		replicationServer=r.(*replication.ReplicationServer)
+	}
+
+	err:=storage.Init()
 	if err!=nil{
 		log.Error(err)
 		e,ok:=err.(errors.Error)
@@ -48,7 +69,7 @@ func ServiceStoreInit(context *Context,m map[string]interface{}) interface{}{
 		replication,ok:=m["replication"]
 		if ok && replication==true {
 			p:=&process.ReplicationStorageInit{}
-			context.ReplicationServer.Replication(p)
+			replicationServer.Replication(p)
 		}else{
 			log.Debug("receive replication request")
 		}

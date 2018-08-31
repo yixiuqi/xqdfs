@@ -8,9 +8,15 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/master/strategy"
+	"xqdfs/utils/plugin"
 
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpOptUpload,ServiceOptUpload)
+}
 
 /**
  * @api {post} /opt/upload [Opt]图片上传
@@ -39,9 +45,15 @@ import (
     "result": 0
 }
 * */
-func ServiceOptUpload(context *Context,m map[string]interface{}) interface{}{
-	var img []byte
+func ServiceOptUpload(m map[string]interface{}) interface{}{
+	var strategyServer *strategy.AllocStrategyServer
+	if s:=plugin.PluginGetObject(plugin.PluginStrategyServer);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		strategyServer=s.(*strategy.AllocStrategyServer)
+	}
 
+	var img []byte
 	value,ok:=m["img"]
 	if ok {
 		img=helper.ImageGet("",value.(string))
@@ -53,11 +65,11 @@ func ServiceOptUpload(context *Context,m map[string]interface{}) interface{}{
 	}
 
 	key:=helper.KeyGenerate()
-	url,err:=context.StrategyServer.Write(key,constant.Cookie,img)
+	url,err:=strategyServer.Write(key,constant.Cookie,img)
 	for err==errors.ErrNeedleExist {
 		log.Error(err," try again")
 		key=helper.KeyGenerate()
-		url,err=context.StrategyServer.Write(key,constant.Cookie,img)
+		url,err=strategyServer.Write(key,constant.Cookie,img)
 	}
 
 	if err!=nil{

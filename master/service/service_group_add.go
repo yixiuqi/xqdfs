@@ -5,13 +5,26 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/helper"
 	"xqdfs/constant"
-	configuredef "xqdfs/configure/defines"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/configure/defines"
 
 	"github.com/Jeffail/gabs"
 )
 
-func ServiceGroupAdd(context *Context,m map[string]interface{}) interface{}{
-	groups,err:=context.ConfigureServer.GroupGetAll()
+func init() {
+	plugin.PluginAddService(constant.HttpGroupAdd,ServiceGroupAdd)
+}
+
+func ServiceGroupAdd(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
+	groups,err:=conf.GroupGetAll()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGetAll,err.Error())
@@ -24,11 +37,11 @@ func ServiceGroupAdd(context *Context,m map[string]interface{}) interface{}{
 		}
 	}
 
-	newGroup:=configuredef.NewGroupDal()
+	newGroup:=defines.NewGroupDal()
 	newGroup.Id=id+1
 	newGroup.ReadOnly=true
 	log.Debugf("group[%d] add",newGroup.Id)
-	err=context.ConfigureServer.GroupAdd(newGroup)
+	err=conf.GroupAdd(newGroup)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupAdd,err.Error())

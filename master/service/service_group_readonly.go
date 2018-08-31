@@ -5,12 +5,24 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
 )
 
-func ServiceGroupReadOnly(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpGroupReadOnly,ServiceGroupReadOnly)
+}
+
+func ServiceGroupReadOnly(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
 	var groupId int32
 	var readOnly bool
-
 	value,ok:=m["id"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -28,7 +40,7 @@ func ServiceGroupReadOnly(context *Context,m map[string]interface{}) interface{}
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"readOnly missing")
 	}
 
-	group,err:=context.ConfigureServer.GroupGet(groupId)
+	group,err:=conf.GroupGet(groupId)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGet,err.Error())
@@ -38,7 +50,7 @@ func ServiceGroupReadOnly(context *Context,m map[string]interface{}) interface{}
 	}
 
 	group.ReadOnly=readOnly
-	err=context.ConfigureServer.GroupEdit(group)
+	err=conf.GroupEdit(group)
 	if err!=nil {
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupEdit,err.Error())

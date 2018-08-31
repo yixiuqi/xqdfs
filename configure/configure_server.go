@@ -1,8 +1,8 @@
 package configure
 
 import (
-	"xqdfs/configure/defines"
 	"xqdfs/configure/ssdb"
+	"xqdfs/configure/defines"
 )
 
 type ConfigureServer struct {

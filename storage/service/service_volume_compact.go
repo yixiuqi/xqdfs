@@ -2,15 +2,23 @@ package service
 
 import (
 	"sync"
-	
-	"xqdfs/utils/helper"
-	"xqdfs/utils/log"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
+	"xqdfs/utils/plugin"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/store"
+	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
 
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeCompact,ServiceVolumeCompact)
+	plugin.PluginAddService(constant.HttpVolumeCompactStatus,ServiceVolumeCompactStatus)
+}
 
 var(
 	compactTaskCount int32
@@ -43,9 +51,22 @@ var(
     "result": 0
 }
 * */
-func ServiceVolumeCompact(context *Context,m map[string]interface{}) interface{}{
-	var vid int32
+func ServiceVolumeCompact(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
 
+	var replicationServer *replication.ReplicationServer
+	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		replicationServer=r.(*replication.ReplicationServer)
+	}
+
+	var vid int32
 	value,ok:=m["vid"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -56,12 +77,12 @@ func ServiceVolumeCompact(context *Context,m map[string]interface{}) interface{}
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
 	}
 
-	if len(context.Store.FreeVolumes) == 0 {
+	if len(storage.FreeVolumes) == 0 {
 		log.Error(errors.ErrStoreNoFreeVolume.Error())
 		return helper.ResultBuildWithExtInfo(errors.RetStoreNoFreeVolume,errors.ErrStoreNoFreeVolume.Error())
 	}
 
-	if v:= context.Store.Volumes[vid]; v != nil {
+	if v:= storage.Volumes[vid]; v != nil {
 		if v.Compact {
 			return helper.ResultBuildWithExtInfo(errors.RetVolumeInCompact,errors.ErrVolumeInCompact.Error())
 		}
@@ -84,14 +105,14 @@ func ServiceVolumeCompact(context *Context,m map[string]interface{}) interface{}
 			p:=&process.ReplicationStorageVolumeCompact{
 				Vid:vid,
 			}
-			context.ReplicationServer.Replication(p)
+			replicationServer.Replication(p)
 		}else{
 			log.Debug("receive replication request")
 		}
 
 		defer helper.HandleErr()
 		start:=helper.CurrentTime()
-		err:=context.Store.CompactVolume(vid)
+		err:=storage.CompactVolume(vid)
 		end:=helper.CurrentTime()
 		log.Debugf("volume[%v] compact time[%d]",vid,end-start)
 
@@ -135,9 +156,15 @@ func ServiceVolumeCompact(context *Context,m map[string]interface{}) interface{}
     "result": 0
 }
 * */
-func ServiceVolumeCompactStatus(context *Context,m map[string]interface{}) interface{}{
-	var vid int32
+func ServiceVolumeCompactStatus(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
 
+	var vid int32
 	value,ok:=m["vid"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -148,7 +175,7 @@ func ServiceVolumeCompactStatus(context *Context,m map[string]interface{}) inter
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
 	}
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		json:=gabs.New()
 		json.Set(v.IsCompact(),"status")

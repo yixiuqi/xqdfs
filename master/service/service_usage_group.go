@@ -5,8 +5,14 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/discovery"
+	"xqdfs/utils/plugin"
 	"xqdfs/master/resource/usage"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpUsageGroups,ServiceUsageGroups)
+}
 
 /**
  * @api {post} /usage/groups [Usage]所有组存储信息
@@ -39,8 +45,15 @@ import (
     "result": 0
 }
 * */
-func ServiceUsageGroups(context *Context,m map[string]interface{}) interface{}{
-	groups:=context.DiscoveryServer.Groups()
+func ServiceUsageGroups(m map[string]interface{}) interface{}{
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
+	groups:=discoveryServer.Groups()
 	if groups==nil{
 		return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,"discovery groups is empty")
 	}

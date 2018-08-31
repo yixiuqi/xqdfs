@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	"xqdfs/utils/log"
-	"xqdfs/storage/conf"
-	"xqdfs/storage/store"
-	"xqdfs/storage/replication"
-	"xqdfs/storage/service"
+	_"xqdfs/storage/service"
 	"xqdfs/errors"
 	"xqdfs/configure"
+	"xqdfs/utils/log"
+	"xqdfs/storage/conf"
+	"xqdfs/utils/plugin"
+	"xqdfs/storage/store"
 	"xqdfs/configure/defines"
+	"xqdfs/storage/replication"
+	"xqdfs/channel"
 )
 
 const(
@@ -24,7 +26,7 @@ func main() {
 		configFile string
 		config	*conf.Config
 		s	*store.Store
-		httpServer *service.HttpServer
+		httpServer *channel.HttpServer
 		configureServer *configure.ConfigureServer
 		replicationServer *replication.ReplicationServer
 		err	error
@@ -38,6 +40,7 @@ func main() {
 		log.Errorf("NewConfig(\"%s\") error(%v)", configFile, err)
 		return
 	}
+	plugin.PluginAddObject(plugin.PluginLocalConfig,config)
 
 	if configureServer,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
 		log.Errorf("create configure server error[%v]",err)
@@ -57,6 +60,7 @@ func main() {
 				return
 			}
 		}
+		plugin.PluginAddObject(plugin.PluginConfigure,configureServer)
 	}
 
 	if s, err = store.NewStore(config); err != nil {
@@ -67,14 +71,17 @@ func main() {
 		if err==errors.ErrVolumeExist{
 			log.Info("store already init")
 		}
+		plugin.PluginAddObject(plugin.PlugineStorage,s)
 	}
 
 	if replicationServer, err = replication.NewReplicationServer(config,s,configureServer); err != nil {
 		log.Errorf("sync server init error[%v]",err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginReplicationServer,replicationServer)
 	}
 
-	if httpServer, err = service.NewHttpServer(config,s,replicationServer); err != nil {
+	if httpServer, err = channel.NewHttpServer(config.Server.Port); err != nil {
 		log.Errorf("http server init error[%v]",err)
 		return
 	}

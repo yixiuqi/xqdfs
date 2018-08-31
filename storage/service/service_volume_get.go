@@ -3,14 +3,20 @@ package service
 import (
 	"net/http"
 
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/helper"
 
 	"github.com/gin-gonic/gin"
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeGet,ServiceVolumeGet)
+}
 
 /**
  * @api {post} /volume/get [Volume]图片下载
@@ -42,11 +48,17 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeGet(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeGet(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
 	var vid int32
 	var key int64
 	var cookie int32
-
 	value,ok:=m["vid"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -77,7 +89,7 @@ func ServiceVolumeGet(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"cookie missing")
 	}
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		n,err:= v.Read(key, cookie)
 		if err!=nil{

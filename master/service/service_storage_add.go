@@ -5,15 +5,27 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/helper"
 	"xqdfs/constant"
-	configuredef "xqdfs/configure/defines"
+	"xqdfs/configure"
+	"xqdfs/utils/plugin"
+	"xqdfs/configure/defines"
 
 	"github.com/Jeffail/gabs"
 )
 
-func ServiceStorageAdd(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpStorageAdd,ServiceStorageAdd)
+}
+
+func ServiceStorageAdd(m map[string]interface{}) interface{}{
+	var conf *configure.ConfigureServer
+	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		conf=s.(*configure.ConfigureServer)
+	}
+
 	var addr string
 	var desc string
-
 	value,ok:=m["addr"]
 	if ok {
 		addr=value.(string)
@@ -31,7 +43,7 @@ func ServiceStorageAdd(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"desc missing")
 	}
 
-	storages,err:=context.ConfigureServer.StorageGetAll()
+	storages,err:=conf.StorageGetAll()
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGetAll,err.Error())
@@ -44,11 +56,11 @@ func ServiceStorageAdd(context *Context,m map[string]interface{}) interface{}{
 		}
 	}
 
-	newStorage:=configuredef.NewStorageDal()
+	newStorage:=defines.NewStorageDal()
 	newStorage.Id=id+1
 	newStorage.Addr=addr
 	newStorage.Desc=desc
-	err=context.ConfigureServer.StorageAdd(newStorage)
+	err=conf.StorageAdd(newStorage)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageAdd,err.Error())

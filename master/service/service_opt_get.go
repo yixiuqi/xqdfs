@@ -5,9 +5,15 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/master/strategy"
+	"xqdfs/utils/plugin"
 
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpOptGet,ServiceOptGet)
+}
 
 /**
  * @api {post} /opt/get [Opt]图片下载
@@ -37,9 +43,15 @@ import (
     "result": 0
 }
 * */
-func ServiceOptGet(context *Context,m map[string]interface{}) interface{}{
-	var url string
+func ServiceOptGet(m map[string]interface{}) interface{}{
+	var strategyServer *strategy.AllocStrategyServer
+	if s:=plugin.PluginGetObject(plugin.PluginStrategyServer);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		strategyServer=s.(*strategy.AllocStrategyServer)
+	}
 
+	var url string
 	value,ok:=m["url"]
 	if ok {
 		url=value.(string)
@@ -47,7 +59,7 @@ func ServiceOptGet(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"url missing")
 	}
 
-	img,err:=context.StrategyServer.Read(url)
+	img,err:=strategyServer.Read(url)
 	if err!=nil {
 		log.Error(err)
 		e,ok:=err.(errors.Error)

@@ -4,20 +4,32 @@ import (
 	"sort"
 	"math"
 
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/discovery"
+	"xqdfs/utils/plugin"
+	"xqdfs/utils/helper"
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
 )
 
-func ServiceStorageVolumeGetAll(context *Context,m map[string]interface{}) interface{}{
+func init() {
+	plugin.PluginAddService(constant.HttpStorageVolumeGetAll,ServiceStorageVolumeGetAll)
+}
+
+func ServiceStorageVolumeGetAll(m map[string]interface{}) interface{}{
+	var discoveryServer *discovery.DiscoveryServer
+	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		discoveryServer=d.(*discovery.DiscoveryServer)
+	}
+
 	var storageId int32
 	var page int32
 	var rows int32
 	var sortType string
-
 	value,ok:=m["storageId"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -53,7 +65,7 @@ func ServiceStorageVolumeGetAll(context *Context,m map[string]interface{}) inter
 		sortType=value.(string)
 	}
 
-	su:=usage.GetStorageUsageFromArray(context.DiscoveryServer.Storages(),storageId)
+	su:=usage.GetStorageUsageFromArray(discoveryServer.Storages(),storageId)
 	if su==nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageNotExist,errors.ErrStorageNotExist.Error())
 	}

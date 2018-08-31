@@ -8,9 +8,15 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/storage/store"
+	"xqdfs/utils/plugin"
 	
 	"github.com/Jeffail/gabs"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeNeedleInfo,ServiceVolumeNeedleInfo)
+}
 
 /**
  * @api {post} /volume/needleinfo [Volume]查询Needle信息
@@ -40,10 +46,16 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeNeedleInfo(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeNeedleInfo(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
 	var vid int32
 	var key int64
-
 	value,ok:=m["vid"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -64,7 +76,7 @@ func ServiceVolumeNeedleInfo(context *Context,m map[string]interface{}) interfac
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
 	}
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		n,err:= v.GetHeader(key)
 		if err!=nil{

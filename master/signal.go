@@ -5,15 +5,15 @@ import (
 	"syscall"
 	"os"
 
+	"xqdfs/proxy"
+	"xqdfs/channel"
 	"xqdfs/utils/log"
-	"xqdfs/master/service"
 	"xqdfs/configure"
 	"xqdfs/discovery"
-	"xqdfs/proxy"
 	"xqdfs/master/strategy"
 )
 
-func StartSignal(httpServer *service.HttpServer,
+func StartSignal(httpServer *channel.HttpServer,
 								configureServer *configure.ConfigureServer,
 								discoveryServer *discovery.DiscoveryServer,
 								strategyServer *strategy.AllocStrategyServer,

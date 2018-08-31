@@ -1,12 +1,19 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/plugin"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/store"
+	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
 )
+
+func init() {
+	plugin.PluginAddService(constant.HttpVolumeDelete,ServiceVolumeDelete)
+}
 
 /**
  * @api {post} /volume/delete [Volume]图片删除
@@ -36,10 +43,23 @@ import (
     "result": 0
 }
 * */
-func ServiceVolumeDelete(context *Context,m map[string]interface{}) interface{}{
+func ServiceVolumeDelete(m map[string]interface{}) interface{}{
+	var storage *store.Store
+	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		storage=s.(*store.Store)
+	}
+
+	var replicationServer *replication.ReplicationServer
+	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
+		return helper.ResultBuild(errors.RetNoSupport)
+	}else{
+		replicationServer=r.(*replication.ReplicationServer)
+	}
+
 	var vid int32
 	var key int64
-
 	value,ok:=m["vid"]
 	if ok {
 		tmp,err:=helper.GetInt32(value)
@@ -60,7 +80,7 @@ func ServiceVolumeDelete(context *Context,m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
 	}
 
-	v:= context.Store.Volumes[vid]
+	v:= storage.Volumes[vid]
 	if v != nil {
 		err:= v.Delete(key)
 		if err!=nil{
@@ -78,7 +98,7 @@ func ServiceVolumeDelete(context *Context,m map[string]interface{}) interface{}{
 					Vid:vid,
 					Key:key,
 				}
-				context.ReplicationServer.Replication(p)
+				replicationServer.Replication(p)
 			}else{
 				log.Debug("receive replication request")
 			}
