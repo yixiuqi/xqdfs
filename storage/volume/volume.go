@@ -473,6 +473,7 @@ func (v *Volume) compact(nv *Volume) (err error) {
 	err = v.Block.Compact(v.CompactOffset, func(n *needle.Needle, so, eo uint32) (err1 error) {
 		if n.Flag != needle.FlagDel {
 			if err1 = nv.Write(n); err1 != nil {
+				log.Error(err1)
 				return
 			}
 		}
@@ -508,10 +509,12 @@ func (v *Volume) StopCompact(nv *Volume) (err error) {
 	defer v.lock.Unlock()
 	if nv != nil {
 		if err = v.compact(nv); err != nil {
+			log.Error(err)
 			goto free
 		}
 		for _, key = range v.compactKeys {
 			if err = nv.Delete(key); err != nil {
+				log.Error(err)
 				goto free
 			}
 		}

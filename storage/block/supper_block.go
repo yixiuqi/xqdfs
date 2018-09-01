@@ -282,7 +282,6 @@ func (b *SuperBlock) Scan(r *os.File, offset uint32, fn func(*needle.Needle, uin
 		log.Errorf("block: %s Fadvise() error(%v)", b.File)
 		return
 	}
-	log.Debugf("scan block: %s from offset: %d", b.File, offset)
 	if _, err = r.Seek(bso, os.SEEK_SET); err != nil {
 		log.Errorf("block: %s Seek() error(%v)", b.File)
 		return
@@ -315,7 +314,6 @@ func (b *SuperBlock) Scan(r *os.File, offset uint32, fn func(*needle.Needle, uin
 			log.Errorf("block: %s Fadvise() error(%v)", b.File)
 			return
 		}
-		log.Debugf("scan block: %s to offset: %d [ok]", b.File, eo)
 		err = nil
 	} else {
 		log.Infof("scan block: %s to offset: %d error(%v) [failed]", b.File, eo, err)
@@ -377,6 +375,7 @@ func (b *SuperBlock) Compact(offset uint32, fn func(*needle.Needle, uint32, uint
 	if err = b.Scan(r, offset, func(n *needle.Needle, so, eo uint32) error {
 		return fn(n, so, eo)
 	}); err != nil {
+		log.Error(err)
 		r.Close()
 		return
 	}

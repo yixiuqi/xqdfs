@@ -241,13 +241,11 @@ func (i *Indexer) Scan(r *os.File, fn func(*Index) error) (err error) {
 		// advise no need page cache
 		if err = myos.Fadvise(fd, 0, fi.Size(), myos.POSIX_FADV_DONTNEED); err == nil {
 			err = nil
-			log.Debugf("scan index: %s [ok]", i.File)
 			return
 		} else {
 			log.Errorf("index: %s Fadvise() error(%v)", i.File)
 		}
 	}
-	log.Infof("scan index: %s error(%v) [failed]", i.File, err)
 	return
 }
 

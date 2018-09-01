@@ -69,3 +69,24 @@ func GetInt64(param interface{}) (int64,error){
 		return 0,errors.ErrParameterError
 	}
 }
+
+func GetFloat64(param interface{}) (float64,error){
+	switch param.(type) {
+	case string:
+		v, err := strconv.ParseFloat(param.(string), 64)
+		if err == nil {
+			return float64(v), err
+		} else {
+			return 0, err
+		}
+	case json.Number:
+		v, err := strconv.ParseFloat(param.(json.Number).String(), 64)
+		if err == nil {
+			return float64(v), err
+		} else {
+			return 0, err
+		}
+	default:
+		return 0,errors.ErrParameterError
+	}
+}

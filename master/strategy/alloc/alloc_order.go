@@ -192,9 +192,6 @@ func (this *AllocOrder) Delete(url string) error {
 	if err!=nil{
 		log.Debug(err)
 		return err
-	}else{
-		log.Debugf("image source group[%d] storage[%d][%s] volume[%d] key[%d] cookie[%d]",
-			location.GroupId,location.StorageId,source.Host,location.VolumeId,location.Key,location.Cookie)
 	}
 
 	err=this.proxyStorage.Delete(source.Host,location.VolumeId,location.Key,true)
