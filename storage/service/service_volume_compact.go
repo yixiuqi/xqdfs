@@ -16,8 +16,8 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpVolumeCompact,ServiceVolumeCompact)
-	plugin.PluginAddService(constant.HttpVolumeCompactStatus,ServiceVolumeCompactStatus)
+	plugin.PluginAddService(constant.CmdVolumeCompact,ServiceVolumeCompact)
+	plugin.PluginAddService(constant.CmdVolumeCompactStatus,ServiceVolumeCompactStatus)
 }
 
 var(

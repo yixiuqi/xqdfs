@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageVolumeCompact,ServiceStorageVolumeCompact)
+	plugin.PluginAddService(constant.CmdStorageVolumeCompact,ServiceStorageVolumeCompact)
 }
 
 func ServiceStorageVolumeCompact(m map[string]interface{}) interface{}{

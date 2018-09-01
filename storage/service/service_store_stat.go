@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStoreStat,ServiceStoreStat)
+	plugin.PluginAddService(constant.CmdStoreStat,ServiceStoreStat)
 }
 
 /**

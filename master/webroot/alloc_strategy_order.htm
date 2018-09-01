@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/metro-blue/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="themes/demo.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/storage_add.js"></script>
+    <script type="text/javascript" src="js/storage_remove.js"></script>
+    <script type="text/javascript" src="js/storage_init.js"></script>
+</head>
+<body>
+    <h2>策略说明</h2>
+    <p>按Group Id和Storage Id排序，顺序分配Volume用于写操作。</p>
+    <div style="margin:20px 0;"></div>
+    <div class="easyui-panel" title="策略相关参数" style="width:100%;max-width:310px;padding:15px 15px;">
+        <table>
+            <tr>
+                <td height="30px">卷预留空间(Bytes):</td>
+                <td><input id="minFreeSpace" class="easyui-textbox" style="width:150px;"></input></td>
+            </tr>
+            <tr>
+                <td height="30px">同时并行写多少卷:</td>
+                <td><input id="consumeCount" class="easyui-textbox" style="width:150px;"></input></td>
+            </tr>
+            <tr>
+                <td height="40px"></td>
+                <td align="right">
+                    <a href="#" class="easyui-linkbutton" onClick="btnAllocOrderConfigGet()">获取参数</a>
+                    <a href="#" class="easyui-linkbutton" onClick="btnAllocOrderConfigSet()">设置参数</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function btnAllocOrderConfigGet(){
+            httpAllocOrderConfigGet()
+        }
+
+        function btnAllocOrderConfigSet(){
+            var minFreeSpace=$('#minFreeSpace').val();
+            if (minFreeSpace.length==0){
+                $.messager.alert('提示','参数不完整!','error');
+                return;    
+            }
+            var consumeCount=$('#consumeCount').val();
+            if (consumeCount.length==0){
+                $.messager.alert('提示','参数不完整!','error');
+                return;    
+            }
+            $.messager.confirm('提示', '是否确定设置参数?', function(r){
+                if (r){
+                    $.ajax({
+                        url: "/strategy/alloc/order/config/set",  
+                        type: "POST",
+                        data: "minFreeSpace="+minFreeSpace+"&consumeCount="+consumeCount,
+                        dataType:"json", 
+                        success: function( response ) {
+                            if(response.result==0){
+                                $.messager.alert('提示','操作成功!','info');
+                            }else{
+                                $.messager.alert('提示','操作失败:'+response.info,'error');
+                            }            
+                        },
+                        error: function( jqXHR, textStatus, errorThrown ) {
+                        }
+                    });
+                }
+            });
+        }
+
+        function httpAllocOrderConfigGet(){
+            var error="null"
+            $.ajax({
+                url: "/strategy/alloc/order/config/get",  
+                type: "POST",
+                data: "",
+                dataType:"json", 
+                success: function( response ) {
+                    if(response.result==0){
+                        $('#minFreeSpace').textbox('setValue', response.minFreeSpace);
+                        $('#consumeCount').textbox('setValue', response.consumeCount);
+                    }else{
+                        error=response.info
+                    }            
+                },
+                error: function( jqXHR, textStatus, errorThrown ) {
+                }
+            });
+        }
+
+        $(function(){
+            httpAllocOrderConfigGet()
+        });
+    </script>
+</body>
+</html>

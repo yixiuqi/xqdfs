@@ -27,7 +27,7 @@ func (this *ProxyHttp) Upload(host string,vid int32,key int64,cookie int32,img [
 	jsonSend.Set(cookie,"cookie")
 	jsonSend.Set(img,"img")
 	jsonSend.Set(replication,"replication")
-	url:="http://"+host+constant.HttpVolumeUpload
+	url:="http://"+host+constant.CmdVolumeUpload
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
@@ -53,7 +53,7 @@ func (this *ProxyHttp) Get(host string,vid int32,key int64,cookie int32) ([]byte
 	jsonSend.Set(vid,"vid")
 	jsonSend.Set(key,"key")
 	jsonSend.Set(cookie,"cookie")
-	url:="http://"+host+constant.HttpVolumeGet
+	url:="http://"+host+constant.CmdVolumeGet
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		log.Debug(err)
@@ -85,7 +85,7 @@ func (this *ProxyHttp) Delete(host string,vid int32,key int64,replication bool) 
 	jsonSend.Set(vid,"vid")
 	jsonSend.Set(key,"key")
 	jsonSend.Set(replication,"replication")
-	url:="http://"+host+constant.HttpVolumeDelete
+	url:="http://"+host+constant.CmdVolumeDelete
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
@@ -108,7 +108,7 @@ func (this *ProxyHttp) StorageInit(host string,replication bool) error {
 	jsonSend:=gabs.New()
 	jsonSend.Set(helper.UUIDBuild(),"seq")
 	jsonSend.Set(replication,"replication")
-	url:="http://"+host+constant.HttpStoreInit
+	url:="http://"+host+constant.CmdStoreInit
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
@@ -132,7 +132,7 @@ func (this *ProxyHttp) StorageVolumeCompact(host string,vid int32,replication bo
 	jsonSend.Set(helper.UUIDBuild(),"seq")
 	jsonSend.Set(vid,"vid")
 	jsonSend.Set(replication,"replication")
-	url:="http://"+host+constant.HttpVolumeCompact
+	url:="http://"+host+constant.CmdVolumeCompact
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
@@ -156,7 +156,7 @@ func (this *ProxyHttp) StorageVolumeClear(host string,vid int32,replication bool
 	jsonSend.Set(helper.UUIDBuild(),"seq")
 	jsonSend.Set(vid,"vid")
 	jsonSend.Set(replication,"replication")
-	url:="http://"+host+constant.HttpVolumeClear
+	url:="http://"+host+constant.CmdVolumeClear
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
@@ -178,7 +178,7 @@ func (this *ProxyHttp) StorageVolumeClear(host string,vid int32,replication bool
 func (this *ProxyHttp) StorageGetConfigure(host string) (*gabs.Container,error) {
 	jsonSend:=gabs.New()
 	jsonSend.Set(helper.UUIDBuild(),"seq")
-	url:="http://"+host+constant.HttpStoreConf
+	url:="http://"+host+constant.CmdStoreConf
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
 		return nil,errors.ErrRpc

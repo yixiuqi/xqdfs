@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpVolumeGet,ServiceVolumeGet)
+	plugin.PluginAddService(constant.CmdVolumeGet,ServiceVolumeGet)
 }
 
 /**

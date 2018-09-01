@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpGroupReadOnly,ServiceGroupReadOnly)
+	plugin.PluginAddService(constant.CmdGroupReadOnly,ServiceGroupReadOnly)
 }
 
 func ServiceGroupReadOnly(m map[string]interface{}) interface{}{

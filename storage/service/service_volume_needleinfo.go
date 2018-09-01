@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpVolumeNeedleInfo,ServiceVolumeNeedleInfo)
+	plugin.PluginAddService(constant.CmdVolumeNeedleInfo,ServiceVolumeNeedleInfo)
 }
 
 /**

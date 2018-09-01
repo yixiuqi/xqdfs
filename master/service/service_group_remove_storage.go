@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpGroupRemoveStorage,ServiceGroupRemoveStorage)
+	plugin.PluginAddService(constant.CmdGroupRemoveStorage,ServiceGroupRemoveStorage)
 }
 
 func ServiceGroupRemoveStorage(m map[string]interface{}) interface{}{

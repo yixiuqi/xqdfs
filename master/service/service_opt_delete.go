@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpOptDelete,ServiceOptDelete)
+	plugin.PluginAddService(constant.CmdOptDelete,ServiceOptDelete)
 }
 
 /**

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpGroupRemove,ServiceGroupRemove)
+	plugin.PluginAddService(constant.CmdGroupRemove,ServiceGroupRemove)
 }
 
 func ServiceGroupRemove(m map[string]interface{}) interface{}{

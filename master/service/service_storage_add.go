@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageAdd,ServiceStorageAdd)
+	plugin.PluginAddService(constant.CmdStorageAdd,ServiceStorageAdd)
 }
 
 func ServiceStorageAdd(m map[string]interface{}) interface{}{

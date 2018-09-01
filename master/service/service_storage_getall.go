@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageGetAll,ServiceStorageGetAll)
+	plugin.PluginAddService(constant.CmdStorageGetAll,ServiceStorageGetAll)
 }
 
 func ServiceStorageGetAll(m map[string]interface{}) interface{}{

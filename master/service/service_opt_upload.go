@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpOptUpload,ServiceOptUpload)
+	plugin.PluginAddService(constant.CmdOptUpload,ServiceOptUpload)
 }
 
 /**

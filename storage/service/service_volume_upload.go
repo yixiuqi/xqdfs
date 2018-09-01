@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpVolumeUpload,ServiceVolumeUpload)
+	plugin.PluginAddService(constant.CmdVolumeUpload,ServiceVolumeUpload)
 }
 
 /**
@@ -108,8 +108,6 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 	}else{
 		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"cookie missing")
 	}
-
-	log.Debugf("upload volume[%d] key[%d] cookie[%d]",vid,key,cookie)
 
 	v:= storage.Volumes[vid]
 	if v != nil {

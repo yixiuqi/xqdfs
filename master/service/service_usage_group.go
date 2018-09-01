@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpUsageGroups,ServiceUsageGroups)
+	plugin.PluginAddService(constant.CmdUsageGroups,ServiceUsageGroups)
 }
 
 /**

@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpGroupAdd,ServiceGroupAdd)
+	plugin.PluginAddService(constant.CmdGroupAdd,ServiceGroupAdd)
 }
 
 func ServiceGroupAdd(m map[string]interface{}) interface{}{

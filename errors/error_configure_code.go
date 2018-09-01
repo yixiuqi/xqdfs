@@ -19,6 +19,7 @@ const(
 	RetStorageGet				= 8015
 	RetStorageGetAll			= 8016
 	RetParamNotExist			= 8017
+	RetParamSet				= 8018
 )
 
 var(
@@ -40,4 +41,5 @@ var(
 	ErrStorageGet 				= Error(RetStorageGet)
 	ErrStorageGetAll 			= Error(RetStorageGetAll)
 	ErrParamNotExist 			= Error(RetParamNotExist)
+	ErrParamSet					= Error(RetParamSet)
 )

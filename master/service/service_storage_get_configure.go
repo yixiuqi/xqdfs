@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageGetConfigure,ServiceStorageGetConfigure)
+	plugin.PluginAddService(constant.CmdStorageGetConfigure,ServiceStorageGetConfigure)
 }
 
 func ServiceStorageGetConfigure(m map[string]interface{}) interface{}{

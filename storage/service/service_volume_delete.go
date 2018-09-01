@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpVolumeDelete,ServiceVolumeDelete)
+	plugin.PluginAddService(constant.CmdVolumeDelete,ServiceVolumeDelete)
 }
 
 /**

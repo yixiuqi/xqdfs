@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageRemove,ServiceStorageRemove)
+	plugin.PluginAddService(constant.CmdStorageRemove,ServiceStorageRemove)
 }
 
 func ServiceStorageRemove(m map[string]interface{}) interface{}{

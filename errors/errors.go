@@ -85,6 +85,7 @@ var (
 		RetStorageGet:			"get storage info error",
 		RetStorageGetAll:			"get all storages info error",
 		RetParamNotExist:			"param not exist",
+		RetParamSet:				"param set error",
 		//binlog
 		RetBinlogWrite:			"binlog write error",
 		RetBinlogRead:			"binlog read error",

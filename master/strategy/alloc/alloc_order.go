@@ -9,14 +9,14 @@ import (
 	"xqdfs/configure"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
-	"xqdfs/utils/plugin"
 )
 
 const(
-	OrderMinFreeSpace = "OrderMinFreeSpace"			// 每个卷预留多少空间 default:104857600
-	OrderConsumeCount = "OrderConsumeCount"			// 同时default:3
+	AllocOrderMinFreeSpace 	= 	"AllocOrderMinFreeSpace"			// 每个卷预留多少空间 default:104857600
+	AllocOrderConsumeCount 	= 	"AllocOrderConsumeCount"			// 同时default:3
 )
 
 type AllocOrder struct {
@@ -54,10 +54,10 @@ func NewAllocOrder() (*AllocOrder,error) {
 	}
 
 	var orderMinFreeSpace int64=104857600
-	value,err:=conf.ParamGet(OrderMinFreeSpace)
+	value,err:=conf.ParamGet(AllocOrderMinFreeSpace)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(OrderMinFreeSpace,"104857600")
+			err=conf.ParamSet(AllocOrderMinFreeSpace,"104857600")
 			if err!=nil{
 				return nil,err
 			}
@@ -74,10 +74,10 @@ func NewAllocOrder() (*AllocOrder,error) {
 	}
 
 	orderConsumeCount:=3
-	value,err=conf.ParamGet(OrderConsumeCount)
+	value,err=conf.ParamGet(AllocOrderConsumeCount)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(OrderConsumeCount,"3")
+			err=conf.ParamSet(AllocOrderConsumeCount,"3")
 			if err!=nil{
 				return nil,err
 			}
@@ -93,8 +93,8 @@ func NewAllocOrder() (*AllocOrder,error) {
 		}
 	}
 
-	log.Infof("%s[%d]",OrderMinFreeSpace,orderMinFreeSpace)
-	log.Infof("%s[%d]",OrderConsumeCount,orderConsumeCount)
+	log.Infof("%s[%d]",AllocOrderMinFreeSpace,orderMinFreeSpace)
+	log.Infof("%s[%d]",AllocOrderConsumeCount,orderConsumeCount)
 	s:=&AllocOrder{
 		configureServer:conf,
 		discoveryServer:discoveryServer,
@@ -103,6 +103,7 @@ func NewAllocOrder() (*AllocOrder,error) {
 		orderMinFreeSpace:orderMinFreeSpace,
 		orderConsumeCount:orderConsumeCount,
 	}
+	ServiceAllocOrderSetup(s)
 	return s,nil
 }
 
@@ -207,4 +208,34 @@ func (this *AllocOrder) Delete(url string) error {
 
 func (this *AllocOrder) Stop() {
 	log.Info("AllocOrder stop")
+}
+
+func (this *AllocOrder) AllocOrderMinFreeSpaceGet() int64 {
+	return this.orderMinFreeSpace
+}
+
+func (this *AllocOrder) AllocOrderMinFreeSpaceSet(orderMinFreeSpace int64) error {
+	err:=this.configureServer.ParamSet(AllocOrderMinFreeSpace,fmt.Sprintf("%d",orderMinFreeSpace))
+	if err!=nil{
+		log.Error(err)
+		return err
+	}else{
+		this.orderMinFreeSpace=orderMinFreeSpace
+		return nil
+	}
+}
+
+func (this *AllocOrder) AllocOrderConsumeCountGet() int {
+	return this.orderConsumeCount
+}
+
+func (this *AllocOrder) AllocOrderConsumeCountSet(orderConsumeCount int) error {
+	err:=this.configureServer.ParamSet(AllocOrderConsumeCount,fmt.Sprintf("%d",orderConsumeCount))
+	if err!=nil{
+		log.Error(err)
+		return err
+	}else{
+		this.orderConsumeCount=orderConsumeCount
+		return nil
+	}
 }

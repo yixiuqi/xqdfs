@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpOptGet,ServiceOptGet)
+	plugin.PluginAddService(constant.CmdOptGet,ServiceOptGet)
 }
 
 /**

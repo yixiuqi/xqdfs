@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStorageVolumeClear,ServiceStorageVolumeClear)
+	plugin.PluginAddService(constant.CmdStorageVolumeClear,ServiceStorageVolumeClear)
 }
 
 func ServiceStorageVolumeClear(m map[string]interface{}) interface{}{

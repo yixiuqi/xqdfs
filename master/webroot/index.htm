@@ -12,14 +12,16 @@
     <div data-options="region:'north'" style="width:100%;height:50px;padding:0px 0px 0px 0px;">
     	<img src="image/logo.png"/>
     </div>
-    <div data-options="region:'west',split:true,title:'导航列表'" style="width:170px;">
+    <div data-options="region:'west',split:true,title:'导航列表'" style="width:230px;">
         <div class="easyui-accordion" data-options="fit:true,border:false">
             <div title="存储管理" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
                 <ul id="tree" class="easyui-tree">
-                    <li data-options="iconCls:'icon-ok',title:'节点配置',page:'storage.htm',isOpen:1"><span>存储节点配置</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'组配置',page:'group.htm',isOpen:1"><span>存储组配置</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'文件上传',page:'opt_upload.htm',isOpen:1"><span>文件上传</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'文件下载',page:'opt_get.htm',isOpen:1"><span>文件下载</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'存储节点配置',page:'storage.htm',isOpen:1"><span>存储节点配置</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'存储组配置',page:'group.htm',isOpen:1"><span>存储组配置</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'卷分配策略[顺序分配]',page:'alloc_strategy_order.htm',isOpen:1"><span>卷分配策略[顺序分配]</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'卷回收策略[最老时间]',page:'clear_time_old.htm',isOpen:1"><span>卷回收策略[最老时间]</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'图片文件上传',page:'opt_upload.htm',isOpen:1"><span>图片文件上传</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'图片文件下载',page:'opt_get.htm',isOpen:1"><span>图片文件下载</span></li>
                 </ul>
             </div>
         </div>

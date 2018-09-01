@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpGroupGetAll,ServiceGroupGetAll)
+	plugin.PluginAddService(constant.CmdGroupGetAll,ServiceGroupGetAll)
 }
 
 func ServiceGroupGetAll(m map[string]interface{}) interface{}{

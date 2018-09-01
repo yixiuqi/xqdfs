@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	plugin.PluginAddService(constant.HttpStoreConf,ServiceStoreConf)
+	plugin.PluginAddService(constant.CmdStoreConf,ServiceStoreConf)
 }
 
 /**

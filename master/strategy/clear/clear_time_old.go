@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 	"math"
+	"fmt"
 
 	"xqdfs/proxy"
 	"xqdfs/errors"
@@ -17,7 +18,7 @@ import (
 )
 
 const(
-	OrderClearThreshold = "OrderClearThreshold"		// 最少预留多少卷 default:5
+	ClearTimeOldClearThreshold = "ClearTimeOldClearThreshold"		// 最少预留多少卷 default:5
 )
 
 type VolumeItem struct {
@@ -36,7 +37,7 @@ type ClearTimeOld struct {
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
-	orderClearThreshold int
+	clearTimeOldThreshold int
 }
 
 func NewClearTimeOld() (*ClearTimeOld,error) {
@@ -64,11 +65,11 @@ func NewClearTimeOld() (*ClearTimeOld,error) {
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	orderClearThreshold:=5
-	value,err:=conf.ParamGet(OrderClearThreshold)
+	clearTimeOldThreshold:=5
+	value,err:=conf.ParamGet(ClearTimeOldClearThreshold)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(OrderClearThreshold,"5")
+			err=conf.ParamSet(ClearTimeOldClearThreshold,"5")
 			if err!=nil{
 				return nil,err
 			}
@@ -77,22 +78,23 @@ func NewClearTimeOld() (*ClearTimeOld,error) {
 			return nil,err
 		}
 	}else{
-		orderClearThreshold,err=helper.StringToInt(value)
+		clearTimeOldThreshold,err=helper.StringToInt(value)
 		if err!=nil{
 			log.Error(err)
 			return nil,err
 		}
 	}
 
-	log.Infof("%s[%d]",OrderClearThreshold,orderClearThreshold)
+	log.Infof("%s[%d]",ClearTimeOldClearThreshold,clearTimeOldThreshold)
 	t:=&ClearTimeOld{
 		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		signal:make(chan int, 1),
 		isRun:true,
-		orderClearThreshold:orderClearThreshold,
+		clearTimeOldThreshold:clearTimeOldThreshold,
 	}
+	ServiceClearTimeOldSetup(t)
 	go t.task()
 	return t,nil
 }
@@ -166,7 +168,7 @@ func (this *ClearTimeOld) process() {
 	}
 
 	log.Debugf("available volume count[%d] util[%v]",free,u.Util)
-	if free>this.orderClearThreshold {
+	if free>this.clearTimeOldThreshold {
 		return
 	}
 
@@ -174,6 +176,21 @@ func (this *ClearTimeOld) process() {
 	err:=this.proxyStorage.StorageVolumeClear(storageAddr,volumeId,true)
 	if err!=nil {
 		log.Errorf("send auto clear command error[%v]",err)
+	}
+}
+
+func (this *ClearTimeOld) ClearTimeOldClearThresholdGet() int {
+	return this.clearTimeOldThreshold
+}
+
+func (this *ClearTimeOld) ClearTimeOldClearThresholdSet(clearTimeOldThreshold int) error {
+	err:=this.configureServer.ParamSet(ClearTimeOldClearThreshold,fmt.Sprintf("%d",clearTimeOldThreshold))
+	if err!=nil{
+		log.Error(err)
+		return err
+	}else{
+		this.clearTimeOldThreshold=clearTimeOldThreshold
+		return nil
 	}
 }
 
