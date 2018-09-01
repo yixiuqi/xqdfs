@@ -38,6 +38,7 @@ type ClearTimeOld struct {
 	isRun bool
 	signal chan int
 	clearTimeOldThreshold int
+	curAvailableVolume int
 }
 
 func NewClearTimeOld() (*ClearTimeOld,error) {
@@ -168,6 +169,7 @@ func (this *ClearTimeOld) process() {
 	}
 
 	log.Debugf("available volume count[%d] util[%v]",free,u.Util)
+	this.curAvailableVolume=free
 	if free>this.clearTimeOldThreshold {
 		return
 	}
@@ -177,6 +179,10 @@ func (this *ClearTimeOld) process() {
 	if err!=nil {
 		log.Errorf("send auto clear command error[%v]",err)
 	}
+}
+
+func (this *ClearTimeOld) CurAvailableVolume() int {
+	return this.curAvailableVolume
 }
 
 func (this *ClearTimeOld) ClearTimeOldClearThresholdGet() int {
