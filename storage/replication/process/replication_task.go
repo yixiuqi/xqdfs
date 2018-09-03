@@ -1,18 +1,18 @@
 package process
 
 import (
+	"io"
 	"os"
 	"sync"
 	"time"
 
+	"xqdfs/proxy"
+	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
-	"xqdfs/proxy"
 	"xqdfs/storage/store"
-	"xqdfs/storage/replication/binlog"
 	"xqdfs/storage/needle"
-	"xqdfs/errors"
-	"io"
+	"xqdfs/storage/replication/binlog"
 )
 
 type ReplicationTask struct {

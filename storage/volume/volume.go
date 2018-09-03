@@ -1,20 +1,20 @@
 package volume
 
 import (
-	"sync"
+	"os"
 	"fmt"
+	"sync"
 	"time"
 	"sync/atomic"
-	"os"
+	"path/filepath"
 
-	"xqdfs/utils/log"
 	"xqdfs/errors"
+	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
+	"xqdfs/storage/conf"
 	"xqdfs/storage/block"
 	"xqdfs/storage/index"
-	"xqdfs/storage/conf"
 	"xqdfs/storage/needle"
-	"path/filepath"
 	myos "xqdfs/storage/os"
 
 	"github.com/BurntSushi/toml"

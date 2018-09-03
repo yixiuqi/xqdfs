@@ -1,8 +1,8 @@
 package process
 
 import (
-	"xqdfs/storage/replication/binlog"
 	"xqdfs/utils/log"
+	"xqdfs/storage/replication/binlog"
 )
 
 type ReplicationDelete struct {

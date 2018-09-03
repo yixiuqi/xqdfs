@@ -1,9 +1,9 @@
 package order
 
 import (
+	"xqdfs/errors"
 	"xqdfs/discovery/defines"
 	"xqdfs/master/strategy/tool"
-	"xqdfs/errors"
 	strategydef "xqdfs/master/strategy/defines"
 )
 

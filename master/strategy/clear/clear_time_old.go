@@ -12,9 +12,9 @@ import (
 	"xqdfs/discovery"
 	"xqdfs/configure"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/storage/block"
 	"xqdfs/master/resource/usage"
-	"xqdfs/utils/plugin"
 )
 
 const(

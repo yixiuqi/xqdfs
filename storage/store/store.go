@@ -1,23 +1,23 @@
 package store
 
 import (
-	"sync"
 	"os"
-	"io/ioutil"
+	"fmt"
+	"time"
+	"sync"
 	"strings"
 	"strconv"
-	"fmt"
+	"io/ioutil"
 	"path/filepath"
-	"time"
 
+	"xqdfs/errors"
+	"xqdfs/utils/log"
+	"xqdfs/utils/stat"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/conf"
 	"xqdfs/storage/block"
 	"xqdfs/storage/volume"
-	"xqdfs/storage/conf"
-	"xqdfs/utils/log"
-	"xqdfs/errors"
-	"xqdfs/utils/stat"
 	myos "xqdfs/storage/os"
-	"xqdfs/utils/helper"
 )
 
 // Store get all volume meta data from a index file. index contains volume id,

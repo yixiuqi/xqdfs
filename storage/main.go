@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	_"xqdfs/storage/service"
 	"xqdfs/errors"
+	"xqdfs/channel"
 	"xqdfs/configure"
 	"xqdfs/utils/log"
 	"xqdfs/storage/conf"
@@ -14,7 +14,7 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/configure/defines"
 	"xqdfs/storage/replication"
-	"xqdfs/channel"
+	_"xqdfs/storage/service"
 )
 
 const(
