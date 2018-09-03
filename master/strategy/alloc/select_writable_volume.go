@@ -81,7 +81,12 @@ func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,o
 		i := helper.Uint32n(uint32(len(su)))
 		objStorage:=su[i]
 		for vid:=id[i];vid<len(objStorage.VolumeUsage);vid+=tolerant {
-			//remove
+			//正在压缩
+			if objStorage.VolumeUsage[vid].Compact {
+				continue
+			}
+
+			//过滤
 			isRemove:=false
 			for _,r:=range removeVolumes {
 				if r.GroupId==g.Id &&r.StorageId==objStorage.Id && r.VolumeId==objStorage.VolumeUsage[vid].Id{
