@@ -18,6 +18,7 @@ import (
 const(
 	CompactExcessThresholdValue = "CompactExcessThresholdValue"
 	CompactExcessThresholdMinCount = "CompactExcessThresholdMinCount"
+	CompactExcessThresholdMinUtil = 0.5
 )
 
 type CompactExcessThreshold struct {
@@ -138,23 +139,26 @@ func (this *CompactExcessThreshold) process() {
 	}
 
 	for _,g:=range u.Usage {
-		for _,s:=range g.StorageUsage {
-			for _,v:=range s.VolumeUsage {
-				if v.Compact || v.ImageCount<uint64(this.minCount) {
-					continue
-				}
+		if len(g.StorageUsage)==0 {
+			continue
+		}
 
-				var util float64
-				if v.ImageCount ==0 {
-					util=0
-				}else{
-					util=float64(v.ImageDelCount)/float64(v.ImageCount)
-					//log.Debugf("storage[%s] volume[%d] del[%v][%v]",s.Addr,v.Id,util,this.excessThreshold)
-				}
-				if util>this.excessThreshold {
-					log.Debugf("auto compact [%s] volume[%d] util[%v]",s.Addr,v.Id,util)
-					this.proxyStorage.StorageVolumeCompact(s.Addr,v.Id,true)
-				}
+		su:=g.StorageUsage[0]
+		for _,v:=range su.VolumeUsage {
+			if v.Compact || v.ImageCount<uint64(this.minCount) || v.Util < CompactExcessThresholdMinUtil {
+				continue
+			}
+
+			var util float64
+			if v.ImageCount ==0 {
+				util=0
+			}else{
+				util=float64(v.ImageDelCount)/float64(v.ImageCount)
+				//log.Debugf("storage[%s] volume[%d] del[%v][%v]",s.Addr,v.Id,util,this.excessThreshold)
+			}
+			if util>this.excessThreshold {
+				log.Debugf("auto compact [%s] volume[%d] util[%v]",su.Addr,v.Id,util)
+				this.proxyStorage.StorageVolumeCompact(su.Addr,v.Id,true)
 			}
 		}
 	}

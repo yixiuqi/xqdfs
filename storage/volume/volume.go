@@ -35,7 +35,6 @@ type Volume struct {
 	Compact       bool   		`json:"compact"`
 	CompactOffset uint32 		`json:"compactOffset"`
 	CompactTime   int64  		`json:"compactTime"`
-	compactKeys   []int64
 	// status
 	closed bool
 }
@@ -50,7 +49,6 @@ func NewVolume(id int32, bfile, ifile string, c *conf.Config) (v *Volume, err er
 		Compact:false,
 		CompactOffset:0,
 		CompactTime:0,
-		compactKeys:[]int64{},
 		closed:false,
 	}
 	if v.Block, err = block.NewSuperBlock(bfile, c); err != nil {
@@ -259,7 +257,6 @@ func (v *Volume) Clear() (err error) {
 	v.Compact = false
 	v.CompactOffset = 0
 	v.CompactTime = 0
-	v.compactKeys = []int64{}
 	v.closed = false
 	if v.Block, err = block.NewSuperBlock(v.Block.File, v.conf); err != nil {
 		return err
@@ -369,13 +366,13 @@ func (v *Volume) Read(key int64, cookie int32) (n *needle.Needle, err error) {
 	return
 }
 
-// Write add a needle, if key exists append to super block, then update
-// needle cache offset to new offset.
 func (v *Volume) Write(n *needle.Needle) (err error) {
+	v.lock.Lock()
+	defer v.lock.Unlock()
+
 	var (
 		ok     bool
 	)
-	v.lock.Lock()
 	_, ok = v.needles[n.Key]
 	if ok {
 		err=errors.ErrNeedleExist
@@ -390,7 +387,7 @@ func (v *Volume) Write(n *needle.Needle) (err error) {
 			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
 		}
 	}
-	v.lock.Unlock()
+
 	if err == nil {
 		atomic.AddUint64(&v.Stats.TotalWriteProcessed, 1)
 		atomic.AddUint64(&v.Stats.TotalWriteBytes, uint64(n.TotalSize))
@@ -399,12 +396,14 @@ func (v *Volume) Write(n *needle.Needle) (err error) {
 }
 
 func (v *Volume) Rewrite(n *needle.Needle) (err error) {
+	v.lock.Lock()
+	defer v.lock.Unlock()
+
 	var (
 		ok     bool
 		nc     int64
 		offset uint32
 	)
-	v.lock.Lock()
 	n.Offset = v.Block.Offset
 	if err = v.Block.Write(n); err == nil {
 		if err = v.Indexer.Write(n.Key, n.Offset, n.TotalSize); err == nil {
@@ -413,7 +412,7 @@ func (v *Volume) Rewrite(n *needle.Needle) (err error) {
 			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
 		}
 	}
-	v.lock.Unlock()
+
 	if err == nil {
 		if ok {
 			log.Debug("needle is rewrite,key:",n.Key)
@@ -441,27 +440,25 @@ func (v *Volume) del(offset uint32) (err error) {
 }
 
 func (v *Volume) Delete(key int64) (err error) {
+	v.lock.Lock()
+	defer v.lock.Unlock()
+
 	var (
 		ok     bool
 		nc     int64
 		size   int32
 		offset uint32
 	)
-	v.lock.Lock()
 	if nc, ok = v.needles[key]; ok {
 		if offset, size = needle.Cache(nc); offset != needle.CacheDelOffset {
 			v.needles[key] = needle.NewCache(needle.CacheDelOffset, size)
-			// when in compact, must save all del operations.
-			if v.Compact {
-				v.compactKeys = append(v.compactKeys, key)
-			}
 		} else {
 			err = errors.ErrNeedleDeleted
 		}
 	} else {
 		err = errors.ErrNeedleNotExist
 	}
-	v.lock.Unlock()
+
 	if err == nil {
 		err = v.del(offset)
 	}
@@ -504,19 +501,13 @@ func (v *Volume) StartCompact(nv *Volume) (err error) {
 }
 
 func (v *Volume) StopCompact(nv *Volume) (err error) {
-	var key int64
 	v.lock.Lock()
 	defer v.lock.Unlock()
+
 	if nv != nil {
 		if err = v.compact(nv); err != nil {
 			log.Error(err)
 			goto free
-		}
-		for _, key = range v.compactKeys {
-			if err = nv.Delete(key); err != nil {
-				log.Error(err)
-				goto free
-			}
 		}
 
 		v.Block, nv.Block = nv.Block, v.Block
@@ -530,7 +521,6 @@ free:
 	v.Compact = false
 	v.CompactOffset = 0
 	v.CompactTime = 0
-	v.compactKeys = v.compactKeys[:0]
 	return
 }
 
