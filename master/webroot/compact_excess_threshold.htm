@@ -15,19 +15,22 @@
     <h2>策略说明</h2>
     <p>(图片删除数目/图片总数)超过阈值后进行卷压缩,执行策略的前提是卷中图片总数需要达到一定数量。</p>
     <div style="margin:20px 0;"></div>
-    <div class="easyui-panel" title="策略相关参数" style="width:100%;max-width:310px;padding:15px 15px;">
+    <div class="easyui-panel" title="策略相关参数" style="width:100%;max-width:550px;padding:15px 15px;">
         <table>
             <tr>
                 <td height="30px">策略阈值:</td>
                 <td><input id="threshold" class="easyui-numberbox" style="width:150px;" data-options="min:0.1,max:1,precision:2"></input></td>
+                <td><font color="#007ACC">&nbsp;&nbsp;(图片删除数目/图片总数)值大于多少时进行卷压缩</font></td>
             </tr>
             <tr>
-                <td height="30px">卷中图片总数底限:</td>
+                <td height="30px">图片总数底限:</td>
                 <td><input id="minCount" class="easyui-numberbox" style="width:150px;" data-options="min:10000"></input></td>
+                <td><font color="#007ACC">&nbsp;&nbsp;卷中图片总数达到多少时才进行卷压缩</font></td>
             </tr>
             <tr>
-                <td height="40px"></td>
-                <td align="right">
+                <td></td>
+                <td></td>
+                <td align="right" valign="bottom" height="30px">
                     <a href="#" class="easyui-linkbutton" onClick="btnExcessThresholdConfigGet()">获取参数</a>
                     <a href="#" class="easyui-linkbutton" onClick="btnExcessThresholdConfigSet()">设置参数</a>
                 </td>

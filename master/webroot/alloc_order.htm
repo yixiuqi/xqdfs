@@ -15,19 +15,22 @@
     <h2>策略说明</h2>
     <p>按Group Id和Storage Id排序，顺序分配Volume用于写操作。</p>
     <div style="margin:20px 0;"></div>
-    <div class="easyui-panel" title="策略相关参数" style="width:100%;max-width:310px;padding:15px 15px;">
+    <div class="easyui-panel" title="策略相关参数" style="width:100%;max-width:500px;padding:15px 15px;">
         <table>
             <tr>
                 <td height="30px">卷预留空间(Bytes):</td>
                 <td><input id="minFreeSpace" class="easyui-numberbox" style="width:150px;" data-options="min:104857600"></input></td>
+                <td><font color="#007ACC">&nbsp;&nbsp;卷至少有多少可用空间才能被选中</font></td>
             </tr>
             <tr>
-                <td height="30px">同时并行写多少卷:</td>
+                <td height="30px">并行写卷数目:</td>
                 <td><input id="consumeCount" class="easyui-numberbox" style="width:150px;" data-options="min:1"></input></td>
+                <td><font color="#007ACC">&nbsp;&nbsp;并行选择多少卷用于写操作</font></td>
             </tr>
             <tr>
-                <td height="40px"></td>
-                <td align="right">
+                <td></td>
+                <td></td>
+                <td align="right" valign="bottom" height="30px">
                     <a href="#" class="easyui-linkbutton" onClick="btnAllocOrderConfigGet()">获取参数</a>
                     <a href="#" class="easyui-linkbutton" onClick="btnAllocOrderConfigSet()">设置参数</a>
                 </td>
