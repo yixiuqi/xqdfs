@@ -25,31 +25,14 @@ var(
 	lock sync.RWMutex
 )
 /**
- * @api {post} /volume/compact [Volume]块回收
- * @apiDescription [Volume]块回收
+ * @api {post} /volume/compact [Volume]卷压缩
+ * @apiDescription [Volume]卷压缩
  * @apiGroup Storage
  * @apiVersion 1.0.0
- * @apiParam {string} [seq] 会话序号(非必填)
  * @apiParam {int32} vid volume id
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
- * @apiError (失败返回参数) {int32} result 1表示失败
+ * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
- * @apiExample 使用示例:
- * http://ip:port/volume/compact
-{
-	"seq": "f428b43e-5bc1-4bea-a93a-ed177ca4552e"
-}
- * @apiErrorExample 失败返回示例
-{
-    "info": "查询错误",
-    "result": 1
-}
-
- * @apiSuccessExample 成功返回示例
-{
-    "info": "success",
-    "result": 0
-}
 * */
 func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 	var storage *store.Store
@@ -132,31 +115,14 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 }
 
 /**
- * @api {post} /volume/compact/status [Volume]块回收状态查询
- * @apiDescription [Volume]块回收状态查询
+ * @api {post} /volume/compact/status [Volume]卷压缩状态查询
+ * @apiDescription [Volume]卷压缩状态查询
  * @apiGroup Storage
  * @apiVersion 1.0.0
- * @apiParam {string} [seq] 会话序号(非必填)
  * @apiParam {int32} vid volume id
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
- * @apiError (失败返回参数) {int32} result 1表示失败
+ * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
- * @apiExample 使用示例:
- * http://ip:port/volume/compact/status
-{
-	"seq": "f428b43e-5bc1-4bea-a93a-ed177ca4552e"
-}
- * @apiErrorExample 失败返回示例
-{
-    "info": "查询错误",
-    "result": 1
-}
-
- * @apiSuccessExample 成功返回示例
-{
-    "info": "success",
-    "result": 0
-}
 * */
 func ServiceVolumeCompactStatus(m map[string]interface{}) interface{}{
 	var storage *store.Store

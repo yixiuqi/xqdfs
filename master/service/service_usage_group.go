@@ -19,31 +19,14 @@ func init() {
  * @apiDescription [Usage]所有组存储信息
  * @apiGroup Master
  * @apiVersion 1.0.0
- * @apiParam {string} [seq] 会话序号(非必填)
  * @apiParam {string} [type] 排序类型(非必填)
 						<br>空:不排序
 						<br>sortById:按id从小到大排序
 						<br>sortBySize:按使用情况从小到大排序
 						<br>sortByWriteTps:按写TPS从小到大排序
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
- * @apiError (失败返回参数) {int32} result 1表示失败
+ * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
- * @apiExample 使用示例:
- * http://ip:port/usage/groups
-{
-	"seq": "f428b43e-5bc1-4bea-a93a-ed177ca4552e"
-}
- * @apiErrorExample 失败返回示例
-{
-    "info": "查询错误",
-    "result": 1
-}
-
- * @apiSuccessExample 成功返回示例
-{
-    "info": "success",
-    "result": 0
-}
 * */
 func ServiceUsageGroups(m map[string]interface{}) interface{}{
 	var discoveryServer *discovery.DiscoveryServer
