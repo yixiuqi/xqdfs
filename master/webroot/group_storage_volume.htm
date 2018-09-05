@@ -50,11 +50,11 @@
 
     <script>
         function storageFormat(val,row,index){
-            return '<a href="#" onclick="btnStorageVolumeClear('+row.id+')">清空</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageVolumeCompact('+row.id+')">压缩</a>';  
+            return '<a href="#" onclick="btnStorageVolumeClear('+row.id+')">回收</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageVolumeCompact('+row.id+')">压缩</a>';  
         }
         
         function btnStorageVolumeClear(volumeId){
-            $.messager.confirm('提示', '是否删除清空卷?', function(r){
+            $.messager.confirm('提示', '是否回收卷?', function(r){
                 if (r){
                     result = httpStorageVolumeClear(getUrlParam('storageId'),volumeId);
                     if(result[0]==0){
@@ -68,7 +68,7 @@
         }
 
         function btnStorageVolumeCompact(volumeId){
-            $.messager.confirm('提示', '是否压缩清空卷?', function(r){
+            $.messager.confirm('提示', '是否压缩卷?', function(r){
                 if (r){
                     result = httpStorageVolumeCompact(getUrlParam('storageId'),volumeId);
                     if(result[0]==0){
