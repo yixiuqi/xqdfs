@@ -71,7 +71,18 @@ Param = "192.168.10.25:18888"   SSDB地址
 **停止节点 ./Storage.sh stop**
 
 # 三、系统配置
-Storage、Master、SSDB都启动后，打开浏览器输入   http://192.168.10.25:10087/page/index.htm  
+Storage、Master、SSDB都启动后，打开浏览器输入http://192.168.10.25:10087/page/index.htm  
 其中IP和端口为Master对应地址，网页界面如下： 
 ![](doc/config1.png)
-  
+
+#### 存储节点信息浏览
+![](doc/config2.png)
+系统启动完成后可以在存储节点配置中看到所有存储节点信息：
+* 节点编号(对应配置文件Server.Id)
+* 节点地址(对应配置文件Server.Host和Server.Port)
+* 节点描述(对应配置文件Server.Desc)
+* 总容量(对应配置文件Dir.Capacity)
+* 已经使用空间
+* 使用率
+* 图片总数
+* 图片删除总数
