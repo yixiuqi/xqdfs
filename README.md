@@ -69,3 +69,9 @@ Param = "192.168.10.25:18888"   SSDB地址
 
 **启动节点 ./Storage.sh start**  
 **停止节点 ./Storage.sh stop**
+
+# 三、系统配置
+Storage、Master、SSDB都启动后，打开浏览器输入   http://192.168.10.25:10087/page/index.htm  
+其中IP和端口为Master对应地址，网页界面如下： 
+![](doc/config1.png)
+  
