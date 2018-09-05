@@ -39,6 +39,12 @@ type ClearTimeOld struct {
 	signal chan int
 	clearTimeOldThreshold int
 	curAvailableVolume int
+
+	oldGroupId int32
+	oldStorageId int32
+	oldStorageAddr string
+	oldVolumeId int32
+	oldTime string
 }
 
 func NewClearTimeOld() (*ClearTimeOld,error) {
@@ -136,12 +142,7 @@ func (this *ClearTimeOld) process() {
 		return
 	}
 
-	var groupId int32
-	var storageId int32
-	var storageAddr string
-	var volumeId int32
 	var timeMin int32 = math.MaxInt32
-	var timeString string
 	free:=0
 
 	for _,g:=range u.Usage {
@@ -153,16 +154,16 @@ func (this *ClearTimeOld) process() {
 			for _,v:=range s.VolumeUsage {
 				if v.Used==block.HeaderSize {
 					free++
-				}
-
-				time:=helper.TimeFromKey(v.LastKey)
-				if time<timeMin && time !=0 {
-					groupId=g.Id
-					storageId=s.Id
-					storageAddr=s.Addr
-					volumeId=v.Id
-					timeMin=time
-					timeString=helper.TimeStringFromKey(v.LastKey)
+				}else{
+					time:=helper.TimeFromKey(v.LastKey)
+					if time<timeMin && time !=0 {
+						this.oldGroupId=g.Id
+						this.oldStorageId=s.Id
+						this.oldStorageAddr=s.Addr
+						this.oldVolumeId=v.Id
+						timeMin=time
+						this.oldTime=helper.TimeStringFromKey(v.LastKey)
+					}
 				}
 			}
 		}
@@ -174,8 +175,9 @@ func (this *ClearTimeOld) process() {
 		return
 	}
 
-	log.Debugf("auto clear group[%d] storage[%d][%s] volume[%d][%s]",groupId,storageId,storageAddr,volumeId,timeString)
-	err:=this.proxyStorage.StorageVolumeClear(storageAddr,volumeId,true)
+	log.Debugf("auto clear group[%d] storage[%d][%s] volume[%d][%s]",
+		this.oldGroupId,this.oldStorageId,this.oldStorageAddr,this.oldVolumeId,this.oldTime)
+	err:=this.proxyStorage.StorageVolumeClear(this.oldStorageAddr,this.oldVolumeId,true)
 	if err!=nil {
 		log.Errorf("send auto clear command error[%v]",err)
 	}

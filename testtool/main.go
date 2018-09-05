@@ -30,8 +30,9 @@ func main() {
 				str,ret:=testServiceStorageUpload(k,img)
 				json,_:=gabs.ParseJSON([]byte(str))
 				url:=json.Path("url").Data().(string)
-				testServiceStorageDelete(url)
+				//testServiceStorageDelete(url)
 				if (k%1000)==0{
+					url=url
 					if ret==true{
 						fmt.Println(count/1024/1024,"M ",str)
 					}
