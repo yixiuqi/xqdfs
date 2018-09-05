@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"bytes"
 	"math/rand"
+	"xqdfs/utils/log"
 )
 
 var (
@@ -25,28 +26,17 @@ func TestSuperBlock(t *testing.T) {
 	var (
 		b                  *SuperBlock
 		n                  *needle.Needle
-		//offset, v2, v3, v4 uint32
 		err                error
 		buf                = &bytes.Buffer{}
-		//needles            = make(map[int64]int64)
 		data               = []byte("test")
 		file               = "./test.block"
 	)
-
+	log.SetLevel("error")
 	os.Remove(file)
 	defer os.Remove(file)
-	{
-		fmt.Println("--------------------------------------------------------------------------- test new block file")
-		if b, err = NewSuperBlock(file, testConf); err != nil {
-			t.Errorf("NewSuperBlock(\"%s\") error(%v)", file, err)
-			t.FailNow()
-		}
-		fmt.Println(b.String())
-		b.Close()
-	}
 
 	{
-		fmt.Println("--------------------------------------------------------------------------- test parse block file")
+		fmt.Println("--------------------------------------------------------------------------- test new block file")
 		if b, err = NewSuperBlock(file, testConf); err != nil {
 			t.Errorf("NewSuperBlock(\"%s\") error(%v)", file, err)
 			t.FailNow()

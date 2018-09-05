@@ -5,6 +5,7 @@ import (
 	"testing"
 	"os"
 	"fmt"
+	"xqdfs/utils/log"
 )
 
 var (
@@ -24,6 +25,7 @@ func TestIndex(t *testing.T) {
 		err     error
 		file    = "./test.idx"
 	)
+	log.SetLevel("error")
 	os.Remove(file)
 	defer os.Remove(file)
 
