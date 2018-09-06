@@ -9,7 +9,7 @@
 * Client：客户端，上传下载数据的服务器，也就是我们自己的项目所部署在的服务器。
 
 ### 2、客户端SDK
-goland:[说明文档](https://github.com/yixiuqi/xqdfs-client-go/blob/master/README.md)
+goland:[[SDK及说明文档]](https://github.com/yixiuqi/xqdfs-client-go/blob/master/README.md)
 
 # 二、安装XQDFS环境  
 ### 1、安装SSDB 
