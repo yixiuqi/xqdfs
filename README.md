@@ -1,4 +1,4 @@
-[![支持](https://img.shields.io/badge/QQ-30880136-brightgreen.svg)]
+![支持](https://img.shields.io/badge/QQ-30880136-brightgreen.svg "支持")
 
 # 一、XQDFS介绍  
 ### 1、简介
