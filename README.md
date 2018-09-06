@@ -78,11 +78,15 @@ Storage、Master、SSDB都启动后，打开浏览器输入http://192.168.10.25:
 #### 存储节点信息浏览
 ![](doc/config2.png)
 系统启动完成后可以在存储节点配置中看到所有存储节点信息：
-* 节点编号(对应配置文件Server.Id)
-* 节点地址(对应配置文件Server.Host和Server.Port)
-* 节点描述(对应配置文件Server.Desc)
-* 总容量(对应配置文件Dir.Capacity)
-* 已经使用空间
+* 节点编号(对应Storage配置文件Server.Id)
+* 节点地址(对应Storage配置文件Server.Host和Server.Port)
+* 节点描述(对应Storage配置文件Server.Desc)
+* 总容量(GB)(对应Storage配置文件Dir.Capacity)
+* 已经使用空间(GB)
 * 使用率
 * 图片总数
 * 图片删除总数
+
+#### 配置存储组
+![](doc/config3.png)
+添加完组后在组中添加存储节点

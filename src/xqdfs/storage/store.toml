@@ -30,7 +30,7 @@ Path = ["volume_data"]
 Capacity = [512]
 
 [Configure]
-Param = "192.168.10.25:18888,192.168.10.31:18888"
+Param = "192.168.10.90:18888,192.168.10.31:18888"
 
 [Replication]
 Path = "binlog"
