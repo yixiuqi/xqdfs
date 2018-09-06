@@ -6,13 +6,13 @@ import (
 
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
 	"xqdfs/discovery"
 	"xqdfs/utils/plugin"
 	"xqdfs/utils/helper"
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
-	"xqdfs/utils/log"
 )
 
 func init() {
