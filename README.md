@@ -89,4 +89,6 @@ Storage、Master、SSDB都启动后，打开浏览器输入http://192.168.10.25:
 
 #### 配置存储组
 ![](doc/config3.png)
+
 添加完组后在组中添加存储节点
+![](doc/config4.png)
