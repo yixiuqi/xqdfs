@@ -24,6 +24,10 @@ func (this *ConfigureServer) ParamSet(key string,value string) error {
 	return this.configure.ParamSet(key,value)
 }
 
+func (this *ConfigureServer) ParamSetx(key string,value string,ttl int) error {
+	return this.configure.ParamSetx(key,value,ttl)
+}
+
 func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {
 	return this.configure.StorageAdd(s)
 }

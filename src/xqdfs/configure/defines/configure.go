@@ -8,6 +8,7 @@ const(
 type Configure interface {
 	ParamGet(key string) (string,error)
 	ParamSet(key string,value string) error
+	ParamSetx(key string,value string,ttl int) error
 	StorageAdd(s *StorageDal) error
 	StorageRemove(sid int32) error
 	StorageGet(sid int32) (*StorageDal,error)

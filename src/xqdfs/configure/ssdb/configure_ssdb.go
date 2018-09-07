@@ -26,6 +26,11 @@ func (this *ConfigureSSDB) ParamSet(key string,value string) error {
 	return kv.Set(key,value)
 }
 
+func (this *ConfigureSSDB) ParamSetx(key string,value string,ttl int) error {
+	kv:=NewSSDBKV()
+	return kv.Setx(key,value,ttl)
+}
+
 func (this *ConfigureSSDB) StorageAdd(s *defines.StorageDal) (err error) {
 	hset:=NewSSDBHash()
 	var param []byte

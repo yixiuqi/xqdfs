@@ -37,3 +37,18 @@ func (this *SSDBKV) Set(key string,value string) error{
 		return nil
 	}
 }
+
+func (this *SSDBKV) Setx(key string,value string,ttl int) error{
+	link, err := SSDBConnectMgrInstance().getConnect()
+	if err != nil {
+		return err
+	}
+	defer link.close()
+
+	err= link.setx(key,value,ttl)
+	if err != nil {
+		return err
+	}else{
+		return nil
+	}
+}

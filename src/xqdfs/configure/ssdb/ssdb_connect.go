@@ -52,6 +52,17 @@ func (this *SSDBConnect) set(key string, val string) error {
 	return fmt.Errorf("bad response")
 }
 
+func (this *SSDBConnect) setx(key string, val string,ttl int) error {
+	resp, err := this.do("setx", key, val, ttl)
+	if err != nil {
+		return err
+	}
+	if len(resp) == 2 && resp[0] == "ok" {
+		return nil
+	}
+	return fmt.Errorf("bad response")
+}
+
 func (this *SSDBConnect) get(key string) (string, error) {
 	resp, err := this.do("get", key)
 	if err != nil {
