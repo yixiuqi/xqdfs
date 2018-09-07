@@ -6,34 +6,43 @@ import (
 	"xqdfs/master/strategy/clear"
 	"xqdfs/master/strategy/defines"
 	"xqdfs/master/strategy/compact"
+	"xqdfs/master/strategy/leader"
 )
 
 type AllocStrategyServer struct {
+	leaderSelect defines.Leader
 	allocStrategy defines.AllocStrategy
 	clearStrategy defines.ClearStrategy
 	compactStrategy defines.CompactStrategy
 }
 
 func NewAllocStrategyServer() (*AllocStrategyServer,error){
+	leaderSelect,err:=leader.NewLeaderSelect()
+	if err!=nil{
+		log.Error(err)
+		return nil,err
+	}
+
 	alloc,err:=order.NewAllocOrder()
 	if err!=nil{
 		log.Error(err)
 		return nil,err
 	}
 
-	clear,err:=clear.NewClearTimeOld()
+	clear,err:=clear.NewClearTimeOld(leaderSelect)
 	if err!=nil{
 		log.Error(err)
 		return nil,err
 	}
 
-	comp,err:=compact.NewCompactExcessThreshold()
+	comp,err:=compact.NewCompactExcessThreshold(leaderSelect)
 	if err!=nil{
 		log.Error(err)
 		return nil,err
 	}
 
 	s:=&AllocStrategyServer{
+		leaderSelect:leaderSelect,
 		allocStrategy:alloc,
 		clearStrategy:clear,
 		compactStrategy:comp,
@@ -58,4 +67,5 @@ func (this *AllocStrategyServer) Stop() {
 	this.allocStrategy.Stop()
 	this.clearStrategy.Stop()
 	this.compactStrategy.Stop()
+	this.leaderSelect.Stop()
 }

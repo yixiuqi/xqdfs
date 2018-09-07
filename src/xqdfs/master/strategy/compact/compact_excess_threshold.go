@@ -13,6 +13,7 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/master/resource/usage"
+	"xqdfs/master/strategy/defines"
 )
 
 const(
@@ -25,6 +26,7 @@ type CompactExcessThreshold struct {
 	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
+	leader defines.Leader
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
@@ -32,7 +34,7 @@ type CompactExcessThreshold struct {
 	minCount int64
 }
 
-func NewCompactExcessThreshold() (*CompactExcessThreshold,error) {
+func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,error) {
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -101,6 +103,7 @@ func NewCompactExcessThreshold() (*CompactExcessThreshold,error) {
 		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
+		leader:leader,
 		signal:make(chan int, 1),
 		isRun:true,
 		excessThreshold:excessThreshold,
@@ -113,7 +116,12 @@ func NewCompactExcessThreshold() (*CompactExcessThreshold,error) {
 
 func (this *CompactExcessThreshold) task() {
 	for this.isRun {
-		this.process()
+		if this.leader.IsLeader() {
+			this.process()
+		}else{
+			log.Debug("not leader")
+		}
+
 		select {
 		case <-time.After(10 * time.Second):
 		case <-this.signal:

@@ -15,6 +15,7 @@ import (
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/block"
 	"xqdfs/master/resource/usage"
+	"xqdfs/master/strategy/defines"
 )
 
 const(
@@ -34,6 +35,7 @@ type ClearTimeOld struct {
 	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
+	leader defines.Leader
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
@@ -47,7 +49,7 @@ type ClearTimeOld struct {
 	oldTime string
 }
 
-func NewClearTimeOld() (*ClearTimeOld,error) {
+func NewClearTimeOld(leader defines.Leader) (*ClearTimeOld,error) {
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -97,6 +99,7 @@ func NewClearTimeOld() (*ClearTimeOld,error) {
 		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
+		leader:leader,
 		signal:make(chan int, 1),
 		isRun:true,
 		clearTimeOldThreshold:clearTimeOldThreshold,
@@ -108,7 +111,12 @@ func NewClearTimeOld() (*ClearTimeOld,error) {
 
 func (this *ClearTimeOld) task() {
 	for this.isRun {
-		this.process()
+		if this.leader.IsLeader() {
+			this.process()
+		}else{
+			log.Debug("not leader")
+		}
+
 		select {
 		case <-time.After(10 * time.Second):
 		case <-this.signal:

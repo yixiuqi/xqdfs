@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/ui/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+</head>
+<body>
+    <div class="easyui-panel" title="主机信息" style="width:100%;max-width:380px;padding:15px 15px;">
+        <table>
+            <tr>
+                <td height="30px">Leader编号:</td>
+                <td><input id="leaderId" class="easyui-textbox" style="width:260px;" disabled=true></input></td>
+            </tr>
+            <tr>
+                <td height="30px">本机编号:</td>
+                <td><input id="meId" class="easyui-textbox" style="width:260px;" disabled=true></input></td>
+            </tr>
+            <tr>
+                <td height="30px">本机地址:</td>
+                <td><input id="addr" class="easyui-textbox" style="width:200px;" disabled=true></input></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="right" valign="bottom" height="30px">
+                    <a href="#" class="easyui-linkbutton" onClick="btnLeaderGet()">主机查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function btnLeaderGet(){
+            httpLeaderGet()
+        }
+
+        function httpLeaderGet(){
+            var error="null"
+            $.ajax({
+                url: "/strategy/leader/get",  
+                type: "POST",
+                data: "",
+                dataType:"json", 
+                success: function( response ) {
+                    if(response.result==0){
+                        $('#leaderId').textbox('setValue', response.leaderId);
+                        $('#meId').textbox('setValue', response.meId);
+                        $('#addr').textbox('setValue', response.addr);
+                    }else{
+                        error=response.info
+                    }            
+                },
+                error: function( jqXHR, textStatus, errorThrown ) {
+                }
+            });
+        }
+
+        $(function(){
+            httpLeaderGet()
+        });
+    </script>
+</body>
+</html>
