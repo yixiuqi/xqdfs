@@ -12,7 +12,7 @@ import (
 	"xqdfs/storage/replication"
 )
 
-func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,replicationServer *replication.ReplicationServer,httpServer *channel.HttpServer) {
+func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,replicationServer *replication.ReplicationServer,server *channel.Server) {
 	var (
 		c chan os.Signal
 		s os.Signal
@@ -28,7 +28,7 @@ func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,r
 			replicationServer.Stop()
 			store.Close()
 			configureServer.Stop()
-			httpServer.Stop()
+			server.Stop()
 			log.Info("system stop")
 			return
 		case syscall.SIGHUP:

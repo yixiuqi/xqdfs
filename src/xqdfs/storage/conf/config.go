@@ -8,26 +8,23 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
+	"xqdfs/utils/conf"
 	"xqdfs/storage/needle"
 
-	"github.com/BurntSushi/toml"
 	"github.com/Jeffail/gabs"
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	NeedleMaxSize int	`json:"needle_max_size"`
-	Log		  *Log		`json:"-"`
-	Store     *Store	`json:"store"`
-	Block     *Block	`json:"block"`
-	Index     *Index	`json:"index"`
-	Server	  *Server	`json:"http"`
-	Dir 	  *Dir		`json:"dir"`
-	Configure  *Configure 			`json:"-"`
-	Replication	*Replication		`json:"-"`
-}
-
-type Log struct {
-	Level string
+	Log		  *conf.Log			`json:"-"`
+	Server	  *conf.Server		`json:"server"`
+	Configure  *conf.Configure	`json:"-"`
+	NeedleMaxSize int			`json:"needleMaxSize"`
+	Store     *Store			`json:"store"`
+	Block     *Block			`json:"block"`
+	Index     *Index			`json:"index"`
+	Dir 	  *Dir				`json:"dir"`
+	Replication	*Replication	`json:"-"`
 }
 
 type Store struct {
@@ -47,20 +44,9 @@ type Index struct {
 	Syncfilerange bool	`json:"sync_file_range"`
 }
 
-type Server struct {
-	Id int				`json:"id"`
-	Desc string			`json:"desc"`
-	Host string			`json:"host"`
-	Port int			`json:"port"`
-}
-
 type Dir struct {
 	Path []string		`json:"path"`
 	Capacity []int		`json:"capacity"`		//GB
-}
-
-type Configure struct {
-	Param string
 }
 
 type Replication struct {

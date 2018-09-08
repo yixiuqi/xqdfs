@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	_"xqdfs/master/service"
+	"xqdfs/proxy"
+	"xqdfs/channel"
+	"xqdfs/configure"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
-	"xqdfs/proxy"
-	"xqdfs/configure"
 	"xqdfs/master/conf"
-	"xqdfs/master/strategy"
 	"xqdfs/utils/plugin"
-	"xqdfs/channel"
+	"xqdfs/master/strategy"
+	_"xqdfs/master/service"
 )
 
 const(
@@ -29,7 +29,7 @@ func main() {
 		configureServer *configure.ConfigureServer
 		discoveryServer *discovery.DiscoveryServer
 		strategyServer *strategy.AllocStrategyServer
-		httpServer *channel.HttpServer
+		server *channel.Server
 	)
 
 	flag.StringVar(&configFile, "c", "./store.toml", " set master config file path")
@@ -71,14 +71,14 @@ func main() {
 		plugin.PluginAddObject(plugin.PluginStrategyServer,strategyServer)
 	}
 
-	if httpServer, err = channel.NewHttpServer(config.Server.Port); err != nil {
-		log.Errorf("create http server error[%v]",err)
+	if server, err = channel.NewServer(config.Server); err != nil {
+		log.Errorf("create server error[%v]",err)
 		return
 	}
 	log.Info("system start")
 	log.SetLevel(config.Log.Level)
 	go logo()
-	StartSignal(httpServer,configureServer,discoveryServer,strategyServer,proxyStorage)
+	StartSignal(server,configureServer,discoveryServer,strategyServer,proxyStorage)
 }
 
 func logo(){

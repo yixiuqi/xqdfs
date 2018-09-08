@@ -5,26 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"xqdfs/utils/conf"
+
 	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	Log		  *Log
-	Server	  *Server
-	Configure  *Configure
-}
-
-type Log struct {
-	Level string
-}
-
-type Server struct {
-	Host string
-	Port int
-}
-
-type Configure struct {
-	Param string
+	Log		  *conf.Log
+	Server	  *conf.Server
+	Configure  *conf.Configure
 }
 
 func NewConfig(conf string) (c *Config, err error) {

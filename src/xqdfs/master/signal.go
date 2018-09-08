@@ -13,7 +13,7 @@ import (
 	"xqdfs/master/strategy"
 )
 
-func StartSignal(httpServer *channel.HttpServer,
+func StartSignal(server *channel.Server,
 								configureServer *configure.ConfigureServer,
 								discoveryServer *discovery.DiscoveryServer,
 								strategyServer *strategy.AllocStrategyServer,
@@ -35,7 +35,7 @@ func StartSignal(httpServer *channel.HttpServer,
 			proxyStorage.Stop()
 			discoveryServer.Stop()
 			configureServer.Stop()
-			httpServer.Stop()
+			server.Stop()
 			log.Info("system stop")
 			return
 		case syscall.SIGHUP:

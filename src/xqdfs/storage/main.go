@@ -26,7 +26,7 @@ func main() {
 		configFile string
 		config	*conf.Config
 		s	*store.Store
-		httpServer *channel.HttpServer
+		server *channel.Server
 		configureServer *configure.ConfigureServer
 		replicationServer *replication.ReplicationServer
 		err	error
@@ -75,20 +75,20 @@ func main() {
 	}
 
 	if replicationServer, err = replication.NewReplicationServer(config,s,configureServer); err != nil {
-		log.Errorf("sync server init error[%v]",err)
+		log.Errorf("create sync server error[%v]",err)
 		return
 	}else{
 		plugin.PluginAddObject(plugin.PluginReplicationServer,replicationServer)
 	}
 
-	if httpServer, err = channel.NewHttpServer(config.Server.Port); err != nil {
-		log.Errorf("http server init error[%v]",err)
+	if server, err = channel.NewServer(config.Server); err != nil {
+		log.Errorf("create server error[%v]",err)
 		return
 	}
 	log.Info("system start")
 	log.SetLevel(config.Log.Level)
 	go logo()
-	StartSignal(configureServer,s,replicationServer,httpServer)
+	StartSignal(configureServer,s,replicationServer,server)
 }
 
 func logo(){
