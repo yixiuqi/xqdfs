@@ -12,10 +12,23 @@ import (
 	"xqdfs/errors"
 
 	"github.com/Jeffail/gabs"
+	"xqdfs/storage/volume"
+	"sort"
 )
 
 func init() {
 	plugin.PluginAddService(constant.CmdStoreStat,ServiceStoreStat)
+}
+
+type VolumeSortById []*volume.Volume
+func (v VolumeSortById) Len() int {
+	return len(v)
+}
+func (v VolumeSortById) Swap(i, j int){
+	v[i], v[j] = v[j], v[i]
+}
+func (v VolumeSortById) Less(i, j int) bool {
+	return v[j].Id > v[i].Id
 }
 
 /**
@@ -40,7 +53,13 @@ func ServiceStoreStat(m map[string]interface{}) interface{}{
 	jsonStat.Set(storage.FreeId,"freeId")
 
 	jsonStat.Array("volumes")
+	vs:=make([]*volume.Volume,0)
 	for _,v:=range storage.Volumes{
+		vs=append(vs,v)
+	}
+	sort.Sort(VolumeSortById(vs))
+
+	for _,v:=range vs{
 		b,err:=json.Marshal(v)
 		if err==nil{
 			dec := json.NewDecoder(bytes.NewBuffer(b))
