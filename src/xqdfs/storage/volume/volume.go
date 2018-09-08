@@ -376,7 +376,6 @@ func (v *Volume) Write(n *needle.Needle) (err error) {
 	_, ok = v.needles[n.Key]
 	if ok {
 		err=errors.ErrNeedleExist
-		v.lock.Unlock()
 		return
 	}
 
