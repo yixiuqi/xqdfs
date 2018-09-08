@@ -2,8 +2,8 @@
 dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export PATH=/home/yimin/tool/go/bin:$PATH
 export GOPATH=$dir
-rm -rf $dir/bin_master
 mkdir $dir/bin_master
+rm -rf $dir/bin_master/*
 mkdir $dir/bin_master/log
 cd $dir/src/xqdfs/master
 go build -v

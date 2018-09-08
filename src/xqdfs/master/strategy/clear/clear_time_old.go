@@ -151,17 +151,18 @@ func (this *ClearTimeOld) process() {
 	}
 
 	var timeMin int32 = math.MaxInt32
-	free:=0
-
+	freeVolume:=0
+	availableGroup:=0
 	for _,g:=range u.Usage {
 		if g.ReadOnly==true{
 			continue
 		}
+		availableGroup++
 
 		for _,s:=range g.StorageUsage {
 			for _,v:=range s.VolumeUsage {
 				if v.Used==block.HeaderSize {
-					free++
+					freeVolume++
 				}else{
 					time:=helper.TimeFromKey(v.LastKey)
 					if time<timeMin && time !=0 {
@@ -176,10 +177,13 @@ func (this *ClearTimeOld) process() {
 			}
 		}
 	}
+	if availableGroup==0 {
+		return
+	}
 
-	log.Debugf("available volume count[%d] util[%v]",free,u.Util)
-	this.curAvailableVolume=free
-	if free>this.clearTimeOldThreshold {
+	log.Debugf("available volume count[%d] util[%v]",freeVolume,u.Util)
+	this.curAvailableVolume=freeVolume
+	if freeVolume>this.clearTimeOldThreshold {
 		return
 	}
 
