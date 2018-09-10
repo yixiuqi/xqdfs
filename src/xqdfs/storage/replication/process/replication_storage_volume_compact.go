@@ -12,7 +12,7 @@ type ReplicationStorageVolumeCompact struct {
 func (this *ReplicationStorageVolumeCompact) Process(task map[int32]*ReplicationTask) {
 	for _,t:=range task{
 		if t.Online {
-			err:=t.proxyStorage.StorageVolumeClear(t.StorageAddr,this.Vid,false)
+			err:=t.proxyStorage.StorageVolumeCompact(t.StorageAddr,this.Vid,false)
 			if err==nil{
 				return
 			}
