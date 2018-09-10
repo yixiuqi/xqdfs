@@ -26,6 +26,8 @@ type AllocOrder struct {
 	selectWritableVolume *SelectWritableVolume
 	orderMinFreeSpace int64
 	orderConsumeCount int
+
+	uploadErrorProcess *UploadErrorProcess
 }
 
 func NewAllocOrder() (*AllocOrder,error) {
@@ -102,6 +104,7 @@ func NewAllocOrder() (*AllocOrder,error) {
 		selectWritableVolume:NewSelectWritableVolume(discoveryServer),
 		orderMinFreeSpace:orderMinFreeSpace,
 		orderConsumeCount:orderConsumeCount,
+		uploadErrorProcess:NewUploadErrorProcess(proxyStorage),
 	}
 	ServiceAllocOrderSetup(s)
 	return s,nil
@@ -118,6 +121,9 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 	vid:=volume.VolumeId
 	host:=volume.StorageAddr
 	err=this.proxyStorage.Upload(host,vid,key,cookie,img,true)
+	if err==errors.ErrRpc {
+		this.uploadErrorProcess.RollBack(host,vid,key)
+	}
 
 	//try three times
 	count:=0
@@ -133,6 +139,9 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 		vid=volume.VolumeId
 		host=volume.StorageAddr
 		err=this.proxyStorage.Upload(host,vid,key,cookie,img,true)
+		if err==errors.ErrRpc {
+			this.uploadErrorProcess.RollBack(host,vid,key)
+		}
 	}
 
 	if err!=nil{
@@ -161,9 +170,6 @@ func (this *AllocOrder) Read(url string) ([]byte,error) {
 	if err!=nil{
 		log.Debug(err)
 		return nil,err
-	}else{
-		log.Debugf("image source group[%d] storage[%d][%s] volume[%d] key[%d] cookie[%d]",
-			location.GroupId,location.StorageId,source.Host,location.VolumeId,location.Key,location.Cookie)
 	}
 
 	img,err:=this.proxyStorage.Get(source.Host,location.VolumeId,location.Key,location.Cookie)
@@ -205,6 +211,7 @@ func (this *AllocOrder) Delete(url string) error {
 
 func (this *AllocOrder) Stop() {
 	log.Info("AllocOrder stop")
+	this.uploadErrorProcess.Stop()
 }
 
 func (this *AllocOrder) AllocOrderMinFreeSpaceGet() int64 {

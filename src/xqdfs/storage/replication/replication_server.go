@@ -63,6 +63,7 @@ func (this *ReplicationServer) start() {
 		func(){
 			defer helper.HandleErr()
 			this.probe()
+			this.dump()
 			select {
 			case <-time.After(3 * time.Second):
 			case <-this.signal:
@@ -97,6 +98,12 @@ func (this *ReplicationServer) Stop() {
 	if this.proxyStorage!=nil {
 		this.proxyStorage.Stop()
 	}
+}
+
+func (this *ReplicationServer) dump(){
+	this.taskLock.Lock()
+	defer this.taskLock.Unlock()
+	log.Debug(this.task)
 }
 
 func (this *ReplicationServer) probe() {
@@ -192,9 +199,10 @@ func (this *ReplicationServer) updateState() {
 	}
 }
 
-func (this *ReplicationServer) Replication(p process.Replication) {
+func (this *ReplicationServer) Replication(p process.Replication) bool {
 	if this.isRun == false {
-		return
+		log.Debug("this.isRun == false")
+		return false
 	}
 
 	task:=make(map[int32]*process.ReplicationTask)
@@ -204,4 +212,5 @@ func (this *ReplicationServer) Replication(p process.Replication) {
 	}
 	this.taskLock.RUnlock()
 	p.Process(task)
+	return true
 }

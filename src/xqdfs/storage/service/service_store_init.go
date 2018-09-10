@@ -46,8 +46,6 @@ func ServiceStoreInit(m map[string]interface{}) interface{}{
 		if ok && replication==true {
 			p:=&process.ReplicationStorageInit{}
 			replicationServer.Replication(p)
-		}else{
-			log.Debug("receive replication request")
 		}
 		return helper.ResultBuild(constant.Success)
 	}

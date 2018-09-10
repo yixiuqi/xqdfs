@@ -13,20 +13,27 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/Jeffail/gabs"
+	"sync"
 )
 
 type HttpWrap struct {
+	wg *sync.WaitGroup
 	handle plugin.HandlerFunc
 }
 
-func NewHttpWrap(handle plugin.HandlerFunc) *HttpWrap {
+func NewHttpWrap(wg *sync.WaitGroup,handle plugin.HandlerFunc) *HttpWrap {
 	wrap:=&HttpWrap{
+		wg:wg,
 		handle:handle,
 	}
 	return wrap
 }
 
 func (this *HttpWrap) Handler(c *gin.Context) {
+	this.wg.Add(1)
+	defer func(){
+		this.wg.Done()
+	}()
 	defer helper.HandleErr()
 	contentType := c.GetHeader("Content-Type")
 	method:=c.Request.Method

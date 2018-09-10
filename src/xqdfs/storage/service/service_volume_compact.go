@@ -91,8 +91,6 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 				Vid:vid,
 			}
 			replicationServer.Replication(p)
-		}else{
-			log.Debug("receive replication request")
 		}
 
 		defer helper.HandleErr()

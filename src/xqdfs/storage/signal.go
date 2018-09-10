@@ -25,10 +25,10 @@ func StartSignal(configureServer *configure.ConfigureServer,store *store.Store,r
 		log.Infof("get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGINT:
+			server.Stop()
 			replicationServer.Stop()
 			store.Close()
 			configureServer.Stop()
-			server.Stop()
 			log.Info("system stop")
 			return
 		case syscall.SIGHUP:

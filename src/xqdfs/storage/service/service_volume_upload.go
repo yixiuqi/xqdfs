@@ -112,8 +112,6 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 					Image:img,
 				}
 				replicationServer.Replication(p)
-			}else{
-				log.Debugf("receive replication request vid[%d] key[%d]",vid,key)
 			}
 			return helper.ResultBuild(constant.Success)
 		}

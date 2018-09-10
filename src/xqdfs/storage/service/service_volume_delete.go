@@ -57,6 +57,14 @@ func ServiceVolumeDelete(m map[string]interface{}) interface{}{
 	v:= storage.Volumes[vid]
 	if v != nil {
 		err:= v.Delete(key)
+		replication,ok:=m["replication"]
+		if ok && replication==true {
+			p:=&process.ReplicationDelete{
+				Vid:vid,
+				Key:key,
+			}
+			replicationServer.Replication(p)
+		}
 		if err!=nil{
 			log.Error(err)
 			e,ok:=err.(errors.Error)
@@ -66,16 +74,6 @@ func ServiceVolumeDelete(m map[string]interface{}) interface{}{
 				return helper.ResultBuildWithExtInfo(errors.RetOptDelete,err.Error())
 			}
 		}else{
-			replication,ok:=m["replication"]
-			if ok && replication==true {
-				p:=&process.ReplicationDelete{
-					Vid:vid,
-					Key:key,
-				}
-				replicationServer.Replication(p)
-			}else{
-				log.Debug("receive replication request")
-			}
 			return helper.ResultBuild(constant.Success)
 		}
 	} else {

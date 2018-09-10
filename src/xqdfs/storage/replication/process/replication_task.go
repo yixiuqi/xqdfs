@@ -13,6 +13,7 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/needle"
 	"xqdfs/storage/replication/binlog"
+	"fmt"
 )
 
 type ReplicationTask struct {
@@ -255,4 +256,8 @@ func (this *ReplicationTask) process() (err error) {
 		this.curBinlogLine++
 	}
 	return
+}
+
+func (this *ReplicationTask) String() string {
+	return fmt.Sprintf("%s",this.StorageAddr)
 }

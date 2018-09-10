@@ -66,7 +66,6 @@ func (this *LeaderSelect) process() {
 	if err==nil{
 		this.leaderId=v
 		if this.meId==v{
-			log.Debug("me is leader,reset time")
 			this.configureServer.ParamSetx(Leader,this.meId,LeaderTime)
 		}
 	}else{
@@ -76,8 +75,6 @@ func (this *LeaderSelect) process() {
 			this.leaderId=v
 		}
 	}
-
-	log.Debugf("leader[%s] me[%s]",this.leaderId,this.meId)
 }
 
 func (this *LeaderSelect) IsLeader() bool {

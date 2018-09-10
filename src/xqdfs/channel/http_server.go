@@ -2,7 +2,7 @@ package channel
 
 import (
 	"fmt"
-	"os"
+	"sync"
 	"net/http"
 	"encoding/base64"
 
@@ -15,6 +15,8 @@ import (
 )
 
 type HttpServer struct {
+	server *http.Server
+	wg sync.WaitGroup
 }
 
 func NewHttpServer(port int) (*HttpServer,error) {
@@ -32,15 +34,19 @@ func (this *HttpServer) process(port int) {
 	services:=plugin.PluginGetServices()
 	for k,v:=range services {
 		log.Debugf("path[%s]",k)
-		router.GET(k, NewHttpWrap(v).Handler)
-		router.POST(k, NewHttpWrap(v).Handler)
+		router.GET(k, NewHttpWrap(&this.wg,v).Handler)
+		router.POST(k, NewHttpWrap(&this.wg,v).Handler)
 	}
 
 	router.POST("/system/upload", this.uploadFile)
-	err:= router.Run(fmt.Sprintf(":%d",port))
+
+	this.server = &http.Server{
+		Addr: fmt.Sprintf(":%d",port),
+		Handler: router,
+		}
+	err:= this.server.ListenAndServe()
 	if err != nil {
-		log.Errorf("http error[%v]",err)
-		os.Exit(1)
+		log.Infof("http info[%v]",err)
 	}
 }
 
@@ -65,6 +71,10 @@ func (this HttpServer) uploadFile(c *gin.Context) {
 }
 
 func (this *HttpServer) Stop() {
+	if this.server !=nil {
+		this.server.Close()
+	}
+	this.wg.Wait()
 	log.Info("HttpServer stop")
 }
 
