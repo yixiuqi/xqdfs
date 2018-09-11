@@ -66,7 +66,7 @@ func ServiceVolumeDelete(m map[string]interface{}) interface{}{
 			replicationServer.Replication(p)
 		}
 		if err!=nil{
-			log.Error(err)
+			//log.Error(err)
 			e,ok:=err.(errors.Error)
 			if ok {
 				return helper.ResultBuildWithExtInfo(int32(e),err.Error())

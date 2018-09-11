@@ -70,7 +70,7 @@ func (this *UploadErrorProcess) process() bool {
 		for e := v.Front(); e != nil; e = e.Next() {
 			item:=e.Value.(*DeleteCmd)
 			err:=this.proxyStorage.Delete(item.host,item.vid,item.key,true)
-			log.Debugf("upload error process[%v]",item)
+			log.Debugf("delete process[%v][%v]",item,err)
 			if err==errors.ErrRpc{
 				break
 			}else{

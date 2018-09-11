@@ -3,6 +3,7 @@ package process
 import (
 	"io"
 	"os"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/needle"
 	"xqdfs/storage/replication/binlog"
-	"fmt"
 )
 
 type ReplicationTask struct {
@@ -37,6 +37,7 @@ type ReplicationTask struct {
 }
 
 func NewReplicationTask(path string,s *store.Store,proxyStorage *proxy.ProxyStorage,storageId int32,storageAddr string) (*ReplicationTask,error) {
+	log.Debugf("create ReplicationTask [%s]",storageAddr)
 	confPath:=path+"/"+helper.Int32ToString(storageId)+".toml"
 	binlogPath:=path+"/"+helper.Int32ToString(storageId)+".log"
 
@@ -82,12 +83,7 @@ func (this *ReplicationTask) start() {
 		func(){
 			defer helper.HandleErr()
 			err:=this.process()
-			if err==nil{
-				return
-			}
-
 			if err==io.EOF || err==errors.ErrRpc{
-				this.compressFile()
 				select {
 				case <-time.After(time.Second):
 				case <-this.signal:
@@ -103,12 +99,7 @@ func (this *ReplicationTask) compressFile() {
 	if this.curBinlogLine==0 {
 		return
 	}
-
 	log.Debug("compressFile")
-
-	this.lock.Lock()
-	defer this.lock.Unlock()
-
 	this.curBinlogLine=0
 
 	//delete
@@ -217,14 +208,20 @@ func (this *ReplicationTask) Write(cmd byte,vid int32,key int64,cookie int32) er
 }
 
 func (this *ReplicationTask) process() (err error) {
-	line:=this.curBinlogLine+1
+	var(
+		data *binlog.Binlog
+	)
+
 	this.lock.Lock()
-	var data *binlog.Binlog
-	data,err=this.binlogReader.Read(line)
+	data,err=this.binlogReader.Read(this.curBinlogLine+1)
+	if err==io.EOF {
+		this.compressFile()
+	}
 	this.lock.Unlock()
 	if err!=nil {
 		return
 	}
+
 	vid:=data.Vid
 	key:=data.Key
 	cookie:=data.Cookie
@@ -235,10 +232,12 @@ func (this *ReplicationTask) process() (err error) {
 		if v != nil {
 			var n *needle.Needle
 			n, err= v.Read(key, cookie)
-			if err!=nil{
-				return
+			if err==nil{
+				err=this.proxyStorage.Upload(this.StorageAddr,vid,key,cookie,n.Data,false)
 			}
-			err=this.proxyStorage.Upload(this.StorageAddr,vid,key,cookie,n.Data,false)
+			if err!=nil{
+				log.Debug(err)
+			}
 		}else{
 			err=errors.ErrVolumeNotExist
 		}

@@ -53,7 +53,7 @@ func NewReplicationServer(conf *conf.Config,s *store.Store,configureServer *conf
 		signal:make(chan int, 1),
 		task:make(map[int32]*process.ReplicationTask),
 	}
-
+	sync.probe()
 	go sync.start()
 	return sync,nil
 }
@@ -63,7 +63,6 @@ func (this *ReplicationServer) start() {
 		func(){
 			defer helper.HandleErr()
 			this.probe()
-			this.dump()
 			select {
 			case <-time.After(3 * time.Second):
 			case <-this.signal:
@@ -211,6 +210,9 @@ func (this *ReplicationServer) Replication(p process.Replication) bool {
 		task[k]=v
 	}
 	this.taskLock.RUnlock()
+	if len(task)==0 {
+		log.Debug("len(task)==0")
+	}
 	p.Process(task)
 	return true
 }

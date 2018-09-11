@@ -95,7 +95,19 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 
 		err= v.Write(n)
 		if err!=nil{
-			log.Error(err)
+			if err==errors.ErrNeedleExist {
+				replication,ok:=m["replication"]
+				if ok && replication==true {
+					p:=&process.ReplicationUpload{
+						Vid:vid,
+						Key:key,
+						Cookie:cookie,
+						Image:img,
+					}
+					replicationServer.Replication(p)
+				}
+			}
+
 			e,ok:=err.(errors.Error)
 			if ok {
 				return helper.ResultBuildWithExtInfo(int32(e),err.Error())
