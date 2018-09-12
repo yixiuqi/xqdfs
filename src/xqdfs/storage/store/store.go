@@ -221,7 +221,6 @@ func (s *Store) parseIndex(lines []string) (im map[int32]struct{}, ids []int32, 
 		bfs = append(bfs, bfile)
 		ifs = append(ifs, ifile)
 		im[vid] = struct{}{}
-		log.Debugf("parse volume index, id: %d, block: %s, index: %s", id, bfile, ifile)
 	}
 	return
 }
@@ -471,6 +470,7 @@ func (s *Store) AddFreeVolume(n int, bdir, idir string) (sn int, err error) {
 		v.Close()
 		s.FreeVolumes = append(s.FreeVolumes, v)
 		sn++
+		log.Infof("create free volume bfile[%s] ifile[%s]",bfile,ifile)
 	}
 	err = s.saveFreeVolumeIndex()
 	s.flock.Unlock()

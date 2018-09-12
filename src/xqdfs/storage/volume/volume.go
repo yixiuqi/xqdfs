@@ -3,10 +3,10 @@ package volume
 import (
 	"os"
 	"fmt"
-	"sync"
 	"time"
+	"sync"
+	"strings"
 	"sync/atomic"
-	"path/filepath"
 
 	"xqdfs/errors"
 	"xqdfs/utils/log"
@@ -69,9 +69,8 @@ func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
 	if vid==-1{
 		return &stat.Stats{}
 	}
-	path:=fmt.Sprintf("%s/%d.toml",filepath.Dir(ifile),vid)
-	log.Debugf("storeStats [%s] vid[%d]",path,vid)
-
+	p:=strings.Split(ifile,".")
+	path:=p[0]+".toml"
 	stat:=&stat.Stats{}
 	if myos.Exist(path) == false {
 		f, err:= os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0664)
@@ -107,7 +106,8 @@ func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
 }
 
 func (v *Volume) StoreStats() error {
-	path:=fmt.Sprintf("%s/%d.toml",filepath.Dir(v.Indexer.File),v.Id)
+	p:=strings.Split(v.Indexer.File,".")
+	path:=p[0]+".toml"
 	f, err:= os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0664)
 	if err != nil {
 		log.Errorf("os.OpenFile(\"%s\") error(%v)", path, err)
@@ -285,6 +285,10 @@ func (v *Volume) Destroy() {
 	if v.Indexer != nil {
 		v.Indexer.Destroy()
 	}
+
+	p:=strings.Split(v.Indexer.File,".")
+	path:=p[0]+".toml"
+	os.Remove(path)
 }
 
 func (v *Volume) read(n *needle.Needle) (err error) {

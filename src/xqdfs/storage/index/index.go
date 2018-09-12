@@ -203,7 +203,6 @@ func (i *Indexer) Scan(r *os.File, fn func(*Index) error) (err error) {
 		ix   = &Index{}
 		rd   = bufio.NewReaderSize(r, i.conf.Index.BufferSize)
 	)
-	log.Debugf("scan index: %s", i.File)
 	// advise sequential read
 	if fi, err = r.Stat(); err != nil {
 		log.Errorf("index: %s Stat() error(%v)", i.File)
