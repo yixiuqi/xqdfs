@@ -27,12 +27,12 @@ func ServiceClearTimeOldSetup(timeold *ClearTimeOld) {
 
 func ServiceClearTimeOldConfigGet(m map[string]interface{}) interface{}{
 	json:=gabs.New()
-	json.Set(clearTimeOld.ClearTimeOldClearThresholdGet(),"clearThreshold")
-	json.Set(clearTimeOld.curAvailableVolume,"curAvailableVolume")
-	json.Set(clearTimeOld.oldGroupId,"oldestGroupId")
-	json.Set(clearTimeOld.oldStorageId,"oldestStorageId")
-	json.Set(clearTimeOld.oldVolumeId,"oldestVolumeId")
-	json.Set(clearTimeOld.oldTime,"oldestTime")
+	json.Set(clearTimeOld.ClearTimeOldThreshold,"clearThreshold")
+	json.Set(clearTimeOld.CurAvailableVolume,"curAvailableVolume")
+	json.Set(clearTimeOld.OldGroupId,"oldestGroupId")
+	json.Set(clearTimeOld.OldStorageId,"oldestStorageId")
+	json.Set(clearTimeOld.OldVolumeId,"oldestVolumeId")
+	json.Set(clearTimeOld.OldTime,"oldestTime")
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 

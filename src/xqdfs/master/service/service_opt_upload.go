@@ -72,7 +72,6 @@ func ServiceOptUpload(m map[string]interface{}) interface{}{
 		urlInfo.Set(items[2],"volume")
 		urlInfo.Set(items[3],"key")
 		urlInfo.Set(items[4],"cookie")
-		urlInfo.Set(helper.TimeFromKey(key),"time")
 
 		json:=gabs.New()
 		json.Set(urlInfo.Data(),"urlInfo")

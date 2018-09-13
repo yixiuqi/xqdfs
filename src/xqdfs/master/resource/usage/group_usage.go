@@ -1,20 +1,16 @@
 package usage
 
 import (
-	"encoding/json"
+	"math"
 	"sort"
 	"bytes"
-	"math"
+	"encoding/json"
 
 	"xqdfs/discovery/defines"
 	"xqdfs/utils/log"
 
 	"github.com/Jeffail/gabs"
 )
-
-/*
- *	组使用情况描述
- */
 
 type GroupsUsage struct {
 	Usage []*GroupUsage	`json:"usage_groups"`

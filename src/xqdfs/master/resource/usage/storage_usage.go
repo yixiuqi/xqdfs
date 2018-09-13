@@ -6,10 +6,6 @@ import (
 	"xqdfs/discovery/defines"
 )
 
-/*
- *	Storage使用情况描述
- */
-
 type StorageUsage struct {
 	Id int32					`json:"id"`
 	Addr string					`json:"addr"`

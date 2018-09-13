@@ -3,23 +3,22 @@ package stat
 import "encoding/json"
 
 type Stats struct {
-	TotalWriteProcessed     uint64 `json:"totalWrite"`
-	WriteTPS                uint64 `json:"writeTPS"`
-	lastTotalWriteProcessed uint64 `json:"-"`
+	TotalReadProcessed       	uint64 		`json:"totalRead"`
+	lastTotalReadProcessed   	uint64 		`json:"-"`
+	ReadQPS                  	uint64 		`json:"readQPS"`
+	TotalReadBytes           	uint64 		`json:"-"`
+	lastTotalReadBytes       	uint64 		`json:"-"`
+	ReadFlow                 	uint64 		`json:"readFlow"`
 
-	TotalReadProcessed       uint64 `json:"totalRead"`
-	ReadQPS                  uint64 `json:"readQPS"`
-	lastTotalReadProcessed   uint64 `json:"-"`
+	TotalWriteProcessed     	uint64 		`json:"totalWrite"`
+	lastTotalWriteProcessed 	uint64 		`json:"-"`
+	WriteTPS                	uint64 		`json:"writeTPS"`
+	TotalWriteBytes				uint64 		`json:"-"`
+	lastTotalWriteBytes			uint64 		`json:"-"`
+	WriteFlow					uint64 		`json:"writeFlow"`
+	LastWriteTime				int64		`json:"lastWriteTime"`
 
-	TotalReadBytes           uint64 `json:"-"`
-	ReadFlow                 uint64 `json:"readFlow"`
-	lastTotalReadBytes       uint64 `json:"-"`
-
-	TotalWriteBytes          uint64 `json:"-"`
-	WriteFlow                uint64 `json:"writeFlow"`
-	lastTotalWriteBytes      uint64 `json:"-"`
-
-	TotalDelProcessed       uint64 `json:"totalDel"`
+	TotalDelProcessed       	uint64 		`json:"totalDel"`
 }
 
 func (s *Stats) Calc() {

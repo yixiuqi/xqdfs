@@ -39,14 +39,14 @@ type ClearTimeOld struct {
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
-	clearTimeOldThreshold int
-	curAvailableVolume int
 
-	oldGroupId int32
-	oldStorageId int32
-	oldStorageAddr string
-	oldVolumeId int32
-	oldTime string
+	ClearTimeOldThreshold int
+	CurAvailableVolume int
+	OldGroupId int32
+	OldStorageId int32
+	OldStorageAddr string
+	OldVolumeId int32
+	OldTime string
 }
 
 func NewClearTimeOld(leader defines.Leader) (*ClearTimeOld,error) {
@@ -102,7 +102,7 @@ func NewClearTimeOld(leader defines.Leader) (*ClearTimeOld,error) {
 		leader:leader,
 		signal:make(chan int, 1),
 		isRun:true,
-		clearTimeOldThreshold:clearTimeOldThreshold,
+		ClearTimeOldThreshold:clearTimeOldThreshold,
 	}
 	ServiceClearTimeOldSetup(t)
 	go t.task()
@@ -150,7 +150,7 @@ func (this *ClearTimeOld) process() {
 		return
 	}
 
-	var timeMin int32 = math.MaxInt32
+	var timeMin int64 = math.MaxInt64
 	freeVolume:=0
 	availableGroup:=0
 	for _,g:=range u.Usage {
@@ -164,14 +164,13 @@ func (this *ClearTimeOld) process() {
 				if v.Used==block.HeaderSize {
 					freeVolume++
 				}else{
-					time:=helper.TimeFromKey(v.LastKey)
-					if time<timeMin && time !=0 {
-						this.oldGroupId=g.Id
-						this.oldStorageId=s.Id
-						this.oldStorageAddr=s.Addr
-						this.oldVolumeId=v.Id
-						timeMin=time
-						this.oldTime=helper.TimeStringFromKey(v.LastKey)
+					if v.LastWriteTime<timeMin && v.LastWriteTime !=0 {
+						this.OldGroupId=g.Id
+						this.OldStorageId=s.Id
+						this.OldStorageAddr=s.Addr
+						this.OldVolumeId=v.Id
+						timeMin=v.LastWriteTime
+						this.OldTime=v.LastTime
 					}
 				}
 			}
@@ -181,26 +180,17 @@ func (this *ClearTimeOld) process() {
 		return
 	}
 
-	log.Debugf("available volume count[%d] util[%v]",freeVolume,u.Util)
-	this.curAvailableVolume=freeVolume
-	if freeVolume>this.clearTimeOldThreshold {
+	this.CurAvailableVolume=freeVolume
+	if freeVolume>this.ClearTimeOldThreshold {
 		return
 	}
 
 	log.Debugf("auto clear group[%d] storage[%d][%s] volume[%d][%s]",
-		this.oldGroupId,this.oldStorageId,this.oldStorageAddr,this.oldVolumeId,this.oldTime)
-	err:=this.proxyStorage.StorageVolumeClear(this.oldStorageAddr,this.oldVolumeId,true)
+		this.OldGroupId,this.OldStorageId,this.OldStorageAddr,this.OldVolumeId,this.OldTime)
+	err:=this.proxyStorage.StorageVolumeClear(this.OldStorageAddr,this.OldVolumeId,true)
 	if err!=nil {
 		log.Errorf("send auto clear command error[%v]",err)
 	}
-}
-
-func (this *ClearTimeOld) CurAvailableVolume() int {
-	return this.curAvailableVolume
-}
-
-func (this *ClearTimeOld) ClearTimeOldClearThresholdGet() int {
-	return this.clearTimeOldThreshold
 }
 
 func (this *ClearTimeOld) ClearTimeOldClearThresholdSet(clearTimeOldThreshold int) error {
@@ -209,7 +199,7 @@ func (this *ClearTimeOld) ClearTimeOldClearThresholdSet(clearTimeOldThreshold in
 		log.Error(err)
 		return err
 	}else{
-		this.clearTimeOldThreshold=clearTimeOldThreshold
+		this.ClearTimeOldThreshold=clearTimeOldThreshold
 		return nil
 	}
 }

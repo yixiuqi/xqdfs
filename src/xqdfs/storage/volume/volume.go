@@ -11,6 +11,7 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
+	"xqdfs/utils/helper"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/block"
 	"xqdfs/storage/index"
@@ -28,7 +29,6 @@ type Volume struct {
 	Block   *block.SuperBlock 	`json:"block"`
 	Indexer *index.Indexer    	`json:"index"`
 	// data
-	LastKey	int64				`json:"lastKey"`
 	needles map[int64]int64
 	conf    *conf.Config
 	// compact
@@ -164,7 +164,6 @@ func (v *Volume) init() (err error) {
 			log.Error("recovery index: %s EOF", ix)
 			return errors.ErrIndexEOF
 		}
-		v.LastKey=ix.Key
 		v.needles[ix.Key] = needle.NewCache(ix.Offset, ix.Size)
 		offset = ix.Offset + needle.NeedleOffset(int64(ix.Size))
 		lastOffset = ix.Offset
@@ -181,7 +180,6 @@ func (v *Volume) init() (err error) {
 		} else {
 			so = needle.CacheDelOffset
 		}
-		v.LastKey=n.Key
 		v.needles[n.Key] = needle.NewCache(so, n.TotalSize)
 		return
 	}); err != nil {
@@ -253,7 +251,6 @@ func (v *Volume) Clear() (err error) {
 	v.Stats = &stat.Stats{}
 	v.StoreStats()
 	v.needles = make(map[int64]int64)
-	v.LastKey=0
 	v.Compact = false
 	v.CompactOffset = 0
 	v.CompactTime = 0
@@ -386,7 +383,7 @@ func (v *Volume) Write(n *needle.Needle) (err error) {
 	n.Offset = v.Block.Offset
 	if err = v.Block.Write(n); err == nil {
 		if err = v.Indexer.Write(n.Key, n.Offset, n.TotalSize); err == nil {
-			v.LastKey=n.Key
+			v.Stats.LastWriteTime=helper.CurrentTime()
 			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
 		}
 	}
@@ -410,7 +407,7 @@ func (v *Volume) Rewrite(n *needle.Needle) (err error) {
 	n.Offset = v.Block.Offset
 	if err = v.Block.Write(n); err == nil {
 		if err = v.Indexer.Write(n.Key, n.Offset, n.TotalSize); err == nil {
-			v.LastKey=n.Key
+			v.Stats.LastWriteTime=helper.CurrentTime()
 			nc, ok = v.needles[n.Key]
 			v.needles[n.Key] = needle.NewCache(n.Offset, n.TotalSize)
 		}
