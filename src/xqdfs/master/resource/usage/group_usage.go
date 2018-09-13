@@ -127,15 +127,15 @@ func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 
 		groupsUsage.Total+=gu.Total
 		groupsUsage.Used+=gu.Used
-		if groupsUsage.Total==0{
-			groupsUsage.Util=0
-		}else{
-			v:=float64(groupsUsage.Used)/float64(groupsUsage.Total)
-			groupsUsage.Util=float32(math.Trunc(v*1e6+0.5) * 1e-6)
-		}
 		groupsUsage.Usage=append(groupsUsage.Usage,gu)
 	}
 
+	if groupsUsage.Total==0{
+		groupsUsage.Util=0
+	}else{
+		v:=float64(groupsUsage.Used)/float64(groupsUsage.Total)
+		groupsUsage.Util=float32(math.Trunc(v*1e6+0.5) * 1e-6)
+	}
 	return groupsUsage
 }
 

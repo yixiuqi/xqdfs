@@ -1,7 +1,6 @@
 package usage
 
 import (
-	"fmt"
 	"time"
 	"math"
 
@@ -41,7 +40,7 @@ func GetVolumeUsage(volume *defines.Volume) *VolumeUsage {
 	v.WriteTps=volume.Stat.WriteTPS
 	v.WriteFlow=volume.Stat.WriteFlow
 	v.LastWriteTime=volume.Stat.LastWriteTime
-	v.LastTime=fmt.Sprintf("%v", time.Unix(0, volume.Stat.LastWriteTime*1000000))
+	v.LastTime=time.Unix(0, volume.Stat.LastWriteTime*1000000).Format("2006-01-02 15:04:05 PM")
 	v.Compact=volume.Compact
 	v.ImageCount=volume.ImageCount
 	v.ImageDelCount=volume.Stat.TotalDelProcessed

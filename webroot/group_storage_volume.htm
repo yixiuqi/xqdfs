@@ -21,16 +21,17 @@
         data-options="method:'post'">
         <thead>
             <tr> 
-                <th field="id" width="70" align="center">卷编号</th>
-                <th field="total" width="90" align="center">总容量(GB)</th>
-                <th field="used" width="90" align="center">已使用(GB)</th>
-                <th field="util" width="100" align="center">使用率</th>
-                <th field="writeTps" width="70" align="center">写Tps</th>
-                <th field="readQps" width="70" align="center">读Qps</th>
-                <th field="compact" width="100" align="center">是否正在压缩</th>
-                <th field="imageCount" width="100" align="center">图片总数</th>
-                <th field="imageDelCount" width="110" align="center">图片删除总数</th>
-                <th data-options="field:'operation',width:110,formatter:storageFormat" align="center">操作</th> 
+                <th field="id" width="50" align="center">编号</th>
+                <th field="total" width="80" align="center">总容量(GB)</th>
+                <th field="used" width="80" align="center">已使用(GB)</th>
+                <th field="util" width="90" align="center">使用率</th>
+                <th field="writeTps" width="70" align="center">写TPS</th>
+                <th field="readQps" width="70" align="center">读QPS</th>
+                <th field="compact" width="60" align="center">压缩</th>
+                <th field="imageCount" width="80" align="center">总数</th>
+                <th field="imageDelCount" width="80" align="center">删除数</th>
+                <th field="lastTime" width="160" align="center">卷最后写时间</th>
+                <th data-options="field:'operation',width:80,formatter:storageFormat" align="center">操作</th> 
             </tr>
         </thead>
     </table>
@@ -45,7 +46,7 @@
 
     <script>
         function storageFormat(val,row,index){
-            return '<a href="#" onclick="btnStorageVolumeClear('+row.id+')">回收</a>&nbsp;&nbsp;<a href="#" onclick="btnStorageVolumeCompact('+row.id+')">压缩</a>';  
+            return '<a href="#" onclick="btnStorageVolumeClear('+row.id+')">回收</a>&nbsp;<a href="#" onclick="btnStorageVolumeCompact('+row.id+')">压缩</a>';  
         }
         
         function btnStorageVolumeClear(volumeId){
