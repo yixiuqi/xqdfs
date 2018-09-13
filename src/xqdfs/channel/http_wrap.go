@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"sync"
 	"bytes"
 	"strings"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/Jeffail/gabs"
-	"sync"
 )
 
 type HttpWrap struct {
