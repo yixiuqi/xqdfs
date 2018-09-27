@@ -210,9 +210,9 @@ func (this *ReplicationServer) Replication(p process.Replication) bool {
 		task[k]=v
 	}
 	this.taskLock.RUnlock()
-	if len(task)==0 {
-		log.Debug("len(task)==0")
+	if len(task)>0 {
+		p.Process(task)
 	}
-	p.Process(task)
+
 	return true
 }

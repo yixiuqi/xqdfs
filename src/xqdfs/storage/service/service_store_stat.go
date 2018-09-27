@@ -1,19 +1,19 @@
 package service
 
 import (
-	"encoding/json"
+	"sort"
 	"bytes"
+	"encoding/json"
 
-	"xqdfs/utils/helper"
-	"xqdfs/utils/log"
+	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/storage/store"
 	"xqdfs/utils/plugin"
-	"xqdfs/errors"
+	"xqdfs/storage/volume"
 
 	"github.com/Jeffail/gabs"
-	"xqdfs/storage/volume"
-	"sort"
 )
 
 func init() {
@@ -33,7 +33,7 @@ func (v VolumeSortById) Less(i, j int) bool {
 
 /**
  * @api {post} /store/stat [Store]查询状态
- * @apiDescription [Store]查询状态
+ * @apiDescription [Store]查询当前存储节点状态信息
  * @apiGroup Storage
  * @apiVersion 1.0.0
  * @apiSuccess (成功返回参数) {int32} result 0表示成功
