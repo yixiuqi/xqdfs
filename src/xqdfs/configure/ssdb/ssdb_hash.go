@@ -1,10 +1,10 @@
 package ssdb
 
 import (
-	"fmt"
+	"errors"
 
 	"xqdfs/utils/helper"
-	"xqdfs/errors"
+	myerr "xqdfs/errors"
 )
 
 type SSDBHashItem struct{
@@ -13,15 +13,21 @@ type SSDBHashItem struct{
 }
 
 type SSDBHash struct{
+	connMgr *SSDBConnectMgr
 }
 
-func NewSSDBHash() *SSDBHash{
-	item:=new(SSDBHash)
-	return item
+func NewSSDBHash(connMgr *SSDBConnectMgr) *SSDBHash {
+	return &SSDBHash{
+		connMgr:connMgr,
+	}
 }
 
-func (this *SSDBHash) HSet(name string,key string,value string) error{
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBHash) HSet(name string,key string,value string) error {
+	if this.connMgr == nil {
+		return errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return err
 	}
@@ -34,11 +40,15 @@ func (this *SSDBHash) HSet(name string,key string,value string) error{
 	if len(resp) == 2 && resp[0] == "ok" {
 		return nil
 	}
-	return fmt.Errorf("bad response")
+	return errors.New("bad response")
 }
 
-func (this *SSDBHash) HGet(name string,key string) (string,error){
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBHash) HGet(name string,key string) (string,error) {
+	if this.connMgr == nil {
+		return "",errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return "",err
 	}
@@ -49,13 +59,17 @@ func (this *SSDBHash) HGet(name string,key string) (string,error){
 		return resp[1], nil
 	}
 	if resp[0] == "not_found" {
-		return "", errors.ErrParamNotExist
+		return "", myerr.ErrParamNotExist
 	}
-	return "", fmt.Errorf("bad response")
+	return "", errors.New("bad response")
 }
 
 func (this *SSDBHash) HSize(name string) (int,error) {
-	link, err := SSDBConnectMgrInstance().getConnect()
+	if this.connMgr == nil {
+		return 0,errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return 0,err
 	}
@@ -73,11 +87,15 @@ func (this *SSDBHash) HSize(name string) (int,error) {
 			return count,nil
 		}
 	}
-	return 0,fmt.Errorf("bad response")
+	return 0,errors.New("bad response")
 }
 
-func (this *SSDBHash) HDel(name string,key string) error{
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBHash) HDel(name string,key string) error {
+	if this.connMgr == nil {
+		return errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return err
 	}
@@ -90,11 +108,15 @@ func (this *SSDBHash) HDel(name string,key string) error{
 	if len(resp) == 2 && resp[0] == "ok" {
 		return nil
 	}
-	return fmt.Errorf("bad response")
+	return errors.New("bad response")
 }
 
-func (this *SSDBHash) HGetAll(name string) ([]SSDBHashItem,error){
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBHash) HGetAll(name string) ([]SSDBHashItem,error) {
+	if this.connMgr == nil {
+		return nil,errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return nil,err
 	}
@@ -117,7 +139,7 @@ func (this *SSDBHash) HGetAll(name string) ([]SSDBHashItem,error){
 		return items, nil
 	}
 	if resp[0] == "not_found" {
-		return nil, errors.ErrParamNotExist
+		return nil, myerr.ErrParamNotExist
 	}
-	return nil, fmt.Errorf("bad response")
+	return nil, errors.New("bad response")
 }

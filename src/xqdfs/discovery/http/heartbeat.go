@@ -1,11 +1,12 @@
 package http
 
 import (
-	"net/http"
 	"net"
 	"time"
+	"net/http"
 	"encoding/json"
 
+	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/discovery/defines"
 	
@@ -42,10 +43,14 @@ func HeartBeat(addr string) (storage *defines.Storage,err error) {
 	var data []byte
 	data,err=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warn(err)
 		return
 	}
 
-	storage=defines.NewStorage()
+	storage=&defines.Storage{}
 	err=json.Unmarshal(data,storage)
+	if err!=nil {
+		log.Warn(err)
+	}
 	return
 }

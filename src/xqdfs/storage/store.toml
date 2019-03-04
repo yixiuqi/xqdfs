@@ -20,15 +20,15 @@ Host = "192.168.10.25"
 Port = 10086
 
 [Store]
-VolumeIndex      = "volume_data/volume.idx"
-FreeVolumeIndex  = "volume_data/free_volume.idx"
+VolumeIndex      = "/home/yimin/xqdfs/data/volume.idx"
+FreeVolumeIndex  = "/home/yimin/xqdfs/data/free_volume.idx"
 
 [Dir]
-Path = ["volume_data"]
-Capacity = [512]
+Path = ["/home/yimin/xqdfs/data"]
+Capacity = [4096]
 
 [Configure]
-Param = "192.168.10.90:18888,192.168.10.31:18888"
+Param = "192.168.10.25:20010"
 
 [Replication]
 Path = "binlog"

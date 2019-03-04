@@ -35,7 +35,7 @@ func (this *ProxyHttp) Upload(host string,vid int32,key int64,cookie int32,img [
 
 	jsonRet,err:=gabs.ParseJSON(ret)
 	if err!=nil {
-		log.Error(err)
+		log.Warn(err)
 		return err
 	}
 

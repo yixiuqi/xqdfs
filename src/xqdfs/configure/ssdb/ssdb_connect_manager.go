@@ -1,13 +1,12 @@
 package ssdb
 
 import (
-	"strings"
-	"errors"
 	"fmt"
 	"net"
+	"errors"
+	"strings"
 	"sync/atomic"
 
-	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 )
 
@@ -17,20 +16,10 @@ type SSDBConnectMgr struct {
 	port []int
 }
 
-var gSSDBConnectMgr *SSDBConnectMgr
-func SSDBConnectMgrInstance() *SSDBConnectMgr {
-	if gSSDBConnectMgr == nil {
-		gSSDBConnectMgr = new(SSDBConnectMgr)
-		log.Info(helper.NewStringBuilder().Append("create SSDBConnectMgr").ToString())
-	}
-
-	return gSSDBConnectMgr
-}
-
 func (this *SSDBConnectMgr) Init(addr string) error{
 	items:=strings.Split(addr,",")
 	if items==nil||len(items)<=0{
-		return errors.New("SSDB地址配置错误")
+		return errors.New("ssdb param error")
 	}
 
 	this.addr=make([]string,len(items))
@@ -39,13 +28,13 @@ func (this *SSDBConnectMgr) Init(addr string) error{
 	for i:=0;i<len(items);i++{
 		kv:=strings.Split(items[i],":")
 		if kv==nil||len(kv)!=2{
-			return errors.New("SSDB地址配置错误")
+			return errors.New("ssdb param error")
 		}
 
 		this.addr[i]=kv[0]
 		port,err:=helper.StringToInt(kv[1])
 		if err!=nil{
-			return errors.New("SSDB地址配置错误")
+			return errors.New("ssdb param error")
 		}
 
 		this.port[i]=port
@@ -77,8 +66,6 @@ func (this *SSDBConnectMgr) getConnect() (*SSDBConnect, error) {
 		if err!=nil{
 			return nil,err
 		}else{
-			debug:=helper.NewStringBuilder().Append("获取连接").Append(this.addr[pos]).Append(":").Append(this.port[pos]).ToString()
-			log.Debug(debug)
 			return conn,err
 		}
 	}else{

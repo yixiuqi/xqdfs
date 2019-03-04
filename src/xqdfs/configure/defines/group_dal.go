@@ -16,10 +16,10 @@ func NewGroupDal() *GroupDal {
 }
 
 func (this *GroupDal) String() string {
-	j,err:=json.Marshal(this)
-	if err!=nil{
+	data,err:=json.Marshal(this)
+	if err!=nil {
 		return ""
 	}else{
-		return string(j)
+		return string(data)
 	}
 }

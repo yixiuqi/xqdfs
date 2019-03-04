@@ -52,7 +52,7 @@ func ServiceClearTimeOldConfigSet(m map[string]interface{}) interface{}{
 
 	err:=clearTimeOld.ClearTimeOldClearThresholdSet(clearThreshold)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
 	return helper.ResultBuild(constant.Success)

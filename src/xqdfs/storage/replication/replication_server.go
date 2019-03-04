@@ -111,7 +111,7 @@ func (this *ReplicationServer) probe() {
 
 	groups,err:=this.configureServer.GroupGetAll()
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return
 	}
 

@@ -3,6 +3,7 @@ package defines
 import (
 	"encoding/json"
 
+	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
 )
 
@@ -13,14 +14,10 @@ type Group struct {
 	Storage []*Storage		`json:"storage,omitempty"`
 }
 
-func NewGroup() (g *Group) {
-	g=new(Group)
-	return
-}
-
 func (this *Group) String() string {
 	j,err:=json.Marshal(this)
 	if err!=nil{
+		log.Warn(err)
 		return ""
 	}else{
 		return string(j)

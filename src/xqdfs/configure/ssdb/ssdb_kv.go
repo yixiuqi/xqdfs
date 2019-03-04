@@ -1,15 +1,23 @@
 package ssdb
 
+import "errors"
+
 type SSDBKV struct{
+	connMgr *SSDBConnectMgr
 }
 
-func NewSSDBKV() *SSDBKV{
-	item:=new(SSDBKV)
-	return item
+func NewSSDBKV(connMgr *SSDBConnectMgr) *SSDBKV {
+	return &SSDBKV{
+		connMgr:connMgr,
+	}
 }
 
 func (this *SSDBKV) Get(key string) (string,error){
-	link, err := SSDBConnectMgrInstance().getConnect()
+	if this.connMgr == nil {
+		return "",errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return "",err
 	}
@@ -23,8 +31,12 @@ func (this *SSDBKV) Get(key string) (string,error){
 	}
 }
 
-func (this *SSDBKV) Set(key string,value string) error{
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBKV) Set(key string,value string) error {
+	if this.connMgr == nil {
+		return errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return err
 	}
@@ -38,8 +50,12 @@ func (this *SSDBKV) Set(key string,value string) error{
 	}
 }
 
-func (this *SSDBKV) Setx(key string,value string,ttl int) error{
-	link, err := SSDBConnectMgrInstance().getConnect()
+func (this *SSDBKV) Setx(key string,value string,ttl int) error {
+	if this.connMgr == nil {
+		return errors.New("connect manager is null")
+	}
+
+	link, err := this.connMgr.getConnect()
 	if err != nil {
 		return err
 	}

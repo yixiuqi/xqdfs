@@ -1,9 +1,9 @@
 package ssdb
 
 import (
-	"bytes"
 	"net"
 	"fmt"
+	"bytes"
 	"strconv"
 
 	"xqdfs/errors"
@@ -12,7 +12,7 @@ import (
 type SSDBConnect struct {
 	host string
 	port int
-	sock     *net.TCPConn
+	sock *net.TCPConn
 	recv_buf bytes.Buffer
 }
 

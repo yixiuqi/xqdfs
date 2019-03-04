@@ -17,7 +17,7 @@ func NewStorageDal() *StorageDal {
 
 func (this *StorageDal) String() string {
 	data,err:=json.Marshal(this)
-	if err!=nil{
+	if err!=nil {
 		return ""
 	}else{
 		return string(data)

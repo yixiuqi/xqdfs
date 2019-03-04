@@ -43,7 +43,7 @@ func ServiceGroupReadOnly(m map[string]interface{}) interface{}{
 
 	group,err:=conf.GroupGet(groupId)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGet,err.Error())
 	}
 	if group==nil{
@@ -53,7 +53,7 @@ func ServiceGroupReadOnly(m map[string]interface{}) interface{}{
 	group.ReadOnly=readOnly
 	err=conf.GroupEdit(group)
 	if err!=nil {
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupEdit,err.Error())
 	}else{
 		return helper.ResultBuild(constant.Success)

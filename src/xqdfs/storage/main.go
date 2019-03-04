@@ -1,16 +1,16 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"time"
+	"flag"
 
 	"xqdfs/errors"
 	"xqdfs/channel"
 	"xqdfs/configure"
 	"xqdfs/utils/log"
-	"xqdfs/storage/conf"
 	"xqdfs/utils/plugin"
+	"xqdfs/storage/conf"
 	"xqdfs/storage/store"
 	"xqdfs/configure/defines"
 	"xqdfs/storage/replication"
@@ -18,12 +18,12 @@ import (
 )
 
 const(
-	Ver	 = "1.0.0"
+	Version	 = "1.0.0"
 )
 
 func main() {
 	var (
-		configFile string
+		configFilePath string
 		config	*conf.Config
 		s	*store.Store
 		server *channel.Server
@@ -32,12 +32,12 @@ func main() {
 		err	error
 	)
 
-	flag.StringVar(&configFile, "c", "./store.toml", " set store config file path")
+	flag.StringVar(&configFilePath, "-c", "./store.toml", " set store config file path")
 	flag.Parse()
-	log.Infof("xqdfs store[%s] start", Ver)
+	log.Infof("xqdfs store version[%s] start", Version)
 
-	if config, err = conf.NewConfig(configFile); err != nil {
-		log.Errorf("NewConfig(\"%s\") error(%v)", configFile, err)
+	if config, err = conf.NewConfig(configFilePath); err != nil {
+		log.Errorf("NewConfig(\"%s\") error(%v)", configFilePath, err)
 		return
 	}
 	plugin.PluginAddObject(plugin.PluginLocalConfig,config)

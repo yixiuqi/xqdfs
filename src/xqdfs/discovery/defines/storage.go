@@ -3,6 +3,7 @@ package defines
 import (
 	"encoding/json"
 
+	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
 )
 
@@ -14,14 +15,10 @@ type Storage struct {
 	Volume []*Volume					`json:"volumes,omitempty"`
 }
 
-func NewStorage() (s *Storage) {
-	s=new(Storage)
-	return
-}
-
 func (this *Storage) String() string {
 	data,err:=json.Marshal(this)
 	if err!=nil{
+		log.Warn(err)
 		return ""
 	}else{
 		return string(data)

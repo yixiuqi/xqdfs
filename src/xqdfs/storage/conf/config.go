@@ -64,13 +64,13 @@ func (d *Duration) UnmarshalText(text []byte) error {
 }
 
 // NewConfig new a config.
-func NewConfig(conf string) (c *Config, err error) {
+func NewConfig(configFilePath string) (c *Config, err error) {
 	var (
 		file *os.File
 		blob []byte
 	)
 	c = new(Config)
-	if file, err = os.Open(conf); err != nil {
+	if file, err = os.Open(configFilePath); err != nil {
 		return
 	}
 	defer file.Close()

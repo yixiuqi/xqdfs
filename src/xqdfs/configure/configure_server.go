@@ -1,69 +1,180 @@
 package configure
 
 import (
+	"encoding/json"
+
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/configure/ssdb"
 	"xqdfs/configure/defines"
 )
 
+const(
+	HashNameGroup 	= "HashXQDfsGroup"
+	HashNameStorage 	= "HashXQDfsStorage"
+)
+
 type ConfigureServer struct {
-	configure defines.Configure
+	kv *ssdb.SSDBKV
+	hset *ssdb.SSDBHash
 }
 
 func NewConfigureServer(param string) (*ConfigureServer,error) {
-	s:=&ConfigureServer{
-		configure:ssdb.NewConfigureSSDB(param),
+	log.Info("ConfigureServer param:",param)
+	connMgr:=&ssdb.SSDBConnectMgr{}
+	err:=connMgr.Init(param)
+	if err!=nil {
+		log.Error(err)
+		return nil,err
 	}
-	return s,nil
+
+	server:=&ConfigureServer{
+		kv:ssdb.NewSSDBKV(connMgr),
+		hset:ssdb.NewSSDBHash(connMgr),
+	}
+	return server,nil
 }
 
 func (this *ConfigureServer) ParamGet(key string) (string,error) {
-	return this.configure.ParamGet(key)
+	return this.kv.Get(key)
 }
 
 func (this *ConfigureServer) ParamSet(key string,value string) error {
-	return this.configure.ParamSet(key,value)
+	return this.kv.Set(key,value)
 }
 
 func (this *ConfigureServer) ParamSetx(key string,value string,ttl int) error {
-	return this.configure.ParamSetx(key,value,ttl)
+	return this.kv.Setx(key,value,ttl)
 }
 
 func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {
-	return this.configure.StorageAdd(s)
+	param,err:=json.Marshal(s)
+	if err!=nil {
+		log.Warn(err)
+		return err
+	}
+
+	return this.hset.HSet(HashNameStorage,helper.Int32ToString(s.Id),string(param))
 }
 
 func (this *ConfigureServer) StorageRemove(sid int32) error {
-	return this.configure.StorageRemove(sid)
+	return this.hset.HDel(HashNameStorage,helper.Int32ToString(sid))
 }
 
 func (this *ConfigureServer) StorageGet(sid int32) (*defines.StorageDal,error) {
-	return this.configure.StorageGet(sid)
+	param,err:=this.hset.HGet(HashNameStorage,helper.Int32ToString(sid))
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+	if param=="" {
+		return nil,nil
+	}
+
+	s:=defines.NewStorageDal()
+	err=json.Unmarshal([]byte(param),s)
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+
+	return s,nil
 }
 
 func (this *ConfigureServer) StorageGetAll() ([]*defines.StorageDal,error) {
-	return this.configure.StorageGetAll()
+	items,err:=this.hset.HGetAll(HashNameStorage)
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+
+	if items==nil{
+		return nil,nil
+	}
+
+	s:=make([]*defines.StorageDal,0)
+	for _,v:=range items {
+		one:=defines.NewStorageDal()
+		e:=json.Unmarshal([]byte(v.Value),one)
+		if e==nil{
+			s=append(s,one)
+		}else{
+			log.Warn(err)
+		}
+	}
+
+	return s,nil
 }
 
 func (this *ConfigureServer) GroupAdd(g *defines.GroupDal) error {
-	return this.configure.GroupAdd(g)
+	param,err:=json.Marshal(g)
+	if err!=nil {
+		log.Warn(err)
+		return err
+	}
+
+	return this.hset.HSet(HashNameGroup,helper.Int32ToString(g.Id),string(param))
 }
 
 func (this *ConfigureServer) GroupRemove(gid int32) error {
-	return this.configure.GroupRemove(gid)
+	return this.hset.HDel(HashNameGroup,helper.Int32ToString(gid))
 }
 
-func (this *ConfigureServer) GroupEdit(g *defines.GroupDal) (err error) {
-	return this.configure.GroupEdit(g)
+func (this *ConfigureServer) GroupEdit(g *defines.GroupDal) error {
+	param,err:=json.Marshal(g)
+	if err!=nil {
+		log.Warn(err)
+		return err
+	}
+
+	return this.hset.HSet(HashNameGroup,helper.Int32ToString(g.Id),string(param))
 }
 
-func (this *ConfigureServer) GroupGet(gid int32) (g *defines.GroupDal,err error) {
-	return this.configure.GroupGet(gid)
+func (this *ConfigureServer) GroupGet(gid int32) (*defines.GroupDal,error) {
+	param,err:=this.hset.HGet(HashNameGroup,helper.Int32ToString(gid))
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+
+	if param==""{
+		return nil,nil
+	}
+
+	g:=defines.NewGroupDal()
+	err=json.Unmarshal([]byte(param),g)
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+
+	return g,nil
 }
 
-func (this *ConfigureServer) GroupGetAll() (g []*defines.GroupDal,err error) {
-	return this.configure.GroupGetAll()
+func (this *ConfigureServer) GroupGetAll() ([]*defines.GroupDal,error) {
+	items,err:=this.hset.HGetAll(HashNameGroup)
+	if err!=nil {
+		log.Warn(err)
+		return nil,err
+	}
+	if items==nil{
+		return nil,nil
+	}
+
+	g:=make([]*defines.GroupDal,0)
+	for _,v:=range items {
+		one:=defines.NewGroupDal()
+		e:=json.Unmarshal([]byte(v.Value),one)
+		if e==nil{
+			g=append(g,one)
+		}else{
+			log.Warn(err)
+		}
+	}
+
+	return g,nil
 }
 
 func (this *ConfigureServer) Stop() {
-	this.configure.Stop()
+	log.Info("ConfigureServer stop")
 }

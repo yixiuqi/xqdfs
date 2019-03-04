@@ -27,7 +27,7 @@ func ServiceGroupAdd(m map[string]interface{}) interface{}{
 
 	groups,err:=conf.GroupGetAll()
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGetAll,err.Error())
 	}
 
@@ -44,7 +44,7 @@ func ServiceGroupAdd(m map[string]interface{}) interface{}{
 	log.Debugf("group[%d] add",newGroup.Id)
 	err=conf.GroupAdd(newGroup)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupAdd,err.Error())
 	}
 

@@ -556,7 +556,7 @@ func (s *Store) CompactVolume(id int32) (err error) {
 		if err = v.StopCompact(nv); err == nil {
 			err = s.saveVolumeIndex()
 		}else{
-			log.Error(err)
+			log.Warn(err)
 		}
 	} else {
 		// never happen
@@ -569,7 +569,7 @@ func (s *Store) CompactVolume(id int32) (err error) {
 		bdir, idir = filepath.Dir(nv.Block.File), filepath.Dir(nv.Indexer.File)
 		_, err = s.AddFreeVolume(1, bdir, idir)
 	}else{
-		log.Error(err)
+		log.Warn(err)
 	}
 	return
 }

@@ -46,7 +46,7 @@ func ServiceStorageAdd(m map[string]interface{}) interface{}{
 
 	storages,err:=conf.StorageGetAll()
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGetAll,err.Error())
 	}
 
@@ -63,7 +63,7 @@ func ServiceStorageAdd(m map[string]interface{}) interface{}{
 	newStorage.Desc=desc
 	err=conf.StorageAdd(newStorage)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageAdd,err.Error())
 	}
 

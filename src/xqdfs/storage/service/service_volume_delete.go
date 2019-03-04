@@ -2,10 +2,10 @@ package service
 
 import (
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/utils/plugin"
+	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
@@ -18,7 +18,7 @@ func init() {
 func ServiceVolumeDelete(m map[string]interface{}) interface{}{
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
-		log.Errorf("%s no support",plugin.PlugineStorage)
+		log.Warnf("%s no support",plugin.PlugineStorage)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		storage=s.(*store.Store)

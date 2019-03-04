@@ -3,15 +3,15 @@ package service
 import (
 	"bytes"
 
-	"xqdfs/utils/helper"
-	"xqdfs/storage/needle"
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/storage/replication/process"
-	"xqdfs/storage/store"
-	"xqdfs/storage/replication"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/storage/store"
+	"xqdfs/storage/needle"
+	"xqdfs/storage/replication"
+	"xqdfs/storage/replication/process"
 )
 
 func init() {
@@ -21,7 +21,7 @@ func init() {
 func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
-		log.Errorf("%s no support",plugin.PlugineStorage)
+		log.Warnf("%s no support",plugin.PlugineStorage)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		storage=s.(*store.Store)
@@ -29,7 +29,7 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 
 	var replicationServer *replication.ReplicationServer
 	if r:=plugin.PluginGetObject(plugin.PluginReplicationServer);r==nil {
-		log.Errorf("%s no support",plugin.PluginReplicationServer)
+		log.Warnf("%s no support",plugin.PluginReplicationServer)
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		replicationServer=r.(*replication.ReplicationServer)
@@ -42,7 +42,7 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 	value,ok:=m["img"]
 	if ok {
 		img=helper.ImageGet("",value.(string))
-		if img==nil||len(img)==0 {
+		if len(img)==0 {
 			return helper.ResultBuildWithExtInfo(errors.RetImageData,errors.ErrImageData.Error())
 		}
 	}else{
@@ -89,7 +89,7 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 
 		err:= n.ReadFrom(buf)
 		if err!=nil{
-			log.Error(err)
+			log.Warn(err)
 			return helper.ResultBuildWithExtInfo(errors.RetOptUpload,err.Error())
 		}
 

@@ -83,13 +83,13 @@ func NewClearTimeOld(leader defines.Leader) (*ClearTimeOld,error) {
 				return nil,err
 			}
 		}else{
-			log.Error(err)
+			log.Warn(err)
 			return nil,err
 		}
 	}else{
 		clearTimeOldThreshold,err=helper.StringToInt(value)
 		if err!=nil{
-			log.Error(err)
+			log.Warn(err)
 			return nil,err
 		}
 	}
@@ -196,7 +196,7 @@ func (this *ClearTimeOld) process() {
 func (this *ClearTimeOld) ClearTimeOldClearThresholdSet(clearTimeOldThreshold int) error {
 	err:=this.configureServer.ParamSet(ClearTimeOldClearThreshold,fmt.Sprintf("%d",clearTimeOldThreshold))
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return err
 	}else{
 		this.ClearTimeOldThreshold=clearTimeOldThreshold

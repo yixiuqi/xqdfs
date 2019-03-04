@@ -57,7 +57,7 @@ func ServiceVolumeClear(m map[string]interface{}) interface{}{
 	if v != nil {
 		err:= v.Clear()
 		if err!=nil{
-			log.Error(err)
+			log.Warn(err)
 			return helper.ResultBuildWithExtInfo(errors.RetVolumeClear,err.Error())
 		}else{
 			replication,ok:=m["replication"]

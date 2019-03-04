@@ -60,7 +60,7 @@ func ServiceStorageGetAll(m map[string]interface{}) interface{}{
 
 	storagesDal,err:=conf.StorageGetAll()
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGetAll,err.Error())
 	}
 	storages:=discoveryServer.Storages()

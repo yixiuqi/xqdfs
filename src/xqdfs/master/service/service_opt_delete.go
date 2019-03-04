@@ -43,7 +43,7 @@ func ServiceOptDelete(m map[string]interface{}) interface{}{
 
 	err:=strategyServer.Delete(url)
 	if err!=nil {
-		log.Error(err)
+		log.Warn(err)
 		e,ok:=err.(errors.Error)
 		if ok {
 			return helper.ResultBuildWithExtInfo(int32(e),err.Error())

@@ -35,7 +35,7 @@ func ServiceStorageRemove(m map[string]interface{}) interface{}{
 
 	err:=conf.StorageRemove(id)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageRemove,err.Error())
 	}else{
 		return helper.ResultBuild(constant.Success)

@@ -7,13 +7,11 @@ import (
 
 type Server struct {
 	httpServer *HttpServer
-	thriftServer *ThriftServer
 }
 
 func NewServer(conf *conf.Server) (server *Server,err error) {
 	var(
 		httpServer *HttpServer
-		thriftServer *ThriftServer
 	)
 
 	if httpServer, err = NewHttpServer(conf.Port); err != nil {
@@ -21,14 +19,8 @@ func NewServer(conf *conf.Server) (server *Server,err error) {
 		return
 	}
 
-	//if thriftServer, err = NewThriftServer(conf.Port); err != nil {
-	//	log.Errorf("thrift server init error[%v]",err)
-	//	return
-	//}
-
 	server=&Server{
 		httpServer:httpServer,
-		thriftServer:thriftServer,
 	}
 	return
 }
@@ -38,9 +30,5 @@ func (this *Server) Stop() {
 
 	if this.httpServer !=nil {
 		this.httpServer.Stop()
-	}
-
-	if this.thriftServer !=nil {
-		this.thriftServer.Stop()
 	}
 }

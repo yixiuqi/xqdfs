@@ -82,7 +82,7 @@ func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
 		enc:=toml.NewEncoder(f)
 		err=enc.Encode(stat)
 		if err!=nil{
-			log.Error(err)
+			log.Warn(err)
 			return nil
 		}else{
 			return stat
@@ -97,7 +97,7 @@ func (v *Volume) loadStats(vid int32,ifile string) *stat.Stats {
 
 		_,err=toml.DecodeReader(f,stat)
 		if err!=nil{
-			log.Error(err)
+			log.Warn(err)
 			return nil
 		}else{
 			return stat
@@ -121,7 +121,7 @@ func (v *Volume) StoreStats() error {
 	enc:=toml.NewEncoder(f)
 	err=enc.Encode(v.Stats)
 	if err!=nil{
-		log.Error(err)
+		log.Warn(err)
 		return err
 	}else{
 		return nil
@@ -506,7 +506,7 @@ func (v *Volume) StopCompact(nv *Volume) (err error) {
 
 	if nv != nil {
 		if err = v.compact(nv); err != nil {
-			log.Error(err)
+			log.Warn(err)
 			goto free
 		}
 
