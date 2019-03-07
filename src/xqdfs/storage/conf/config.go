@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
+	"xqdfs/utils/log"
 	"xqdfs/utils/conf"
 	"xqdfs/storage/needle"
 
@@ -69,18 +70,22 @@ func NewConfig(configFilePath string) (c *Config, err error) {
 		file *os.File
 		blob []byte
 	)
-	c = new(Config)
+	c = &Config{}
 	if file, err = os.Open(configFilePath); err != nil {
+		log.Error(err)
 		return
 	}
 	defer file.Close()
 
 	if blob, err = ioutil.ReadAll(file); err != nil {
+		log.Error(err)
 		return
 	}
 	if err = toml.Unmarshal(blob, c); err == nil {
 		c.NeedleMaxSize = needle.Size(c.NeedleMaxSize)
 		c.Block.BufferSize = needle.Size(c.Block.BufferSize)
+	}else{
+		log.Error(err)
 	}
 	return
 }

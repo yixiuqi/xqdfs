@@ -1,13 +1,16 @@
 package http
 
 import (
-	"time"
+	"fmt"
 	"sync"
+	"time"
 
-	"xqdfs/utils/log"
 	"xqdfs/configure"
+	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
+	"xqdfs/storage/conf"
 	"xqdfs/discovery/defines"
 	configuredef "xqdfs/configure/defines"
 )
@@ -71,11 +74,25 @@ func (this *DiscoveryHttp) Stop() {
 func (this* DiscoveryHttp) task() (groups []*defines.Group,storages []*defines.Storage,err error){
 	defer helper.HandleErr()
 
+	//local address
+	var localAddr string
+	c:=plugin.PluginGetObject(plugin.PluginLocalConfig)
+	if c!=nil {
+		config,ok:=c.(*conf.Config)
+		if ok {
+			localAddr=fmt.Sprintf("%s:%d",config.Server.Host,config.Server.Port)
+		}
+	}
+
 	storages=make([]*defines.Storage,0)
 	var storageDals []*configuredef.StorageDal
 	storageDals,err=this.configureServer.StorageGetAll()
 	if err==nil&&storageDals!=nil {
 		for _,s:=range storageDals {
+			//filter local address
+			if s.Addr==localAddr {
+				continue
+			}
 			var storage *defines.Storage
 			storage,err=this.probeStorage(s.Addr)
 			if err==nil{
@@ -83,6 +100,9 @@ func (this* DiscoveryHttp) task() (groups []*defines.Group,storages []*defines.S
 				storage.Addr=s.Addr
 				storage.Online=true
 				storages=append(storages,storage)
+				log.Debugf("DiscoveryHttp probeStorage[%s] ok",s.Addr)
+			}else{
+				log.Warnf("DiscoveryHttp probeStorage[%s] error[%v]",s.Addr,err)
 			}
 		}
 	}

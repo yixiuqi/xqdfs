@@ -19,8 +19,9 @@ type ConfigureServer struct {
 	hset *ssdb.SSDBHash
 }
 
+//param is remote config server's connection param
 func NewConfigureServer(param string) (*ConfigureServer,error) {
-	log.Info("ConfigureServer param:",param)
+	log.Info("NewConfigureServer param is ",param)
 	connMgr:=&ssdb.SSDBConnectMgr{}
 	err:=connMgr.Init(param)
 	if err!=nil {

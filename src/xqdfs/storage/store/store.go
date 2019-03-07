@@ -7,12 +7,14 @@ import (
 	"sync"
 	"strings"
 	"strconv"
+	"runtime"
 	"io/ioutil"
 	"path/filepath"
 
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
+	"xqdfs/utils/pool"
 	"xqdfs/utils/helper"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/block"
@@ -68,20 +70,25 @@ func NewStore(c *conf.Config) (s *Store, err error) {
 		Stats:&stat.Stats{},
 		Volumes:make(map[int32]*volume.Volume),
 	}
+
 	if s.vf, err = os.OpenFile(c.Store.VolumeIndex, os.O_RDWR|os.O_CREATE|myos.O_NOATIME, 0664); err != nil {
-		log.Errorf("os.OpenFile(\"%s\") error(%v)", c.Store.VolumeIndex, err)
+		log.Errorf("os.OpenFile[%s] error[%v]", c.Store.VolumeIndex, err)
 		s.Close()
 		return nil, err
 	}
+
 	if s.fvf, err = os.OpenFile(c.Store.FreeVolumeIndex, os.O_RDWR|os.O_CREATE|myos.O_NOATIME, 0664); err != nil {
-		log.Errorf("os.OpenFile(\"%s\") error(%v)", c.Store.FreeVolumeIndex, err)
+		log.Errorf("os.OpenFile[%s] error[%v]", c.Store.FreeVolumeIndex, err)
 		s.Close()
 		return nil, err
 	}
+
 	if err = s.init(); err != nil {
+		log.Error(err)
 		s.Close()
 		return nil, err
 	}
+
 	return
 }
 
@@ -135,6 +142,11 @@ func (s *Store) init() (err error) {
 	if err = s.parseFreeVolumeIndex(); err == nil {
 		err = s.parseVolumeIndex()
 	}
+	if err!=nil {
+		log.Error(err)
+		return
+	}
+
 	go s.statsProc()
 	go s.volumeStatsUpdateProc()
 	return
@@ -229,9 +241,6 @@ func (s *Store) parseVolumeIndex() (err error) {
 	var (
 		i          int
 		ok         bool
-		id         int32
-		bfile      string
-		ifile      string
 		v          *volume.Volume
 		data       []byte
 		ids       []int32
@@ -247,19 +256,52 @@ func (s *Store) parseVolumeIndex() (err error) {
 		return
 	}
 
+	//load storage
+	log.Debug("using pool to load storage,pool worknum:",runtime.NumCPU())
+	p:= pool.NewPool(runtime.NumCPU(), runtime.NumCPU()).Start()
+	defer p.StopAll()
+	var lock sync.Mutex
+	var wait sync.WaitGroup
+	wait.Add(len(bfs))
 	for i = 0; i < len(bfs); i++ {
-		id, bfile, ifile = ids[i], bfs[i], ifs[i]
-		if _, ok = s.Volumes[id]; ok {
+		index, bfile, ifile:= ids[i], bfs[i], ifs[i]
+		if _, ok = s.Volumes[index]; ok {
+			wait.Done()
 			continue
 		}
-		if v, err = newVolume(id, bfile, ifile, s.conf); err != nil {
-			return
+
+		if p.AddJob(true, func(int) {
+			if v, err = newVolume(index, bfile, ifile, s.conf); err != nil {
+				wait.Done()
+			}else{
+				lock.Lock()
+				s.Volumes[index] = v
+				lock.Unlock()
+				wait.Done()
+			}
+		}) == false {
+			log.Error("pool AddJob error")
+			wait.Done()
 		}
-		s.Volumes[id] = v
 	}
+	wait.Wait()
+
+	//it's too slow
+	//
+	//for i = 0; i < len(bfs); i++ {
+	//	id, bfile, ifile = ids[i], bfs[i], ifs[i]
+	//	if _, ok = s.Volumes[id]; ok {
+	//		continue
+	//	}
+	//	if v, err = newVolume(id, bfile, ifile, s.conf); err != nil {
+	//		return
+	//	}
+	//	s.Volumes[id] = v
+	//}
 	return
 }
 
+//get all free volume
 func (s *Store) parseFreeVolumeIndex() (err error) {
 	var (
 		i     int
@@ -274,7 +316,7 @@ func (s *Store) parseFreeVolumeIndex() (err error) {
 		ifs   []string
 	)
 	if data, err = ioutil.ReadAll(s.fvf); err != nil {
-		log.Errorf("ioutil.ReadAll() error(%v)", err)
+		log.Errorf("ioutil.ReadAll[%s] error[%v]", s.fvf.Name(),err)
 		return
 	}
 	lines = strings.Split(string(data), "\n")
@@ -292,7 +334,6 @@ func (s *Store) parseFreeVolumeIndex() (err error) {
 			s.FreeId = id
 		}
 	}
-	log.Info("FreeId:",s.FreeId)
 	return
 }
 
@@ -398,9 +439,12 @@ func (s *Store) saveFreeVolumeIndex() (err error) {
 }
 
 func newVolume(id int32, bfile, ifile string, c *conf.Config) (v *volume.Volume, err error) {
+	startTime:=helper.CurrentTime()
 	if v, err = volume.NewVolume(id, bfile, ifile, c); err != nil {
-		log.Errorf("newVolume(%d, %s, %s) error(%v)", id, bfile, ifile, err)
+		log.Warnf("newVolume[%d, %s, %s] error[%v]", id, bfile, ifile, err)
 	}
+	endTime:=helper.CurrentTime()
+	log.Debugf("newVolume[%d, %s, %s] elapse:%d", id, bfile, ifile,endTime-startTime)
 	return
 }
 

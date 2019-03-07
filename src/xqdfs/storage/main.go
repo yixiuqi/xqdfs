@@ -9,6 +9,7 @@ import (
 	"xqdfs/channel"
 	"xqdfs/configure"
 	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/store"
@@ -23,72 +24,78 @@ const(
 
 func main() {
 	var (
+		err	error
+		startTime int64
+		endTime int64
 		configFilePath string
 		config	*conf.Config
-		s	*store.Store
-		server *channel.Server
-		configureServer *configure.ConfigureServer
+		storageSvr	*store.Store
+		channelSvr *channel.Server
+		confSvr *configure.ConfigureServer
 		replicationServer *replication.ReplicationServer
-		err	error
 	)
 
-	flag.StringVar(&configFilePath, "-c", "./store.toml", " set store config file path")
+	flag.StringVar(&configFilePath, "-c", "./store.toml", "storage config file path")
 	flag.Parse()
-	log.Infof("xqdfs store version[%s] start", Version)
+	log.Infof("xqdfs storage version[%s] start", Version)
 
 	if config, err = conf.NewConfig(configFilePath); err != nil {
-		log.Errorf("NewConfig(\"%s\") error(%v)", configFilePath, err)
+		log.Errorf("NewConfig[%s] error[%v]", configFilePath, err)
 		return
+	}else{
+		plugin.PluginAddObject(plugin.PluginLocalConfig,config)
 	}
-	plugin.PluginAddObject(plugin.PluginLocalConfig,config)
 
-	if configureServer,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
+	if confSvr,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
 		log.Errorf("create configure server error[%v]",err)
 		return
 	}else{
-		id:=int32(config.Server.Id)
-		c,_:=configureServer.StorageGet(id)
+		curStorageId:=int32(config.Server.Id)
+		c,_:=confSvr.StorageGet(curStorageId)
 		if c==nil {
 			storageDal:=&defines.StorageDal{
-				Id:id,
+				Id:curStorageId,
 				Addr:fmt.Sprintf("%s:%d",config.Server.Host,config.Server.Port),
 				Desc:config.Server.Desc,
 			}
-			err=configureServer.StorageAdd(storageDal)
+			err=confSvr.StorageAdd(storageDal)
 			if err!=nil{
 				log.Errorf("configure error[%v]",err)
 				return
 			}
 		}
-		plugin.PluginAddObject(plugin.PluginConfigure,configureServer)
+		plugin.PluginAddObject(plugin.PluginConfigure,confSvr)
 	}
 
-	if s, err = store.NewStore(config); err != nil {
-		log.Errorf("store init error[%v]",err)
+	startTime=helper.CurrentTime()
+	if storageSvr, err = store.NewStore(config); err != nil {
+		log.Errorf("NewStore error[%v]",err)
 		return
 	}else{
-		err=s.Init()
-		if err==errors.ErrVolumeExist{
-			log.Info("store already init")
+		err=storageSvr.Init()
+		if err==errors.ErrVolumeExist {
+			log.Info("storage already init")
 		}
-		plugin.PluginAddObject(plugin.PlugineStorage,s)
+		plugin.PluginAddObject(plugin.PlugineStorage,storageSvr)
+		endTime=helper.CurrentTime()
+		log.Info("NewStore elapse:",endTime-startTime)
 	}
 
-	if replicationServer, err = replication.NewReplicationServer(config,s,configureServer); err != nil {
+	if replicationServer, err = replication.NewReplicationServer(config,storageSvr,confSvr); err != nil {
 		log.Errorf("create sync server error[%v]",err)
 		return
 	}else{
 		plugin.PluginAddObject(plugin.PluginReplicationServer,replicationServer)
 	}
 
-	if server, err = channel.NewServer(config.Server); err != nil {
+	if channelSvr, err = channel.NewServer(config.Server); err != nil {
 		log.Errorf("create server error[%v]",err)
 		return
 	}
-	log.Info("system start")
+
 	log.SetLevel(config.Log.Level)
 	go logo()
-	StartSignal(configureServer,s,replicationServer,server)
+	StartSignal(confSvr,storageSvr,replicationServer,channelSvr)
 }
 
 func logo(){

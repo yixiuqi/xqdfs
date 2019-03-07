@@ -18,23 +18,23 @@ type SSDBConnectMgr struct {
 
 func (this *SSDBConnectMgr) Init(addr string) error{
 	items:=strings.Split(addr,",")
-	if items==nil||len(items)<=0{
+	if len(items) == 0 {
 		return errors.New("ssdb param error")
 	}
 
 	this.addr=make([]string,len(items))
 	this.port=make([]int,len(items))
 
-	for i:=0;i<len(items);i++{
+	for i:=0;i<len(items);i++ {
 		kv:=strings.Split(items[i],":")
-		if kv==nil||len(kv)!=2{
+		if kv==nil||len(kv)!=2 {
 			return errors.New("ssdb param error")
 		}
 
 		this.addr[i]=kv[0]
 		port,err:=helper.StringToInt(kv[1])
-		if err!=nil{
-			return errors.New("ssdb param error")
+		if err!=nil {
+			return err
 		}
 
 		this.port[i]=port
