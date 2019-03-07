@@ -11,7 +11,7 @@ import (
 )
 
 const(
-	Leader = "leader"
+	Leader = "XQDfsLeader"
 	LeaderTime = 10
 )
 

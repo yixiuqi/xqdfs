@@ -10,8 +10,9 @@ import (
 )
 
 const(
-	HashNameGroup 	= "HashXQDfsGroup"
-	HashNameStorage 	= "HashXQDfsStorage"
+	HashXQDfsGroup 	= "HashXQDfsGroup"
+	HashXQDfsStorage 	= "HashXQDfsStorage"
+	HashXQDfsConfig 	= "HashXQDfsConfig"
 )
 
 type ConfigureServer struct {
@@ -37,11 +38,11 @@ func NewConfigureServer(param string) (*ConfigureServer,error) {
 }
 
 func (this *ConfigureServer) ParamGet(key string) (string,error) {
-	return this.kv.Get(key)
+	return this.hset.HGet(HashXQDfsConfig,key)
 }
 
 func (this *ConfigureServer) ParamSet(key string,value string) error {
-	return this.kv.Set(key,value)
+	return this.hset.HSet(HashXQDfsConfig,key,value)
 }
 
 func (this *ConfigureServer) ParamSetx(key string,value string,ttl int) error {
@@ -55,15 +56,15 @@ func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {
 		return err
 	}
 
-	return this.hset.HSet(HashNameStorage,helper.Int32ToString(s.Id),string(param))
+	return this.hset.HSet(HashXQDfsStorage,helper.Int32ToString(s.Id),string(param))
 }
 
 func (this *ConfigureServer) StorageRemove(sid int32) error {
-	return this.hset.HDel(HashNameStorage,helper.Int32ToString(sid))
+	return this.hset.HDel(HashXQDfsStorage,helper.Int32ToString(sid))
 }
 
 func (this *ConfigureServer) StorageGet(sid int32) (*defines.StorageDal,error) {
-	param,err:=this.hset.HGet(HashNameStorage,helper.Int32ToString(sid))
+	param,err:=this.hset.HGet(HashXQDfsStorage,helper.Int32ToString(sid))
 	if err!=nil {
 		log.Warn(err)
 		return nil,err
@@ -83,7 +84,7 @@ func (this *ConfigureServer) StorageGet(sid int32) (*defines.StorageDal,error) {
 }
 
 func (this *ConfigureServer) StorageGetAll() ([]*defines.StorageDal,error) {
-	items,err:=this.hset.HGetAll(HashNameStorage)
+	items,err:=this.hset.HGetAll(HashXQDfsStorage)
 	if err!=nil {
 		log.Warn(err)
 		return nil,err
@@ -114,11 +115,11 @@ func (this *ConfigureServer) GroupAdd(g *defines.GroupDal) error {
 		return err
 	}
 
-	return this.hset.HSet(HashNameGroup,helper.Int32ToString(g.Id),string(param))
+	return this.hset.HSet(HashXQDfsGroup,helper.Int32ToString(g.Id),string(param))
 }
 
 func (this *ConfigureServer) GroupRemove(gid int32) error {
-	return this.hset.HDel(HashNameGroup,helper.Int32ToString(gid))
+	return this.hset.HDel(HashXQDfsGroup,helper.Int32ToString(gid))
 }
 
 func (this *ConfigureServer) GroupEdit(g *defines.GroupDal) error {
@@ -128,11 +129,11 @@ func (this *ConfigureServer) GroupEdit(g *defines.GroupDal) error {
 		return err
 	}
 
-	return this.hset.HSet(HashNameGroup,helper.Int32ToString(g.Id),string(param))
+	return this.hset.HSet(HashXQDfsGroup,helper.Int32ToString(g.Id),string(param))
 }
 
 func (this *ConfigureServer) GroupGet(gid int32) (*defines.GroupDal,error) {
-	param,err:=this.hset.HGet(HashNameGroup,helper.Int32ToString(gid))
+	param,err:=this.hset.HGet(HashXQDfsGroup,helper.Int32ToString(gid))
 	if err!=nil {
 		log.Warn(err)
 		return nil,err
@@ -153,7 +154,7 @@ func (this *ConfigureServer) GroupGet(gid int32) (*defines.GroupDal,error) {
 }
 
 func (this *ConfigureServer) GroupGetAll() ([]*defines.GroupDal,error) {
-	items,err:=this.hset.HGetAll(HashNameGroup)
+	items,err:=this.hset.HGetAll(HashXQDfsGroup)
 	if err!=nil {
 		log.Warn(err)
 		return nil,err

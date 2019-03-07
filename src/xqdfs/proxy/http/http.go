@@ -1,9 +1,9 @@
 package http
 
 import (
-	"net/http"
 	"net"
 	"time"
+	"net/http"
 )
 
 var httpClient *http.Client

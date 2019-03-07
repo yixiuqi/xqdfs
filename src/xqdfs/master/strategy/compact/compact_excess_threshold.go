@@ -78,6 +78,7 @@ func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,e
 			return nil,err
 		}
 	}
+	log.Infof("%s[%v]",CompactExcessThresholdValue,excessThreshold)
 
 	minCount:=int64(10000)
 	value,err=conf.ParamGet(CompactExcessThresholdMinCount)
@@ -98,6 +99,7 @@ func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,e
 			return nil,err
 		}
 	}
+	log.Infof("%s[%d]",CompactExcessThresholdMinCount,minCount)
 
 	c:=&CompactExcessThreshold{
 		configureServer:conf,

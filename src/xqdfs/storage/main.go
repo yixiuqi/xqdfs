@@ -35,7 +35,7 @@ func main() {
 		replicationServer *replication.ReplicationServer
 	)
 
-	flag.StringVar(&configFilePath, "-c", "./store.toml", "storage config file path")
+	flag.StringVar(&configFilePath, "-c", "./xqdfs_storage.toml", "storage config file path")
 	flag.Parse()
 	log.Infof("xqdfs storage version[%s] start", Version)
 

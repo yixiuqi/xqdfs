@@ -125,7 +125,7 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 		this.uploadErrorProcess.RollBack(host,vid,key)
 	}
 
-	//try three times
+	//try n times
 	count:=0
 	for err==errors.ErrSuperBlockNoSpace&&count<this.orderConsumeCount*2 {
 		removeVolumes=append(removeVolumes,volume)

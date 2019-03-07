@@ -2,9 +2,9 @@ package helper
 
 import (
 	"bytes"
-	"io/ioutil"
-	"net/http"
 	"errors"
+	"net/http"
+	"io/ioutil"
 )
 
 func HttpPost(client *http.Client,host string,sendData []byte)([]byte,error) {

@@ -3,10 +3,10 @@ package http
 import (
 	"encoding/base64"
 
-	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 
 	"github.com/Jeffail/gabs"
 )

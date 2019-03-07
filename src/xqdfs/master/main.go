@@ -17,27 +17,27 @@ import (
 )
 
 const(
-	Ver	 = "1.0.0"
+	Version	 = "1.0.0"
 )
 
 func main() {
 	var (
 		err	error
-		configFile string
+		configFilePath string
 		config	*conf.Config
 		proxyStorage *proxy.ProxyStorage
-		configureServer *configure.ConfigureServer
-		discoveryServer *discovery.DiscoveryServer
-		strategyServer *strategy.AllocStrategyServer
-		server *channel.Server
+		confSvr *configure.ConfigureServer
+		discoverySvr *discovery.DiscoveryServer
+		strategySvr *strategy.AllocStrategyServer
+		channelSvr *channel.Server
 	)
 
-	flag.StringVar(&configFile, "c", "./store.toml", " set master config file path")
+	flag.StringVar(&configFilePath, "-c", "./xqdfs_master.toml", " set master config file path")
 	flag.Parse()
-	log.Infof("xqdfs master[%s] start", Ver)
+	log.Infof("xqdfs master version[%s] start", Version)
 
-	if config, err = conf.NewConfig(configFile); err != nil {
-		log.Errorf("create config(\"%s\") error(%v)", configFile, err)
+	if config, err = conf.NewConfig(configFilePath); err != nil {
+		log.Errorf("NewConfig[%s] error[%v]", configFilePath, err)
 		return
 	}else{
 		plugin.PluginAddObject(plugin.PluginLocalConfig,config)
@@ -50,35 +50,35 @@ func main() {
 		plugin.PluginAddObject(plugin.PluginProxyStorage,proxyStorage)
 	}
 
-	if configureServer,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
+	if confSvr,err = configure.NewConfigureServer(config.Configure.Param); err != nil {
 		log.Errorf("create configure server error[%v]",err)
 		return
 	}else{
-		plugin.PluginAddObject(plugin.PluginConfigure,configureServer)
+		plugin.PluginAddObject(plugin.PluginConfigure,confSvr)
 	}
 
-	if discoveryServer,err = discovery.NewDiscoveryServer(configureServer); err != nil {
+	if discoverySvr,err = discovery.NewDiscoveryServer(confSvr); err != nil {
 		log.Errorf("create discovery server error[%v]",err)
 		return
 	}else{
-		plugin.PluginAddObject(plugin.PluginDiscoveryServer,discoveryServer)
+		plugin.PluginAddObject(plugin.PluginDiscoveryServer,discoverySvr)
 	}
 
-	if strategyServer,err = strategy.NewAllocStrategyServer(); err != nil {
+	if strategySvr,err = strategy.NewAllocStrategyServer(); err != nil {
 		log.Errorf("create alloc strategy error[%v]",err)
 		return
 	}else{
-		plugin.PluginAddObject(plugin.PluginStrategyServer,strategyServer)
+		plugin.PluginAddObject(plugin.PluginStrategyServer,strategySvr)
 	}
 
-	if server, err = channel.NewServer(config.Server); err != nil {
+	if channelSvr, err = channel.NewServer(config.Server); err != nil {
 		log.Errorf("create server error[%v]",err)
 		return
 	}
-	log.Info("system start")
+
 	log.SetLevel(config.Log.Level)
 	go logo()
-	StartSignal(server,configureServer,discoveryServer,strategyServer,proxyStorage)
+	StartSignal(channelSvr,confSvr,discoverySvr,strategySvr,proxyStorage)
 }
 
 func logo(){

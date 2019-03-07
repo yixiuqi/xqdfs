@@ -78,6 +78,7 @@ func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,o
 			continue
 		}
 
+		//这里是个技巧性的东西，同个组多个Storage作为互备的时候，选择volume是间隔选择的，方便互相同步数据
 		i := helper.Uint32n(uint32(len(su)))
 		objStorage:=su[i]
 		for vid:=id[i];vid<len(objStorage.VolumeUsage);vid+=tolerant {

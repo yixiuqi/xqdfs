@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"xqdfs/discovery/defines"
 	"xqdfs/utils/log"
+	"xqdfs/discovery/defines"
 
 	"github.com/Jeffail/gabs"
 )
