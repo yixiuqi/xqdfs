@@ -49,7 +49,7 @@ func GetVolumeUsage(volume *defines.Volume) *VolumeUsage {
 		v.Util=0
 	}else{
 		t:=float64(v.Used)/float64(v.Total)
-		v.Util=float32(math.Trunc(t*1e6+0.5) * 1e-6)
+		v.Util=float32(math.Trunc(t*1e8+0.5) * 1e-8)
 	}
 
 	return v

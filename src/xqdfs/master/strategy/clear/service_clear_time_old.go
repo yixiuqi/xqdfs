@@ -4,8 +4,8 @@ import (
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
-	"xqdfs/utils/plugin"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 
 	"github.com/Jeffail/gabs"
 )
@@ -19,6 +19,9 @@ var(
 	clearTimeOld *ClearTimeOld
 )
 
+//服务类初始化安装
+//1.安装清除功能模块
+//2.安装服务接口
 func ServiceClearTimeOldSetup(timeold *ClearTimeOld) {
 	clearTimeOld=timeold
 	plugin.PluginAddService(CmdClearTimeOldConfigGet,ServiceClearTimeOldConfigGet)

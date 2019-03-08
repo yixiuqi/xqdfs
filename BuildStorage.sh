@@ -9,7 +9,7 @@ mkdir $dir/bin_storage/binlog
 cd $dir/src/xqdfs/storage
 go build -v
 cp -rf $dir/src/xqdfs/storage/storage $dir/bin_storage
-cp -rf $dir/src/xqdfs/storage/store.toml $dir/bin_storage
+cp -rf $dir/src/xqdfs/storage/xqdfs_storage.toml $dir/bin_storage
 cp -rf $dir/src/xqdfs/storage/Storage.sh $dir/bin_storage
 chmod -R 777 $dir/bin_storage
 chmod -R 777 $dir/bin_storage/*

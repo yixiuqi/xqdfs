@@ -4,9 +4,9 @@ import (
 	"xqdfs/utils/log"
 	"xqdfs/master/strategy/alloc"
 	"xqdfs/master/strategy/clear"
+	"xqdfs/master/strategy/leader"
 	"xqdfs/master/strategy/defines"
 	"xqdfs/master/strategy/compact"
-	"xqdfs/master/strategy/leader"
 )
 
 type AllocStrategyServer struct {

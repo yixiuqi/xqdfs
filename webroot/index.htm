@@ -13,14 +13,31 @@
     </div>
     <div data-options="region:'west',split:true,title:'导航列表'" style="width:230px;">
         <div class="easyui-accordion" data-options="fit:true,border:false">
-            <div title="存储管理" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
-                <ul id="tree" class="easyui-tree">
+            <div title="&nbsp;系统说明" data-options="iconCls:'icon-1-home'" style="padding:10px;overflow:auto">
+                <ul id="treeHelp" class="easyui-tree">
+                    <li data-options="iconCls:'icon-ok',title:'API说明',page:'apidoc/index.html',isOpen:1"><span>API说明</span></li>
+                </ul>
+            </div>
+            <div title="存储配置管理" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeConf" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'存储节点配置',page:'storage.htm',isOpen:1"><span>存储节点配置</span></li>
                     <li data-options="iconCls:'icon-ok',title:'存储组配置',page:'group.htm',isOpen:1"><span>存储组配置</span></li>
+               </ul>
+            </div>
+            <div title="存储策略设置" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeStrategy" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'卷分配策略[顺序分配]',page:'alloc_order.htm',isOpen:1"><span>卷分配策略[顺序分配]</span></li>
                     <li data-options="iconCls:'icon-ok',title:'卷回收策略[最老时间]',page:'clear_time_old.htm',isOpen:1"><span>卷回收策略[最老时间]</span></li>
                     <li data-options="iconCls:'icon-ok',title:'卷压缩策略[删除比超限]',page:'compact_excess_threshold.htm',isOpen:1"><span>卷压缩策略[删除比超限]</span></li>
+               </ul>
+            </div>
+            <div title="系统信息查看" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeInfo" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'主机信息',page:'leader.htm',isOpen:1"><span>主机信息</span></li>
+                </ul>
+            </div>
+            <div title="系统工具" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeTool" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'图片文件上传',page:'opt_upload.htm',isOpen:1"><span>图片文件上传</span></li>
                     <li data-options="iconCls:'icon-ok',title:'图片文件下载',page:'opt_get.htm',isOpen:1"><span>图片文件下载</span></li>
                 </ul>
@@ -37,36 +54,42 @@
 </body>
 <script>
     function tabAdd(text,path,type){
-        if ($('#tabMain').tabs('exists',text)){ 
-            $('#tabMain').tabs('select',text); 
-        } 
-        else{
-            if(type==0){
-                $('#tabMain').tabs('add',{
-                    title: text,
-                    selected: true,
-                    closable:true,
-                    href:path+'?id='+Math.random()
-                });
+        var selTab = $('#tabMain').tabs('getSelected');
+        var rand = Math.random();
+        var content='<iframe frameborder="0" scrolling="auto"  style="width:100%;height:100%;" src="'+path+'?id='+rand+'"></iframe>';
+        $('#tabMain').tabs('update', {
+            tab: selTab,
+            options: {
+                title: text,
+                content: content
             }
-            else{
-                var rand = Math.random();
-                var content='<iframe frameborder="0" width="100%" height="100%" src="'+path+'?id='+rand+'"></iframe>';
-                
-                $('#tabMain').tabs('add',{
-                    title: text,
-                    selected: true,
-                    closable:true,
-                    content:content
-                });	
-            }
-        }
+        })
     }
       
-    $('#tree').tree({
+    $('#treeHelp').tree({
         onClick : function(node) {
             tabAdd(node.title,node.page,node.isOpen);
         }
     }); 
+    $('#treeConf').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeStrategy').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeInfo').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeTool').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    });
 </script>
 </html>

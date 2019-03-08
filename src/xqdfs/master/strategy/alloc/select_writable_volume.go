@@ -34,14 +34,15 @@ func (this *SelectWritableVolume) getGroupUsage() *usage.GroupsUsage {
 		this.groupUsage=usage.GetGroupsUsageSortById(this.discoveryServer.Groups())
 	}
 	if this.groupUsage==nil{
-		log.Debug("groupUsage==null")
+		log.Debug("groupUsage is null")
 		return nil
 	}
 
-	for i := len(this.groupUsage.Usage) - 1; i > 0; i-- {
-		num := helper.Uint32n(uint32(i + 1))
-		this.groupUsage.Usage[i], this.groupUsage.Usage[num] = this.groupUsage.Usage[num], this.groupUsage.Usage[i]
-	}
+	//洗牌
+	//for i := len(this.groupUsage.Usage) - 1; i > 0; i-- {
+	//	num := helper.Uint32n(uint32(i + 1))
+	//	this.groupUsage.Usage[i], this.groupUsage.Usage[num] = this.groupUsage.Usage[num], this.groupUsage.Usage[i]
+	//}
 
 	return this.groupUsage
 }

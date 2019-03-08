@@ -9,13 +9,15 @@
     <script type="text/javascript" src="js/storage_add.js"></script>
     <script type="text/javascript" src="js/storage_remove.js"></script>
     <script type="text/javascript" src="js/storage_init.js"></script>
+	<script type="text/javascript" src="js/load.js"></script>
 </head>
 <body class="easyui-layout">
     <table class="easyui-datagrid" width="100%" height="100%" 
         id="tbStorage"
+        fitcolumns="true"
         toolbar="#tbarStorage"
         singleSelect="true" 
-        rownumbers="true"
+        rownumbers="false"
         pagination="true"
         pageSize=10
         pageList="[10,20,30,40,50]"
@@ -53,6 +55,13 @@
                 }
             });
         }
+
+        $(function(){
+            $(".datagrid-header-row td div span").each(function(i,th){
+                var val = $(th).text();
+                $(th).html("<label style='font-weight:bolder;color:#777;'>"+val+"</label>");
+            });
+        });
     </script>
 </body>
 </html>

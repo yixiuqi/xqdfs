@@ -77,13 +77,10 @@ func (this *GroupsUsage) Json() (*gabs.Container,error) {
 	}
 }
 
-/*
- * @brief
- *    获取所有组使用情况
-*/
+//获取所有组使用情况
 func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
-	if groups==nil||len(groups)==0{
-		log.Debug("groups==null")
+	if len(groups)==0 {
+		log.Debug("groups is null")
 		return nil
 	}
 
@@ -122,7 +119,7 @@ func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 			gu.Util=0
 		}else{
 			v:=float64(gu.Used)/float64(gu.Total)
-			gu.Util=float32(math.Trunc(v*1e6+0.5) * 1e-6)
+			gu.Util=float32(math.Trunc(v*1e8+0.5) * 1e-8)
 		}
 
 		groupsUsage.Total+=gu.Total
@@ -134,7 +131,7 @@ func GetGroupsUsage(groups []*defines.Group) *GroupsUsage {
 		groupsUsage.Util=0
 	}else{
 		v:=float64(groupsUsage.Used)/float64(groupsUsage.Total)
-		groupsUsage.Util=float32(math.Trunc(v*1e6+0.5) * 1e-6)
+		groupsUsage.Util=float32(math.Trunc(v*1e8+0.5) * 1e-8)
 	}
 	return groupsUsage
 }
@@ -145,12 +142,16 @@ func GetGroupsUsageSortById(groups []*defines.Group) *GroupsUsage {
 		return nil
 	}
 
+	//按id排序
 	for _,g:=range groupUsage.Usage {
 		for _,s:=range g.StorageUsage {
+			//sort volume
 			sort.Sort(VolumeUsageSortById(s.VolumeUsage))
 		}
+		//sort storage
 		sort.Sort(StorageUsageSortById(g.StorageUsage))
 	}
+	//sort group
 	sort.Sort(GroupUsageSortById(groupUsage.Usage))
 	return groupUsage
 }

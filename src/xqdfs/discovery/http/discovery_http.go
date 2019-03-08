@@ -100,7 +100,7 @@ func (this* DiscoveryHttp) task() (groups []*defines.Group,storages []*defines.S
 				storage.Addr=s.Addr
 				storage.Online=true
 				storages=append(storages,storage)
-				log.Debugf("DiscoveryHttp probeStorage[%s] ok",s.Addr)
+				log.Tracef("DiscoveryHttp probeStorage[%s] ok",s.Addr)
 			}else{
 				log.Warnf("DiscoveryHttp probeStorage[%s] error[%v]",s.Addr,err)
 			}

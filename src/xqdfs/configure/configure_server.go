@@ -37,16 +37,24 @@ func NewConfigureServer(param string) (*ConfigureServer,error) {
 	return server,nil
 }
 
-func (this *ConfigureServer) ParamGet(key string) (string,error) {
+func (this *ConfigureServer) KVGet(key string) (string,error) {
+	return this.kv.Get(key)
+}
+
+func (this *ConfigureServer) KVSet(key string,value string) error {
+	return this.kv.Set(key,value)
+}
+
+func (this *ConfigureServer) KVSetx(key string,value string,ttl int) error {
+	return this.kv.Setx(key,value,ttl)
+}
+
+func (this *ConfigureServer) ConfigGet(key string) (string,error) {
 	return this.hset.HGet(HashXQDfsConfig,key)
 }
 
-func (this *ConfigureServer) ParamSet(key string,value string) error {
+func (this *ConfigureServer) ConfigSet(key string,value string) error {
 	return this.hset.HSet(HashXQDfsConfig,key,value)
-}
-
-func (this *ConfigureServer) ParamSetx(key string,value string,ttl int) error {
-	return this.kv.Setx(key,value,ttl)
 }
 
 func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {

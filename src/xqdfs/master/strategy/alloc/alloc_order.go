@@ -56,10 +56,10 @@ func NewAllocOrder() (*AllocOrder,error) {
 	}
 
 	var orderMinFreeSpace int64=104857600
-	value,err:=conf.ParamGet(AllocOrderMinFreeSpace)
+	value,err:=conf.ConfigGet(AllocOrderMinFreeSpace)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(AllocOrderMinFreeSpace,"104857600")
+			err=conf.ConfigSet(AllocOrderMinFreeSpace,"104857600")
 			if err!=nil{
 				return nil,err
 			}
@@ -76,10 +76,10 @@ func NewAllocOrder() (*AllocOrder,error) {
 	}
 
 	orderConsumeCount:=3
-	value,err=conf.ParamGet(AllocOrderConsumeCount)
+	value,err=conf.ConfigGet(AllocOrderConsumeCount)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(AllocOrderConsumeCount,"3")
+			err=conf.ConfigSet(AllocOrderConsumeCount,"3")
 			if err!=nil{
 				return nil,err
 			}
@@ -219,7 +219,7 @@ func (this *AllocOrder) AllocOrderMinFreeSpaceGet() int64 {
 }
 
 func (this *AllocOrder) AllocOrderMinFreeSpaceSet(orderMinFreeSpace int64) error {
-	err:=this.configureServer.ParamSet(AllocOrderMinFreeSpace,fmt.Sprintf("%d",orderMinFreeSpace))
+	err:=this.configureServer.ConfigSet(AllocOrderMinFreeSpace,fmt.Sprintf("%d",orderMinFreeSpace))
 	if err!=nil{
 		log.Error(err)
 		return err
@@ -234,7 +234,7 @@ func (this *AllocOrder) AllocOrderConsumeCountGet() int {
 }
 
 func (this *AllocOrder) AllocOrderConsumeCountSet(orderConsumeCount int) error {
-	err:=this.configureServer.ParamSet(AllocOrderConsumeCount,fmt.Sprintf("%d",orderConsumeCount))
+	err:=this.configureServer.ConfigSet(AllocOrderConsumeCount,fmt.Sprintf("%d",orderConsumeCount))
 	if err!=nil{
 		log.Error(err)
 		return err

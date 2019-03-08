@@ -12,13 +12,15 @@
     <script type="text/javascript" src="js/group_add_storage.js"></script>
     <script type="text/javascript" src="js/group_remove_storage.js"></script>
     <script type="text/javascript" src="js/storage_getall.js"></script>
+	<script type="text/javascript" src="js/load.js"></script>
 </head>
 <body class="easyui-layout">
     <table class="easyui-datagrid" width="100%" height="100%" 
         id="tbGroup"
+        fitcolumns="true"
         toolbar="#tbarGroup"
         singleSelect="true" 
-        rownumbers="true"
+        rownumbers="false"
         pagination="true"
         pageSize=10
         pageList="[10,20,30,40,50]"
@@ -28,13 +30,13 @@
                 <th field="groupId" width="70" align="center">组编号</th>
                 <th field="groupReadOnly" width="60" align="center">组只读</th>
                 <th data-options="field:'group_operate',width:90,formatter:operationFormat" align="center">操作</th> 
-                <th field="groupInfo" width="150" align="left">组容量信息</th>
-                <th field="groupThroughput" width="150" align="left">组吞吐</th>
+                <th field="groupInfo" width="150" align="left" halign="center">组容量信息</th>
+                <th field="groupThroughput" width="150" align="left" halign="center">组吞吐</th>
                 <th field="storageId" width="70" align="center">节点编号</th>
                 <th field="storageAddr" width="180" align="center">节点地址</th>
                 <th field="storageOnline" width="70" align="center">是否在线</th>
-                <th field="storageInfo" width="150" align="left">节点容量信息</th>
-                <th field="storageThroughput" width="150" align="left">节点吞吐</th>
+                <th field="storageInfo" width="150" align="left" halign="center">节点容量信息</th>
+                <th field="storageThroughput" width="150" align="left" halign="center">节点吞吐</th>
                 <th data-options="field:'volume_info',width:100,formatter:volumeInfoFormat" align="center">卷详细信息</th> 
             </tr>
         </thead>
@@ -42,7 +44,7 @@
     
     <div id="tbarGroup" style="padding:5px;height:auto">
         <div>
-            <a href="#" class="easyui-linkbutton" onClick="btnGroupAdd()">&nbsp;添加组&nbsp;&nbsp;</a>
+            <a href="#" class="easyui-linkbutton" onClick="btnGroupAdd()">&nbsp;添加存储组&nbsp;&nbsp;</a>
             <a href="#" class="easyui-linkbutton" onClick="btnStorageAdd()">&nbsp;&nbsp;添加存储节点&nbsp;</a>
             <a href="#" class="easyui-linkbutton" onClick="btnStorageRemove()">&nbsp;&nbsp;删除存储节点&nbsp;</a>
             <label>&nbsp;&nbsp;&nbsp;实时刷新:</label><input id="switchEdit" class="easyui-switchbutton" data-options="onText:'Yes',offText:'No'">
@@ -296,6 +298,11 @@
                     
                 }
             })
+
+            $(".datagrid-header-row td div span").each(function(i,th){
+                var val = $(th).text();
+                $(th).html("<label style='font-weight:bolder;color:#777;'>"+val+"</label>");
+            });
         });
     </script>
 </body>

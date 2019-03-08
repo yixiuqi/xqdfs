@@ -62,15 +62,15 @@ func (this *LeaderSelect) process() {
 
 	this.leaderId=""
 
-	v,err:=this.configureServer.ParamGet(Leader)
+	v,err:=this.configureServer.KVGet(Leader)
 	if err==nil{
 		this.leaderId=v
 		if this.meId==v{
-			this.configureServer.ParamSetx(Leader,this.meId,LeaderTime)
+			this.configureServer.KVSetx(Leader,this.meId,LeaderTime)
 		}
 	}else{
-		this.configureServer.ParamSetx(Leader,this.meId,LeaderTime)
-		v,err:=this.configureServer.ParamGet(Leader)
+		this.configureServer.KVSetx(Leader,this.meId,LeaderTime)
+		v,err:=this.configureServer.KVGet(Leader)
 		if err==nil{
 			this.leaderId=v
 		}

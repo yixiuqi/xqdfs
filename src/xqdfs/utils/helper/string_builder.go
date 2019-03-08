@@ -5,12 +5,11 @@ import (
 	"fmt"
 )
 
-/*
-字符串拼接类
-eg.
-	str:=NewStringBuilder().Append("1").Append(2).Append("3").ToString()
-	str is "123"
-*/
+//
+//字符串拼接类
+//eg.
+//	str:=NewStringBuilder().Append("1").Append(2).Append("3").ToString()
+//	str is "123"
 
 type StringBuilder struct {
 	msg *bytes.Buffer

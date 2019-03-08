@@ -53,7 +53,7 @@ func GetStorageUsage(storage *defines.Storage) *StorageUsage {
 		su.Util=0
 	}else{
 		v:=float64(su.Used)/float64(su.Total)
-		su.Util=float32(math.Trunc(v*1e6+0.5) * 1e-6)
+		su.Util=float32(math.Trunc(v*1e8+0.5) * 1e-8)
 	}
 
 	return su

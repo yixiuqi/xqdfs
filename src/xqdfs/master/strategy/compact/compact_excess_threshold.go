@@ -60,10 +60,10 @@ func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,e
 	}
 
 	excessThreshold:=0.3
-	value,err:=conf.ParamGet(CompactExcessThresholdValue)
+	value,err:=conf.ConfigGet(CompactExcessThresholdValue)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(CompactExcessThresholdValue,"0.3")
+			err=conf.ConfigSet(CompactExcessThresholdValue,"0.3")
 			if err!=nil{
 				return nil,err
 			}
@@ -81,10 +81,10 @@ func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,e
 	log.Infof("%s[%v]",CompactExcessThresholdValue,excessThreshold)
 
 	minCount:=int64(10000)
-	value,err=conf.ParamGet(CompactExcessThresholdMinCount)
+	value,err=conf.ConfigGet(CompactExcessThresholdMinCount)
 	if err!=nil{
 		if err==errors.ErrParamNotExist{
-			err=conf.ParamSet(CompactExcessThresholdMinCount,"10000")
+			err=conf.ConfigSet(CompactExcessThresholdMinCount,"10000")
 			if err!=nil{
 				return nil,err
 			}
@@ -188,7 +188,7 @@ func (this *CompactExcessThreshold) CompactExcessThresholdValueGet() float64 {
 }
 
 func (this *CompactExcessThreshold) CompactExcessThresholdValueSet(excessThreshold float64) error {
-	err:=this.configureServer.ParamSet(CompactExcessThresholdValue,fmt.Sprintf("%v",excessThreshold))
+	err:=this.configureServer.ConfigSet(CompactExcessThresholdValue,fmt.Sprintf("%v",excessThreshold))
 	if err!=nil{
 		log.Error(err)
 		return err
@@ -203,7 +203,7 @@ func (this *CompactExcessThreshold) CompactExcessThresholdMinCountGet() int64 {
 }
 
 func (this *CompactExcessThreshold) CompactExcessThresholdMinCountSet(minCount int64) error {
-	err:=this.configureServer.ParamSet(CompactExcessThresholdMinCount,fmt.Sprintf("%d",minCount))
+	err:=this.configureServer.ConfigSet(CompactExcessThresholdMinCount,fmt.Sprintf("%d",minCount))
 	if err!=nil{
 		log.Error(err)
 		return err
