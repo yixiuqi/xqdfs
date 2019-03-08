@@ -53,10 +53,17 @@
             }
             $.messager.confirm('提示', '是否确定设置参数?', function(r){
                 if (r){
+                    var jsonData = {
+                        "threshold":parseFloat(threshold),
+                        "minCount":parseInt(minCount)
+                    };
+
                     $.ajax({
                         url: "/strategy/compact/threshold/config/set",  
                         type: "POST",
-                        data: "threshold="+threshold+"&minCount="+minCount,
+                        contentType:"application/json",               
+                        data:JSON.stringify(jsonData), 
+                        async:false, 
                         dataType:"json", 
                         success: function( response ) {
                             if(response.result==0){

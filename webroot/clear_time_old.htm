@@ -68,10 +68,16 @@
             }
             $.messager.confirm('提示', '是否确定设置参数?', function(r){
                 if (r){
+                    var jsonData = {
+                        "clearThreshold":parseInt(clearThreshold)
+                    };
+
                     $.ajax({
                         url: "/strategy/clear/timeold/config/set",  
                         type: "POST",
-                        data: "clearThreshold="+clearThreshold,
+                        contentType:"application/json",               
+                        data:JSON.stringify(jsonData), 
+                        async:false, 
                         dataType:"json", 
                         success: function( response ) {
                             if(response.result==0){
