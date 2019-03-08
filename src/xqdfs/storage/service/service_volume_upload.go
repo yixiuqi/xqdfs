@@ -2,6 +2,8 @@ package service
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -18,7 +20,21 @@ func init() {
 	plugin.PluginAddService(constant.CmdVolumeUpload,ServiceVolumeUpload)
 }
 
-func ServiceVolumeUpload(m map[string]interface{}) interface{}{
+type RequestVolumeUpload struct {
+	Vid int32 			`json:"vid"`
+	Key int64 			`json:"key"`
+	Cookie int32 		`json:"cookie"`
+	Img []byte 		`json:"img"`
+	Replication bool 	`json:"replication"`
+}
+func ServiceVolumeUpload(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeUpload{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Warnf("%s no support",plugin.PlugineStorage)
@@ -35,57 +51,13 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 		replicationServer=r.(*replication.ReplicationServer)
 	}
 
-	var img []byte
-	var vid int32
-	var key int64
-	var cookie int32
-	value,ok:=m["img"]
-	if ok {
-		img=helper.ImageGet("",value.(string))
-		if len(img)==0 {
-			return helper.ResultBuildWithExtInfo(errors.RetImageData,errors.ErrImageData.Error())
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"img missing")
-	}
-
-	value,ok=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	value,ok=m["key"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			key=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
-	}
-
-	value,ok=m["cookie"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			cookie=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"cookie missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
-		n:= needle.NewWriter(key, int32(cookie), int32(len(img)))
+		n:= needle.NewWriter(req.Key, req.Cookie, int32(len(req.Img)))
 		defer n.Close()
 
 		buf:= &bytes.Buffer{}
-		buf.Write(img)
+		buf.Write(req.Img)
 
 		err:= n.ReadFrom(buf)
 		if err!=nil{
@@ -96,13 +68,12 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 		err= v.Write(n)
 		if err!=nil{
 			if err==errors.ErrNeedleExist {
-				replication,ok:=m["replication"]
-				if ok && replication==true {
+				if req.Replication==true {
 					p:=&process.ReplicationUpload{
-						Vid:vid,
-						Key:key,
-						Cookie:cookie,
-						Image:img,
+						Vid:req.Vid,
+						Key:req.Key,
+						Cookie:req.Cookie,
+						Image:req.Img,
 					}
 					replicationServer.Replication(p)
 				}
@@ -115,13 +86,12 @@ func ServiceVolumeUpload(m map[string]interface{}) interface{}{
 				return helper.ResultBuildWithExtInfo(errors.RetOptUpload,err.Error())
 			}
 		}else{
-			replication,ok:=m["replication"]
-			if ok && replication==true {
+			if req.Replication==true {
 				p:=&process.ReplicationUpload{
-					Vid:vid,
-					Key:key,
-					Cookie:cookie,
-					Image:img,
+					Vid:req.Vid,
+					Key:req.Key,
+					Cookie:req.Cookie,
+					Image:req.Img,
 				}
 				replicationServer.Replication(p)
 			}

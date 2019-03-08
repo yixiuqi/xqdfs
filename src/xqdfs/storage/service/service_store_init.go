@@ -1,6 +1,9 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
@@ -15,7 +18,17 @@ func init() {
 	plugin.PluginAddService(constant.CmdStoreInit,ServiceStoreInit)
 }
 
-func ServiceStoreInit(m map[string]interface{}) interface{}{
+type RequestStoreInit struct {
+	Replication bool `json:"replication"`
+}
+func ServiceStoreInit(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStoreInit{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -32,7 +45,7 @@ func ServiceStoreInit(m map[string]interface{}) interface{}{
 		replicationServer=r.(*replication.ReplicationServer)
 	}
 
-	err:=storage.Init()
+	err=storage.Init()
 	if err!=nil{
 		log.Error(err)
 		e,ok:=err.(errors.Error)
@@ -42,8 +55,7 @@ func ServiceStoreInit(m map[string]interface{}) interface{}{
 			return helper.ResultBuildWithExtInfo(errors.RetStoreInitFailed,err.Error())
 		}
 	}else{
-		replication,ok:=m["replication"]
-		if ok && replication==true {
+		if req.Replication==true {
 			p:=&process.ReplicationStorageInit{}
 			replicationServer.Replication(p)
 		}

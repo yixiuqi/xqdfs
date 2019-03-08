@@ -31,7 +31,6 @@ const(
 	CmdStorageVolumeCompact		= "/storage/volume/compact"
 	CmdStorageVolumeClear		= "/storage/volume/clear"
 	CmdStorageInit				= "/storage/init"
-	CmdStorageAdd					= "/storage/add"
 	CmdStorageRemove				= "/storage/remove"
 	CmdStorageGetAll				= "/storage/getall"
 	CmdStorageGetConfigure		= "/storage/getconfigure"

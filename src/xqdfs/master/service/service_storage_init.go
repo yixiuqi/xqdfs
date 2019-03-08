@@ -1,20 +1,33 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
+	"xqdfs/proxy"
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/configure"
-	"xqdfs/utils/plugin"
-	"xqdfs/proxy"
 	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 )
 
 func init() {
 	plugin.PluginAddService(constant.CmdStorageInit,ServiceStorageInit)
 }
 
-func ServiceStorageInit(m map[string]interface{}) interface{}{
+type RequestStorageInit struct {
+	StorageId int32	`json:"id"`
+}
+func ServiceStorageInit(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStorageInit{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -31,18 +44,7 @@ func ServiceStorageInit(m map[string]interface{}) interface{}{
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	var storageId int32
-	value,ok:=m["id"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			storageId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"id missing")
-	}
-
-	storage,err:=conf.StorageGet(storageId)
+	storage,err:=conf.StorageGet(req.StorageId)
 	if err!=nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGet,err.Error())
 	}

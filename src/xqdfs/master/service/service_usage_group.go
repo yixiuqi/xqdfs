@@ -1,11 +1,14 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
 	"xqdfs/discovery"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/master/resource/usage"
 )
@@ -28,7 +31,17 @@ func init() {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceUsageGroups(m map[string]interface{}) interface{}{
+type RequestUsageGroups struct {
+	CmdType string	`json:"type"`
+}
+func ServiceUsageGroups(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestUsageGroups{"null"}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var discoveryServer *discovery.DiscoveryServer
 	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
 		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
@@ -42,15 +55,7 @@ func ServiceUsageGroups(m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,"discovery groups is empty")
 	}
 
-	var cmdType string
-	value,ok:=m["type"]
-	if ok {
-		cmdType=value.(string)
-	}else{
-		cmdType="null"
-	}
-
-	if cmdType=="sortById"{
+	if req.CmdType=="sortById"{
 		groupsUsage:= usage.GetGroupsUsageSortById(groups)
 		if groupsUsage==nil{
 			return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,"discovery groups is empty")
@@ -63,7 +68,7 @@ func ServiceUsageGroups(m map[string]interface{}) interface{}{
 		}else{
 			return helper.ResultBuildWithBody(constant.Success,json)
 		}
-	}else if cmdType=="sortBySize"{
+	}else if req.CmdType=="sortBySize"{
 		groupsUsage:= usage.GetGroupsUsageSortBySize(groups)
 		if groupsUsage==nil{
 			return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,"discovery groups is empty")
@@ -76,7 +81,7 @@ func ServiceUsageGroups(m map[string]interface{}) interface{}{
 		}else{
 			return helper.ResultBuildWithBody(constant.Success,json)
 		}
-	}else if cmdType=="sortByWriteTps"{
+	}else if req.CmdType=="sortByWriteTps"{
 		groupsUsage:= usage.GetGroupsUsageSortByWriteTps(groups)
 		if groupsUsage==nil{
 			return helper.ResultBuildWithExtInfo(errors.RetGroupIsEmpty,"discovery groups is empty")

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"xqdfs/utils/log"
 	"xqdfs/errors"
 	"xqdfs/utils/helper"
@@ -16,7 +18,7 @@ func init() {
 	plugin.PluginAddService(constant.CmdGroupAdd,ServiceGroupAdd)
 }
 
-func ServiceGroupAdd(m map[string]interface{}) interface{}{
+func ServiceGroupAdd(ctx context.Context,inv *plugin.Invocation) interface{}{
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)

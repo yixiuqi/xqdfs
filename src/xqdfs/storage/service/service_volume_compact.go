@@ -2,12 +2,14 @@ package service
 
 import (
 	"sync"
+	"context"
+	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
-	"xqdfs/utils/plugin"
 	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
@@ -34,7 +36,18 @@ var(
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceVolumeCompact(m map[string]interface{}) interface{}{
+type RequestVolumeCompact struct {
+	Vid int32 			`json:"vid"`
+	Replication bool 	`json:"replication"`
+}
+func ServiceVolumeCompact(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeCompact{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -51,23 +64,12 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 		replicationServer=r.(*replication.ReplicationServer)
 	}
 
-	var vid int32
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
 	if len(storage.FreeVolumes) == 0 {
 		log.Error(errors.ErrStoreNoFreeVolume.Error())
 		return helper.ResultBuildWithExtInfo(errors.RetStoreNoFreeVolume,errors.ErrStoreNoFreeVolume.Error())
 	}
 
-	if v:= storage.Volumes[vid]; v != nil {
+	if v:= storage.Volumes[req.Vid]; v != nil {
 		if v.Compact {
 			return helper.ResultBuildWithExtInfo(errors.RetVolumeInCompact,errors.ErrVolumeInCompact.Error())
 		}
@@ -84,7 +86,6 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 		lock.Unlock()
 	}
 
-	replication,_:=m["replication"]
 	go func(replication bool,vid int32) {
 		if replication==true {
 			p:=&process.ReplicationStorageVolumeCompact{
@@ -108,7 +109,7 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
 		lock.Lock()
 		compactTaskCount--
 		lock.Unlock()
-	}(replication.(bool),vid)
+	}(req.Replication,req.Vid)
 	return helper.ResultBuild(constant.Success)
 }
 
@@ -122,7 +123,17 @@ func ServiceVolumeCompact(m map[string]interface{}) interface{}{
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceVolumeCompactStatus(m map[string]interface{}) interface{}{
+type RequestVolumeCompactStatus struct {
+	Vid int32 `json:"vid"`
+}
+func ServiceVolumeCompactStatus(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeCompactStatus{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -131,18 +142,7 @@ func ServiceVolumeCompactStatus(m map[string]interface{}) interface{}{
 		storage=s.(*store.Store)
 	}
 
-	var vid int32
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
 		json:=gabs.New()
 		json.Set(v.IsCompact(),"status")

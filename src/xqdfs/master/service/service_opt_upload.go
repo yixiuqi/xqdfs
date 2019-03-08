@@ -1,15 +1,17 @@
 package service
 
 import (
+	"context"
 	"strings"
+	"encoding/json"
 	"encoding/base64"
 
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/master/strategy"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/master/strategy"
 
 	"github.com/Jeffail/gabs"
 )
@@ -28,7 +30,17 @@ func init() {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceOptUpload(m map[string]interface{}) interface{}{
+type RequestOptUpload struct {
+	Img []byte `json:"img"`
+}
+func ServiceOptUpload(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestOptUpload{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var strategyServer *strategy.AllocStrategyServer
 	if s:=plugin.PluginGetObject(plugin.PluginStrategyServer);s==nil {
 		log.Errorf("%s no support",plugin.PluginStrategyServer)
@@ -37,23 +49,12 @@ func ServiceOptUpload(m map[string]interface{}) interface{}{
 		strategyServer=s.(*strategy.AllocStrategyServer)
 	}
 
-	var img []byte
-	value,ok:=m["img"]
-	if ok {
-		img=helper.ImageGet("",value.(string))
-		if img==nil||len(img)==0 {
-			return helper.ResultBuildWithExtInfo(errors.RetImageData,errors.ErrImageData.Error())
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"img missing")
-	}
-
 	key:=helper.KeyGenerate()
-	url,err:=strategyServer.Write(key,constant.Cookie,img)
+	url,err:=strategyServer.Write(key,constant.Cookie,req.Img)
 	for err==errors.ErrNeedleExist {
 		log.Error(err," try again")
 		key=helper.KeyGenerate()
-		url,err=strategyServer.Write(key,constant.Cookie,img)
+		url,err=strategyServer.Write(key,constant.Cookie,req.Img)
 	}
 
 	if err!=nil{

@@ -1,14 +1,17 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/storage/replication/process"
-	"xqdfs/storage/store"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
+	"xqdfs/storage/replication/process"
 )
 
 func init() {
@@ -25,7 +28,18 @@ func init() {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceVolumeClear(m map[string]interface{}) interface{}{
+type RequestVolumeClear struct {
+	Vid int32 			`json:"vid"`
+	Replication bool 	`json:"replication"`
+}
+func ServiceVolumeClear(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeClear{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -42,28 +56,16 @@ func ServiceVolumeClear(m map[string]interface{}) interface{}{
 		replicationServer=r.(*replication.ReplicationServer)
 	}
 
-	var vid int32
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
 		err:= v.Clear()
 		if err!=nil{
 			log.Warn(err)
 			return helper.ResultBuildWithExtInfo(errors.RetVolumeClear,err.Error())
 		}else{
-			replication,ok:=m["replication"]
-			if ok && replication==true {
+			if req.Replication==true {
 				p:=&process.ReplicationStorageVolumeClear{
-					Vid:vid,
+					Vid:req.Vid,
 				}
 				replicationServer.Replication(p)
 			}

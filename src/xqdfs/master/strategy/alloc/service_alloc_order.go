@@ -1,6 +1,9 @@
 package order
 
 import (
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
@@ -25,43 +28,31 @@ func ServiceAllocOrderSetup(order *AllocOrder) {
 	plugin.PluginAddService(CmdAllocOrderConfigSet,ServiceAllocOrderConfigSet)
 }
 
-func ServiceAllocOrderConfigGet(m map[string]interface{}) interface{}{
+func ServiceAllocOrderConfigGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
 	json.Set(allocOrder.AllocOrderConsumeCountGet(),"consumeCount")
 	json.Set(allocOrder.AllocOrderMinFreeSpaceGet(),"minFreeSpace")
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 
-func ServiceAllocOrderConfigSet(m map[string]interface{}) interface{}{
-	var consumeCount int
-	var minFreeSpace int64
-	value,ok:=m["consumeCount"]
-	if ok {
-		tmp,err:=helper.GetInt(value)
-		if err==nil{
-			consumeCount=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"consumeCount missing")
+type RequestAllocOrderConfigSet struct {
+	ConsumeCount int	`json:"consumeCount"`
+	MinFreeSpace int64	`json:"minFreeSpace"`
+}
+func ServiceAllocOrderConfigSet(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestAllocOrderConfigSet{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	value,ok=m["minFreeSpace"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			minFreeSpace=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"minFreeSpace missing")
-	}
-	log.Debugf("consumeCount[%d] minFreeSpace[%d]",consumeCount,minFreeSpace)
-
-	err:=allocOrder.AllocOrderConsumeCountSet(consumeCount)
+	err=allocOrder.AllocOrderConsumeCountSet(req.ConsumeCount)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
-	err=allocOrder.AllocOrderMinFreeSpaceSet(minFreeSpace)
+	err=allocOrder.AllocOrderMinFreeSpaceSet(req.MinFreeSpace)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())

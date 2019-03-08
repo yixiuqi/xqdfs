@@ -1,12 +1,15 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/master/strategy"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/master/strategy"
 )
 
 func init() {
@@ -24,7 +27,17 @@ func init() {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceOptDelete(m map[string]interface{}) interface{}{
+type RequestOptDelete struct {
+	Url string 			`json:"url"`
+}
+func ServiceOptDelete(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestOptDelete{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var strategyServer *strategy.AllocStrategyServer
 	if s:=plugin.PluginGetObject(plugin.PluginStrategyServer);s==nil {
 		log.Errorf("%s no support",plugin.PluginStrategyServer)
@@ -33,15 +46,7 @@ func ServiceOptDelete(m map[string]interface{}) interface{}{
 		strategyServer=s.(*strategy.AllocStrategyServer)
 	}
 
-	var url string
-	value,ok:=m["url"]
-	if ok {
-		url=value.(string)
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"url missing")
-	}
-
-	err:=strategyServer.Delete(url)
+	err=strategyServer.Delete(req.Url)
 	if err!=nil {
 		log.Warn(err)
 		e,ok:=err.(errors.Error)

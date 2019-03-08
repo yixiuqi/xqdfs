@@ -1,15 +1,16 @@
 package service
 
 import (
-	"encoding/json"
 	"bytes"
+	"context"
+	"encoding/json"
 
-	"xqdfs/utils/helper"
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/storage/store"
+	"xqdfs/utils/log"
 	"xqdfs/utils/plugin"
+	"xqdfs/utils/helper"
+	"xqdfs/storage/store"
 	
 	"github.com/Jeffail/gabs"
 )
@@ -18,7 +19,18 @@ func init() {
 	plugin.PluginAddService(constant.CmdVolumeNeedleInfo,ServiceVolumeNeedleInfo)
 }
 
-func ServiceVolumeNeedleInfo(m map[string]interface{}) interface{}{
+type RequestVolumeNeedleInfo struct {
+	Vid int32 			`json:"vid"`
+	Key int64 			`json:"key"`
+}
+func ServiceVolumeNeedleInfo(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeNeedleInfo{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -27,31 +39,9 @@ func ServiceVolumeNeedleInfo(m map[string]interface{}) interface{}{
 		storage=s.(*store.Store)
 	}
 
-	var vid int32
-	var key int64
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	value,ok=m["key"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			key=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
-		n,err:= v.GetHeader(key)
+		n,err:= v.GetHeader(req.Key)
 		if err!=nil{
 			log.Error(err)
 			return helper.ResultBuildWithExtInfo(errors.RetOptGet,err.Error())

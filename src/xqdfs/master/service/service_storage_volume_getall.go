@@ -3,6 +3,8 @@ package service
 import (
 	"sort"
 	"math"
+	"context"
+	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -19,7 +21,65 @@ func init() {
 	plugin.PluginAddService(constant.CmdStorageVolumeGetAll,ServiceStorageVolumeGetAll)
 }
 
-func ServiceStorageVolumeGetAll(m map[string]interface{}) interface{}{
+type RequestStorageVolumeGetAll struct {
+	Page int32 			`json:"page"`
+	Rows int32 			`json:"rows"`
+	StorageId int32 	`json:"storageId"`
+	Sort string 		`json:"sort"`
+}
+func ServiceStorageVolumeGetAll(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStorageVolumeGetAll{}
+	if inv.ContentType==plugin.HttpTextPlain||inv.ContentType==plugin.HttpApplicationJson {
+		err:=json.Unmarshal(inv.Body,req)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+	}else{
+		j,err:=gabs.ParseJSON(inv.Body)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+
+		if j.Exists("page") {
+			v,err:=helper.StringToInt32(j.Path("page").Data().(string))
+			if err==nil {
+				req.Page=v
+			}
+		}
+
+		if j.Exists("rows") {
+			v,err:=helper.StringToInt32(j.Path("rows").Data().(string))
+			if err==nil {
+				req.Rows=v
+			}
+		}
+
+		if j.Exists("storageId") {
+			v,err:=helper.StringToInt32(j.Path("storageId").Data().(string))
+			if err==nil {
+				req.StorageId=v
+			}
+		}
+
+		if j.Exists("sort") {
+			req.Sort=j.Path("sort").Data().(string)
+		}
+	}
+
+	if req.Rows==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter rows")
+	}
+
+	if req.Page==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter page")
+	}
+
+	if req.StorageId==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter storageId")
+	}
+
 	var discoveryServer *discovery.DiscoveryServer
 	if d:=plugin.PluginGetObject(plugin.PluginDiscoveryServer);d==nil {
 		log.Errorf("%s no support",plugin.PluginDiscoveryServer)
@@ -28,53 +88,14 @@ func ServiceStorageVolumeGetAll(m map[string]interface{}) interface{}{
 		discoveryServer=d.(*discovery.DiscoveryServer)
 	}
 
-	var storageId int32
-	var page int32
-	var rows int32
-	var sortType string
-	value,ok:=m["storageId"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			storageId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageId missing")
-	}
-
-	value,ok=m["page"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			page=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"page missing")
-	}
-
-	value,ok=m["rows"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			rows=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"rows missing")
-	}
-
-	value,ok=m["sort"]
-	if ok {
-		sortType=value.(string)
-	}
-
-	su:=usage.GetStorageUsageFromArray(discoveryServer.Storages(),storageId)
+	su:=usage.GetStorageUsageFromArray(discoveryServer.Storages(),req.StorageId)
 	if su==nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageNotExist,errors.ErrStorageNotExist.Error())
 	}
 
-	if sortType=="byId"{
+	if req.Sort=="byId"{
 		sort.Sort(usage.VolumeUsageSortById(su.VolumeUsage))
-	}else if sortType=="byUtil"{
+	}else if req.Sort=="byUtil"{
 		sort.Sort(usage.VolumeUsageSortByUtil(su.VolumeUsage))
 	}else{
 		sort.Sort(usage.VolumeUsageSortById(su.VolumeUsage))
@@ -83,8 +104,8 @@ func ServiceStorageVolumeGetAll(m map[string]interface{}) interface{}{
 	jsonAll:=gabs.New()
 	jsonAll.Array("rows")
 	jsonAll.Set(len(su.VolumeUsage),"total")
-	start:=(page-1)*rows
-	end:=start+rows
+	start:=(req.Page-1)*req.Rows
+	end:=start+req.Rows
 	for pos:=start;pos<end&&pos<int32(len(su.VolumeUsage));pos++ {
 		jsonV:=gabs.New()
 		jsonV.Set(su.VolumeUsage[pos].Id,"id")

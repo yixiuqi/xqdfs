@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/constant"
@@ -13,7 +15,7 @@ func init() {
 	plugin.PluginAddService(constant.CmdStoreConf,ServiceStoreConf)
 }
 
-func ServiceStoreConf(m map[string]interface{}) interface{}{
+func ServiceStoreConf(ctx context.Context,inv *plugin.Invocation) interface{}{
 	var config *conf.Config
 	if c:=plugin.PluginGetObject(plugin.PluginLocalConfig);c==nil {
 		log.Errorf("%s no support",plugin.PluginLocalConfig)

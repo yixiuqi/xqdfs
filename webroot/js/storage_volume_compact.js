@@ -1,11 +1,16 @@
 function httpStorageVolumeCompact(storageId,vid){
-    var str="id="+storageId+"&vid="+vid;
     var result
     var error="null"
+    var jsonData = {
+        "id": storageId,
+        "vid":vid
+    };
+
     $.ajax({
         url: "/storage/volume/compact",  
         type: "POST",
-        data: str,
+        contentType:"application/json",               
+        data:JSON.stringify(jsonData), 
         async:false, 
         dataType:"json", 
         success: function( response ) {

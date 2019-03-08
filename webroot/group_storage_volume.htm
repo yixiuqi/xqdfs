@@ -54,7 +54,7 @@
         function btnStorageVolumeClear(volumeId){
             $.messager.confirm('提示', '是否回收卷?', function(r){
                 if (r){
-                    result = httpStorageVolumeClear(getUrlParam('storageId'),volumeId);
+                    result = httpStorageVolumeClear(parseInt(getUrlParam('storageId')),volumeId);
                     if(result[0]==0){
                         $.messager.alert('提示','操作成功!','info');
                         $('#tbVolumeInfo').datagrid('reload');
@@ -68,7 +68,7 @@
         function btnStorageVolumeCompact(volumeId){
             $.messager.confirm('提示', '是否压缩卷?', function(r){
                 if (r){
-                    result = httpStorageVolumeCompact(getUrlParam('storageId'),volumeId);
+                    result = httpStorageVolumeCompact(parseInt(getUrlParam('storageId')),volumeId);
                     if(result[0]==0){
                         $.messager.alert('提示','操作成功!','info');
                         $('#tbVolumeInfo').datagrid('reload');

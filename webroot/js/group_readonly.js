@@ -1,12 +1,17 @@
 function httpGroupReadOnly(groupId,readOnly){
-    var str="id="+groupId+"&readOnly="+readOnly;
     var result
     var error="null"
+    var jsonData = {
+        "id": groupId,
+        "readOnly":readOnly
+    };
+
     $.ajax({
         url: "/group/readonly",  
         type: "POST",
-        data: str,
-        async:false,
+        contentType:"application/json",               
+        data:JSON.stringify(jsonData), 
+        async:false, 
         dataType:"json", 
         success: function( response ) {
             if(response.result==0){

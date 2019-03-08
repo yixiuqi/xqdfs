@@ -1,20 +1,33 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
+	"xqdfs/proxy"
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/configure"
-	"xqdfs/utils/plugin"
-	"xqdfs/proxy"
 	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 )
 
 func init() {
 	plugin.PluginAddService(constant.CmdStorageGetConfigure,ServiceStorageGetConfigure)
 }
 
-func ServiceStorageGetConfigure(m map[string]interface{}) interface{}{
+type RequestStorageGetConfigure struct {
+	StorageId int32	`json:"storageId"`
+}
+func ServiceStorageGetConfigure(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStorageGetConfigure{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -31,18 +44,7 @@ func ServiceStorageGetConfigure(m map[string]interface{}) interface{}{
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	var storageId int32
-	value,ok:=m["storageId"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			storageId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageId missing")
-	}
-
-	storage,err:=conf.StorageGet(storageId)
+	storage,err:=conf.StorageGet(req.StorageId)
 	if err!=nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageGet,err.Error())
 	}
@@ -50,10 +52,10 @@ func ServiceStorageGetConfigure(m map[string]interface{}) interface{}{
 		return helper.ResultBuildWithExtInfo(errors.RetStorageNotExist,errors.ErrStorageNotExist.Error())
 	}
 
-	json,err:=proxyStorage.StorageGetConfigure(storage.Addr)
+	result,err:=proxyStorage.StorageGetConfigure(storage.Addr)
 	if err!=nil{
 		return helper.ResultBuildWithExtInfo(errors.RetStoreConfigure,err.Error())
 	}else{
-		return helper.ResultBuildWithBody(constant.Success,json)
+		return helper.ResultBuildWithBody(constant.Success,result)
 	}
 }

@@ -1,6 +1,8 @@
 package plugin
 
-type HandlerFunc func(m map[string]interface{}) interface{}
+import "context"
+
+type HandlerFunc func(ctx context.Context,inv *Invocation) interface{}
 var(
 	services map[string]HandlerFunc = make(map[string]HandlerFunc)
 )

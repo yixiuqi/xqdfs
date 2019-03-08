@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 
@@ -29,6 +28,12 @@ func NewHttpWrap(wg *sync.WaitGroup,handle plugin.HandlerFunc) *HttpWrap {
 	return wrap
 }
 
+var BufPool = sync.Pool{
+	New: func() interface{} { return make([]byte, 1024*32) },
+}
+var InvPool = sync.Pool{
+	New: func() interface{} { return &plugin.Invocation{} },
+}
 func (this *HttpWrap) Handler(c *gin.Context) {
 	this.wg.Add(1)
 	defer func(){
@@ -36,26 +41,36 @@ func (this *HttpWrap) Handler(c *gin.Context) {
 	}()
 	defer helper.HandleErr()
 	contentType := c.GetHeader("Content-Type")
-	method:=c.Request.Method
 
 	m:= make(map[string]interface{})
 	if strings.Contains(contentType, "text/plain") || strings.Contains(contentType,"application/json"){
-		body := new(bytes.Buffer)
-		buf := make([]byte, 1024*128)
-		n, err:= c.Request.Body.Read(buf)
-		for n > 0 {
-			body.Write(buf[0:n])
-			n, err = c.Request.Body.Read(buf)
+		if strings.Contains(contentType, plugin.HttpTextPlain) {
+			contentType=plugin.HttpTextPlain
+		}
+		if strings.Contains(contentType,plugin.HttpApplicationJson) {
+			contentType=plugin.HttpApplicationJson
 		}
 
-		dec := json.NewDecoder(bytes.NewBuffer(body.Bytes()))
-		dec.UseNumber()
-		err = dec.Decode(&m)
-		if err != nil {
-			debug:=helper.NewStringBuilder().Append("http body error[").Append(err).Append("]").ToString()
-			log.Error(debug)
-			result := helper.ResultBuildWithExtInfo(errors.RetParameterError,debug)
-			c.JSON(http.StatusOK, result)
+		body := new(bytes.Buffer)
+		//pool
+		buf:= BufPool.Get().([]byte)
+		defer BufPool.Put(buf)
+		n,_:= c.Request.Body.Read(buf)
+		for n > 0 {
+			body.Write(buf[0:n])
+			n,_= c.Request.Body.Read(buf)
+		}
+
+		inv:=InvPool.Get().(*plugin.Invocation)
+		defer InvPool.Put(inv)
+
+		inv.Body=body.Bytes()
+		inv.Method=c.Request.Method
+		inv.ContentType=contentType
+		result:= this.handle(c,inv)
+		if result!=nil{
+			ret:=result.(*gabs.Container)
+			c.JSON(http.StatusOK, ret.Data())
 		}
 	}else{
 		query := c.Request.URL.Query()
@@ -70,14 +85,20 @@ func (this *HttpWrap) Handler(c *gin.Context) {
 		for k, v := range form {
 			m[k] = v[0]
 		}
-	}
 
-	m["http_contentType"]=contentType
-	m["http_method"]=method
-	m["http_context"]=c
-	ret:=this.handle(m)
-	if ret!=nil{
-		json:=ret.(*gabs.Container)
-		c.JSON(http.StatusOK, json.Data())
+		b, err:= json.Marshal(m)
+		if err!=nil{
+			c.JSON(http.StatusOK, helper.ResultBuild(errors.RetParameterError).Data())
+			return
+		}
+		inv:=&plugin.Invocation{}
+		inv.Body=b
+		inv.Method=c.Request.Method
+		inv.ContentType=contentType
+		result:= this.handle(c,inv)
+		if result!=nil{
+			ret:=result.(*gabs.Container)
+			c.JSON(http.StatusOK, ret.Data())
+		}
 	}
 }

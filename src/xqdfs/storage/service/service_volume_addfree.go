@@ -1,12 +1,15 @@
 package service
 
 import (
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
-	"xqdfs/storage/store"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/storage/store"
 
 	"github.com/Jeffail/gabs"
 )
@@ -15,7 +18,19 @@ func init() {
 	plugin.PluginAddService(constant.CmdVolumeAddFree,ServiceVolumeAddFree)
 }
 
-func ServiceVolumeAddFree(m map[string]interface{}) interface{}{
+type RequestVolumeAddFree struct {
+	Count int `json:"count"`
+	Bdir string `json:"bdir"`
+	Idir string `json:"idir"`
+}
+func ServiceVolumeAddFree(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeAddFree{Count:1}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -24,35 +39,7 @@ func ServiceVolumeAddFree(m map[string]interface{}) interface{}{
 		storage=s.(*store.Store)
 	}
 
-	var count int = 1
-	var bdir string
-	var idir string
-
-	value,ok:=m["count"]
-	if ok {
-		tmp,err:=helper.GetInt(value)
-		if err==nil{
-			count=int(tmp)
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"count missing")
-	}
-
-	value,ok=m["bdir"]
-	if ok {
-		bdir=value.(string)
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"bdir missing")
-	}
-
-	value,ok=m["idir"]
-	if ok {
-		idir=value.(string)
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"idir missing")
-	}
-
-	sn,err:=storage.AddFreeVolume(count,bdir,idir)
+	sn,err:=storage.AddFreeVolume(req.Count,req.Bdir,req.Idir)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetVolumeAddFree,err.Error())

@@ -1,11 +1,15 @@
 function httpGroupRemove(groupId){
-    var str="id="+groupId;
     var result
     var error="null"
+    var jsonData = {
+        "id": groupId
+    };
+    
     $.ajax({
         url: "/group/remove",  
         type: "POST",
-        data: str,
+        contentType:"application/json",               
+        data:JSON.stringify(jsonData), 
         async:false, 
         dataType:"json", 
         success: function( response ) {

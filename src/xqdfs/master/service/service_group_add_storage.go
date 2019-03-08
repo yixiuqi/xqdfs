@@ -1,11 +1,14 @@
 package service
 
 import (
-	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/configure"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/configure/defines"
 )
@@ -14,7 +17,19 @@ func init() {
 	plugin.PluginAddService(constant.CmdGroupAddStorage,ServiceGroupAddStorage)
 }
 
-func ServiceGroupAddStorage(m map[string]interface{}) interface{}{
+type RequestGroupAddStorage struct {
+	GroupId int32 			`json:"groupId"`
+	StorageId int32 		`json:"storageId"`
+	StorageAddr string 		`json:"storageAddr"`
+}
+func ServiceGroupAddStorage(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestGroupAddStorage{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -23,40 +38,11 @@ func ServiceGroupAddStorage(m map[string]interface{}) interface{}{
 		conf=s.(*configure.ConfigureServer)
 	}
 
-	var groupId int32
-	var storageId int32
-	var storageAddr string
-	value,ok:=m["groupId"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			groupId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"groupId missing")
-	}
-
-	value,ok=m["storageId"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			storageId=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageId missing")
-	}
-
-	value,ok=m["storageAddr"]
-	if ok {
-		storageAddr=value.(string)
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"storageAddr missing")
-	}
-	if helper.HostAddrCheck(storageAddr) == false{
+	if helper.HostAddrCheck(req.StorageAddr) == false{
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,"storageAddr param error")
 	}
 
-	group,err:=conf.GroupGet(groupId)
+	group,err:=conf.GroupGet(req.GroupId)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetGroupGet,err.Error())
@@ -74,15 +60,15 @@ func ServiceGroupAddStorage(m map[string]interface{}) interface{}{
 
 	for _,g:=range groups {
 		for _,s:=range g.Storage {
-			if s.Id==storageId {
+			if s.Id==req.StorageId {
 				return helper.ResultBuildWithExtInfo(errors.RetStorageExist,errors.ErrStorageExist.Error())
 			}
 		}
 	}
 
 	newStorage:=defines.NewStorageDal()
-	newStorage.Id=storageId
-	newStorage.Addr=storageAddr
+	newStorage.Id=req.StorageId
+	newStorage.Addr=req.StorageAddr
 	group.Storage=append(group.Storage,newStorage)
 	err=conf.GroupEdit(group)
 	if err!=nil{

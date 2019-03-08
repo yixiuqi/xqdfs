@@ -3,6 +3,7 @@ package service
 import (
 	"sort"
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"xqdfs/errors"
@@ -40,7 +41,7 @@ func (v VolumeSortById) Less(i, j int) bool {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-func ServiceStoreStat(m map[string]interface{}) interface{}{
+func ServiceStoreStat(ctx context.Context,inv *plugin.Invocation) interface{}{
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)

@@ -1,11 +1,16 @@
 function httpGroupAddStorage(groupId,storageId,storageAddr){
-    var str="groupId="+groupId+"&storageId="+storageId+"&storageAddr="+storageAddr;
     var result
     var error="null"
+    var jsonData = {
+        "groupId": groupId,
+        "storageId":storageId,
+        "storageAddr":storageAddr
+    };
     $.ajax({
         url: "/group/storage/add",  
         type: "POST",
-        data: str,
+        contentType:"application/json",               
+        data:JSON.stringify(jsonData), 
         async:false, 
         dataType:"json", 
         success: function( response ) {

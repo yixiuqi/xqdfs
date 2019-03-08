@@ -1,6 +1,9 @@
 package clear
 
 import (
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
@@ -28,7 +31,7 @@ func ServiceClearTimeOldSetup(timeold *ClearTimeOld) {
 	plugin.PluginAddService(CmdClearTimeOldConfigSet,ServiceClearTimeOldConfigSet)
 }
 
-func ServiceClearTimeOldConfigGet(m map[string]interface{}) interface{}{
+func ServiceClearTimeOldConfigGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
 	json.Set(clearTimeOld.ClearTimeOldThreshold,"clearThreshold")
 	json.Set(clearTimeOld.CurAvailableVolume,"curAvailableVolume")
@@ -39,21 +42,18 @@ func ServiceClearTimeOldConfigGet(m map[string]interface{}) interface{}{
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 
-func ServiceClearTimeOldConfigSet(m map[string]interface{}) interface{}{
-	var clearThreshold int
-	value,ok:=m["clearThreshold"]
-	if ok {
-		tmp,err:=helper.GetInt(value)
-		if err==nil{
-			clearThreshold=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"consumeCount missing")
+type RequestClearTimeOldConfigSet struct {
+	ClearThreshold int `json:"clearThreshold"`
+}
+func ServiceClearTimeOldConfigSet(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestClearTimeOldConfigSet{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	log.Debugf("clearThreshold[%d]",clearThreshold)
-
-	err:=clearTimeOld.ClearTimeOldClearThresholdSet(clearThreshold)
+	err=clearTimeOld.ClearTimeOldClearThresholdSet(req.ClearThreshold)
 	if err!=nil{
 		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())

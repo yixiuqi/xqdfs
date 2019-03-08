@@ -1,17 +1,19 @@
 package service
 
 import (
+	"fmt"
 	"sort"
 	"math"
-	"fmt"
+	"context"
+	"encoding/json"
 
-	"xqdfs/utils/helper"
-	"xqdfs/utils/log"
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/configure"
-	"xqdfs/utils/plugin"
+	"xqdfs/utils/log"
 	"xqdfs/discovery"
+	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/configure/defines"
 	"xqdfs/master/resource/usage"
 
@@ -22,7 +24,48 @@ func init() {
 	plugin.PluginAddService(constant.CmdGroupGetAll,ServiceGroupGetAll)
 }
 
-func ServiceGroupGetAll(m map[string]interface{}) interface{}{
+type RequestGroupGetAll struct {
+	Page int32 			`json:"page"`
+	Rows int32 			`json:"rows"`
+}
+func ServiceGroupGetAll(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestGroupGetAll{}
+	if inv.ContentType==plugin.HttpTextPlain||inv.ContentType==plugin.HttpApplicationJson {
+		err:=json.Unmarshal(inv.Body,req)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+	}else{
+		j,err:=gabs.ParseJSON(inv.Body)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+
+		if j.Exists("page") {
+			v,err:=helper.StringToInt32(j.Path("page").Data().(string))
+			if err==nil {
+				req.Page=v
+			}
+		}
+
+		if j.Exists("rows") {
+			v,err:=helper.StringToInt32(j.Path("rows").Data().(string))
+			if err==nil {
+				req.Rows=v
+			}
+		}
+	}
+
+	if req.Rows==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter rows")
+	}
+
+	if req.Page==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter page")
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -37,28 +80,6 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 		return helper.ResultBuild(errors.RetNoSupport)
 	}else{
 		discoveryServer=d.(*discovery.DiscoveryServer)
-	}
-
-	var page int32
-	var rows int32
-	value,ok:=m["page"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			page=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"page missing")
-	}
-
-	value,ok=m["rows"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			rows=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"rows missing")
 	}
 
 	groups,err:=conf.GroupGetAll()
@@ -77,8 +98,8 @@ func ServiceGroupGetAll(m map[string]interface{}) interface{}{
 	jsonGroups:=gabs.New()
 	jsonGroups.Array("rows")
 	jsonGroups.Set(len(groups),"total")
-	start:=(page-1)*rows
-	end:=start+rows
+	start:=(req.Page-1)*req.Rows
+	end:=start+req.Rows
 
 	for pos:=start;pos<end&&pos<int32(len(groups));pos++ {
 		if groups[pos].Storage==nil||len(groups[pos].Storage)==0{

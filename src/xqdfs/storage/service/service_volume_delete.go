@@ -1,6 +1,9 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
@@ -15,7 +18,19 @@ func init() {
 	plugin.PluginAddService(constant.CmdVolumeDelete,ServiceVolumeDelete)
 }
 
-func ServiceVolumeDelete(m map[string]interface{}) interface{}{
+type RequestVolumeDelete struct {
+	Vid int32 			`json:"vid"`
+	Key int64 			`json:"key"`
+	Replication bool 	`json:"replication"`
+}
+func ServiceVolumeDelete(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeDelete{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Warnf("%s no support",plugin.PlugineStorage)
@@ -32,36 +47,13 @@ func ServiceVolumeDelete(m map[string]interface{}) interface{}{
 		replicationServer=r.(*replication.ReplicationServer)
 	}
 
-	var vid int32
-	var key int64
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	value,ok=m["key"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			key=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
-		err:= v.Delete(key)
-		replication,ok:=m["replication"]
-		if ok && replication==true {
+		err:= v.Delete(req.Key)
+		if req.Replication==true {
 			p:=&process.ReplicationDelete{
-				Vid:vid,
-				Key:key,
+				Vid:req.Vid,
+				Key:req.Key,
 			}
 			replicationServer.Replication(p)
 		}

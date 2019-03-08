@@ -1,24 +1,39 @@
 package service
 
 import (
+	"context"
 	"net/http"
+	"encoding/json"
 
 	"xqdfs/errors"
-	"xqdfs/storage/store"
-	"xqdfs/utils/plugin"
-	"xqdfs/utils/log"
 	"xqdfs/constant"
+	"xqdfs/utils/log"
+	"xqdfs/utils/plugin"
 	"xqdfs/utils/helper"
+	"xqdfs/storage/store"
 
-	"github.com/gin-gonic/gin"
 	"github.com/Jeffail/gabs"
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
 	plugin.PluginAddService(constant.CmdVolumeGet,ServiceVolumeGet)
 }
 
-func ServiceVolumeGet(m map[string]interface{}) interface{}{
+type RequestVolumeGet struct {
+	Vid int32 			`json:"vid"`
+	Key int64 			`json:"key"`
+	Cookie int32 		`json:"cookie"`
+	Replication bool 	`json:"replication"`
+}
+func ServiceVolumeGet(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestVolumeGet{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var storage *store.Store
 	if s:=plugin.PluginGetObject(plugin.PlugineStorage);s==nil {
 		log.Errorf("%s no support",plugin.PlugineStorage)
@@ -27,42 +42,9 @@ func ServiceVolumeGet(m map[string]interface{}) interface{}{
 		storage=s.(*store.Store)
 	}
 
-	var vid int32
-	var key int64
-	var cookie int32
-	value,ok:=m["vid"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			vid=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"vid missing")
-	}
-
-	value,ok=m["key"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			key=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"key missing")
-	}
-
-	value,ok=m["cookie"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			cookie=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"cookie missing")
-	}
-
-	v:= storage.Volumes[vid]
+	v:= storage.Volumes[req.Vid]
 	if v != nil {
-		n,err:= v.Read(key, cookie)
+		n,err:= v.Read(req.Key, req.Cookie)
 		if err!=nil{
 			log.Error(err)
 			e,ok:=err.(errors.Error)
@@ -72,23 +54,17 @@ func ServiceVolumeGet(m map[string]interface{}) interface{}{
 				return helper.ResultBuildWithExtInfo(errors.RetOptGet,err.Error())
 			}
 		}else{
-			c,ok:=m["http_context"]
-			if ok {
-				method,ok:=m["http_method"]
-				if ok {
-					if method=="GET" {
-						c.(*gin.Context).Data(http.StatusOK, "image/jpeg", n.Data)
-						return nil
-					}
-				}
+			if inv.Method=="GET" {
+				ctx.(*gin.Context).Data(http.StatusOK, "image/jpeg", n.Data)
+				return nil
+			}else{
+				json:=gabs.New()
+				json.Set(n.Data,"img")
+				json.Set(req.Vid,"vid")
+				json.Set(req.Key,"key")
+				json.Set(req.Cookie,"cookie")
+				return helper.ResultBuildWithBody(constant.Success,json)
 			}
-
-			json:=gabs.New()
-			json.Set(n.Data,"img")
-			json.Set(vid,"vid")
-			json.Set(key,"key")
-			json.Set(cookie,"cookie")
-			return helper.ResultBuildWithBody(constant.Success,json)
 		}
 	}else{
 		return helper.ResultBuildWithExtInfo(errors.RetVolumeNotExist,errors.ErrVolumeNotExist.Error())

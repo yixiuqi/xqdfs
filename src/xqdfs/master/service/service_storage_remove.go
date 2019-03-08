@@ -1,11 +1,14 @@
 package service
 
 import (
-	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/configure"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 )
 
@@ -13,7 +16,17 @@ func init() {
 	plugin.PluginAddService(constant.CmdStorageRemove,ServiceStorageRemove)
 }
 
-func ServiceStorageRemove(m map[string]interface{}) interface{}{
+type RequestStorageRemove struct {
+	Id int32 `json:"id"`
+}
+func ServiceStorageRemove(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStorageRemove{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -22,18 +35,7 @@ func ServiceStorageRemove(m map[string]interface{}) interface{}{
 		conf=s.(*configure.ConfigureServer)
 	}
 
-	var id int32
-	value,ok:=m["id"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			id=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"id missing")
-	}
-
-	err:=conf.StorageRemove(id)
+	err=conf.StorageRemove(req.Id)
 	if err!=nil{
 		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetStorageRemove,err.Error())

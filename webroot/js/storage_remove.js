@@ -1,11 +1,14 @@
 function httpStorageRemove(storageId){
-    var str="id="+storageId;
     var result
     var error="null"
+    var jsonData = {
+        "id":storageId
+    };
     $.ajax({
         url: "/storage/remove",  
         type: "POST",
-        data: str,
+        contentType:"application/json",               
+        data:JSON.stringify(jsonData), 
         async:false, 
         dataType:"json", 
         success: function( response ) {

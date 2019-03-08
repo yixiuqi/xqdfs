@@ -1,6 +1,9 @@
 package compact
 
 import (
+	"context"
+	"encoding/json"
+
 	"xqdfs/errors"
 	"xqdfs/constant"
 	"xqdfs/utils/log"
@@ -25,44 +28,31 @@ func ServiceCompactExcessThresholdSetup(excess *CompactExcessThreshold) {
 	plugin.PluginAddService(CmdCompactExcessThresholdSet,ServiceCompactExcessThresholdSet)
 }
 
-func ServiceCompactExcessThresholdGet(m map[string]interface{}) interface{}{
+func ServiceCompactExcessThresholdGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
 	json.Set(excessThreshold.CompactExcessThresholdMinCountGet(),"minCount")
 	json.Set(excessThreshold.CompactExcessThresholdValueGet(),"threshold")
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 
-func ServiceCompactExcessThresholdSet(m map[string]interface{}) interface{}{
-	var minCount int64
-	var threshold float64
-	value,ok:=m["minCount"]
-	if ok {
-		tmp,err:=helper.GetInt64(value)
-		if err==nil{
-			minCount=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"minCount missing")
+type RequestCompactExcessThresholdSet struct {
+	MinCount int64		`json:"minCount"`
+	Threshold float64	`json:"threshold"`
+}
+func ServiceCompactExcessThresholdSet(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestCompactExcessThresholdSet{}
+	err:=json.Unmarshal(inv.Body,req)
+	if err!=nil {
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	value,ok=m["threshold"]
-	if ok {
-		tmp,err:=helper.GetFloat64(value)
-		if err==nil{
-			threshold=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"threshold missing")
-	}
-
-	log.Debugf("minCount[%d] threshold[%v]",minCount,threshold)
-
-	err:=excessThreshold.CompactExcessThresholdMinCountSet(minCount)
+	err=excessThreshold.CompactExcessThresholdMinCountSet(req.MinCount)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
-	err=excessThreshold.CompactExcessThresholdValueSet(threshold)
+	err=excessThreshold.CompactExcessThresholdValueSet(req.Threshold)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())

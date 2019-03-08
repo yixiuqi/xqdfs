@@ -2,14 +2,16 @@ package service
 
 import (
 	"math"
+	"context"
+	"encoding/json"
 
-	"xqdfs/utils/log"
 	"xqdfs/errors"
-	"xqdfs/utils/helper"
 	"xqdfs/constant"
 	"xqdfs/configure"
-	"xqdfs/utils/plugin"
 	"xqdfs/discovery"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
@@ -19,7 +21,48 @@ func init() {
 	plugin.PluginAddService(constant.CmdStorageGetAll,ServiceStorageGetAll)
 }
 
-func ServiceStorageGetAll(m map[string]interface{}) interface{}{
+type RequestStorageGetAll struct {
+	Page int32 			`json:"page"`
+	Rows int32 			`json:"rows"`
+}
+func ServiceStorageGetAll(ctx context.Context,inv *plugin.Invocation) interface{}{
+	req:=&RequestStorageGetAll{}
+	if inv.ContentType==plugin.HttpTextPlain||inv.ContentType==plugin.HttpApplicationJson {
+		err:=json.Unmarshal(inv.Body,req)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+	}else{
+		j,err:=gabs.ParseJSON(inv.Body)
+		if err!=nil {
+			log.Warn(err)
+			return helper.ResultBuild(errors.RetParameterError)
+		}
+
+		if j.Exists("page") {
+			v,err:=helper.StringToInt32(j.Path("page").Data().(string))
+			if err==nil {
+				req.Page=v
+			}
+		}
+
+		if j.Exists("rows") {
+			v,err:=helper.StringToInt32(j.Path("rows").Data().(string))
+			if err==nil {
+				req.Rows=v
+			}
+		}
+	}
+
+	if req.Rows==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter rows")
+	}
+
+	if req.Page==0 {
+		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"missing parameter page")
+	}
+
 	var conf *configure.ConfigureServer
 	if s:=plugin.PluginGetObject(plugin.PluginConfigure);s==nil {
 		log.Errorf("%s no support",plugin.PluginConfigure)
@@ -36,28 +79,6 @@ func ServiceStorageGetAll(m map[string]interface{}) interface{}{
 		discoveryServer=d.(*discovery.DiscoveryServer)
 	}
 
-	var page int32
-	var rows int32
-	value,ok:=m["page"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			page=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"page missing")
-	}
-
-	value,ok=m["rows"]
-	if ok {
-		tmp,err:=helper.GetInt32(value)
-		if err==nil{
-			rows=tmp
-		}
-	}else{
-		return helper.ResultBuildWithExtInfo(errors.RetMissingParameter,"rows missing")
-	}
-
 	storagesDal,err:=conf.StorageGetAll()
 	if err!=nil{
 		log.Warn(err)
@@ -68,8 +89,8 @@ func ServiceStorageGetAll(m map[string]interface{}) interface{}{
 	jsonStorages:=gabs.New()
 	jsonStorages.Array("rows")
 	jsonStorages.Set(len(storagesDal),"total")
-	start:=(page-1)*rows
-	end:=start+rows
+	start:=(req.Page-1)*req.Rows
+	end:=start+req.Rows
 
 	for pos:=start;pos<end&&pos<int32(len(storagesDal));pos++ {
 		jsonStorage:=gabs.New()

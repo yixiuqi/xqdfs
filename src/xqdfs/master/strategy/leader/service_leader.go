@@ -2,6 +2,7 @@ package leader
 
 import (
 	"net"
+	"context"
 
 	"xqdfs/constant"
 	"xqdfs/utils/plugin"
@@ -23,7 +24,7 @@ func ServiceLeaderSelectSetup(leader *LeaderSelect) {
 	plugin.PluginAddService(CmdLeader,ServiceLeaderGet)
 }
 
-func ServiceLeaderGet(m map[string]interface{}) interface{}{
+func ServiceLeaderGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	var ip string
 	addrs, err := net.InterfaceAddrs()
 	if err == nil {
