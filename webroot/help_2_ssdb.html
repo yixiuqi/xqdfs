@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>help_2_ssdb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+</head>
+<body>
+<h2>描述</h2>
+<p>SSDB是一个高性能的支持丰富数据结构的NoSQL数据库。系统使用SSDB主要用于保存各种配置项，如后端服务器信息、集群信息、路由信息等等。SSDB可以作单机部署，也可以作集群部署。作集群部署时，配置为主主模式。</p>
+<p><strong>SSDB特性</strong></p>
+<ul>
+<li>替代 Redis 数据库, Redis 的 100 倍容量。</li>
+<li>LevelDB 网络支持, 使用 C/C++ 开发。</li>
+<li>Redis API 兼容, 支持 Redis 客户端。</li>
+<li>适合存储集合数据, 如 list, hash, zset...。</li>
+<li>客户端 API 支持的语言包括: C++, PHP, Python, Java, Go。</li>
+<li>持久化的队列服务。</li>
+<li>主从复制, 负载均衡。</li>
+</ul>
+<h2>安装</h2>
+<p>直接解压ssdb.tar.gz文件，解压后目录为ssdb。使用命令赋予主目录ssdb读写权限。</p>
+<h2>启动</h2>
+<p>在主目录中运行  </p>
+<pre><code>./start.sh
+
+成功输出：
+ssdb-server 1.9.4
+Copyright (c) 2012-2015 ssdb.io
+</code></pre>
+
+<h2>停止</h2>
+<p>在主目录中运行</p>
+<pre><code>./stop.sh
+
+成功输出：
+ssdb-server 1.9.4
+Copyright (c) 2012-2015 ssdb.io
+</code></pre>
+
+<h2>配置文件(ssdb.conf)说明</h2>
+<pre><code>work_dir = ./var            //工作目录
+pidfile = ./var/ssdb.pid    //存放ssdb进程pid的文件目录
+server:
+    ip: 0.0.0.0             //本机ip
+    port: 18888             //本机服务端口
+
+replication:  
+    binlog: yes  
+    sync_speed: -1  
+    slaveof:                //主从模式，屏蔽后表示不适用主从或主主模式
+        #id: ssdb_1         
+        #type: mirror  
+        #host: 192.168.10.31  
+        #port: 18888  
+
+logger:  
+    level: error  
+    output: stdout  
+    rotate:  
+        size: 1000000000  
+
+leveldb: 
+    cache_size: 500  
+    write_buffer_size: 64  
+    compaction_speed: 1000  
+    compression: yes  
+</code></pre>
+
+<p><strong>必须修改项</strong></p>
+<pre><code>server:
+    ip: 0.0.0.0             //机器有多个网卡时，最好配置一个固定ip
+    port: 18888             //本机服务端口
+</code></pre>
+
+<h2>将SSDB配置为主主模式</h2>
+<p>假设有2台机器安装SSDB<br />
+<strong>server1(192.168.10.1:18888)</strong>配置文件如下：</p>
+<pre><code>server:
+    ip: 0.0.0.0             
+    port: 18888             
+replication:  
+    binlog: yes  
+    sync_speed: -1  
+    slaveof:                
+        id: ssdb_1          
+        type: mirror  
+        host: 192.168.10.2  //配置为对方ip
+        port: 18888  
+</code></pre>
+
+<p><strong>server2(192.168.10.2:18888)</strong>配置文件如下：</p>
+<pre><code>server:
+    ip: 0.0.0.0             
+    port: 18888             
+replication:  
+    binlog: yes  
+    sync_speed: -1  
+    slaveof:                
+        id: ssdb_2          
+        type: mirror  
+        host: 192.168.10.1  //配置为对方ip
+        port: 18888  
+</code></pre>
+
+<p><strong>备注：配置修改后需要重启SSDB</strong></p>
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
