@@ -2,6 +2,7 @@ package order
 
 import (
 	"sync"
+	"sort"
 
 	"xqdfs/errors"
 	"xqdfs/discovery"
@@ -107,17 +108,10 @@ func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,o
 					StorageId:objStorage.Id,
 					StorageAddr:objStorage.Addr,
 					VolumeId:objStorage.VolumeUsage[vid].Id,
+					Free:free,
 				}
 				availableVolumeAll=append(availableVolumeAll,availableVolume)
 			}
-
-			if len(availableVolumeAll) >= orderConsumeCount {
-				break
-			}
-		}
-
-		if len(availableVolumeAll) >= orderConsumeCount {
-			break
 		}
 	}
 
@@ -125,6 +119,11 @@ func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,o
 		log.Debug(errors.ErrSuperBlockNoSpace)
 		return nil,errors.ErrSuperBlockNoSpace
 	}else{
+		sort.Sort(strategydef.WritableVolumeSort(availableVolumeAll))
+		if len(availableVolumeAll) > orderConsumeCount {
+			availableVolumeAll=availableVolumeAll[:orderConsumeCount]
+		}
+
 		i := helper.Uint32n(uint32(len(availableVolumeAll)))
 		available:=availableVolumeAll[i]
 		for _,g:=range u.Usage {

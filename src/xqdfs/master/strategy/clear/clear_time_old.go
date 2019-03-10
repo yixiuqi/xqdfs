@@ -189,7 +189,7 @@ func (this *ClearTimeOld) process() {
 	}
 
 	this.CurAvailableVolume=freeVolume
-	if freeVolume>this.ClearTimeOldThreshold {
+	if freeVolume>=this.ClearTimeOldThreshold {
 		log.Debug("free volume's count is ",freeVolume)
 		return
 	}
