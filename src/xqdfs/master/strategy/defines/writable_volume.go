@@ -11,7 +11,7 @@ type WritableVolume struct {
 }
 
 func (this *WritableVolume) String() string {
-	return fmt.Sprintf("[%d %d %d]",this.GroupId,this.StorageId,this.VolumeId)
+	return fmt.Sprintf("[%d-%d-%d]",this.GroupId,this.StorageId,this.VolumeId)
 }
 
 type WritableVolumeSort []*WritableVolume

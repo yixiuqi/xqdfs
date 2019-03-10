@@ -119,7 +119,7 @@ func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,o
 		log.Debug(errors.ErrSuperBlockNoSpace)
 		return nil,errors.ErrSuperBlockNoSpace
 	}else{
-		sort.Sort(strategydef.WritableVolumeSort(availableVolumeAll))
+		sort.Stable(strategydef.WritableVolumeSort(availableVolumeAll))
 		if len(availableVolumeAll) > orderConsumeCount {
 			availableVolumeAll=availableVolumeAll[:orderConsumeCount]
 		}
