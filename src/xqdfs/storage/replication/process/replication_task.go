@@ -233,7 +233,7 @@ func (this *ReplicationTask) process() (err error) {
 			var n *needle.Needle
 			n, err= v.Read(key, cookie)
 			if err==nil{
-				err=this.proxyStorage.Upload(this.StorageAddr,vid,key,cookie,n.Data,false)
+				err=this.proxyStorage.Upload(this.StorageAddr,nil,vid,key,cookie,n.Data,false)
 			}
 			if err!=nil{
 				log.Debug(err)

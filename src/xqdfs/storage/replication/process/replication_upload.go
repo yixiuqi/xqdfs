@@ -15,7 +15,7 @@ type ReplicationUpload struct {
 func (this *ReplicationUpload) Process(task map[int32]*ReplicationTask) {
 	for _,t:=range task{
 		if t.Online {
-			err:=t.proxyStorage.Upload(t.StorageAddr,this.Vid,this.Key,this.Cookie,this.Image,false)
+			err:=t.proxyStorage.Upload(t.StorageAddr,nil,this.Vid,this.Key,this.Cookie,this.Image,false)
 			if err==nil{
 				return
 			}
