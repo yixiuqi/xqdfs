@@ -19,16 +19,21 @@ func NewProxyHttp() *ProxyHttp {
 	return p
 }
 
-func (this *ProxyHttp) Upload(host string,vid int32,key int64,cookie int32,img []byte,replication bool) error {
-	jsonSend:=gabs.New()
-	jsonSend.Set(helper.UUIDBuild(),"seq")
-	jsonSend.Set(vid,"vid")
-	jsonSend.Set(key,"key")
-	jsonSend.Set(cookie,"cookie")
-	jsonSend.Set(img,"img")
-	jsonSend.Set(replication,"replication")
+func (this *ProxyHttp) Upload(host string,body *gabs.Container,vid int32,key int64,cookie int32,img []byte,replication bool) error {
+	if body==nil {
+		body=gabs.New()
+	}
+
+	body.Set(helper.UUIDBuild(),"seq")
+	body.Set(vid,"vid")
+	body.Set(key,"key")
+	body.Set(cookie,"cookie")
+	if img!=nil {
+		body.Set(img,"img")
+	}
+	body.Set(replication,"replication")
 	url:="http://"+host+constant.CmdVolumeUpload
-	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
+	ret,err:=helper.HttpPost(httpClient,url,body.Bytes())
 	if err!=nil {
 		return errors.ErrRpc
 	}

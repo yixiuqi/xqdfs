@@ -379,8 +379,10 @@ func (s *Store) Close() {
 	}
 	s.vlock.Lock()
 	for _, v = range s.Volumes {
-		log.Infof("volume[%d] close", v.Id)
+		startTime:=helper.CurrentTime()
 		v.Close()
+		endTime:=helper.CurrentTime()
+		log.Infof("volume[%d] close elapse[%d]", v.Id,endTime-startTime)
 	}
 	s.vlock.Unlock()
 	return

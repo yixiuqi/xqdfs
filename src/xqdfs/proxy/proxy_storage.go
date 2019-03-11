@@ -18,8 +18,8 @@ func NewProxyStorage() (*ProxyStorage,error) {
 	return p,nil
 }
 
-func (this *ProxyStorage) Upload(host string,vid int32,key int64,cookie int32,img []byte,replication bool) error {
-	return this.proxy.Upload(host,vid,key,cookie,img,replication)
+func (this *ProxyStorage) Upload(host string,body *gabs.Container,vid int32,key int64,cookie int32,img []byte,replication bool) error {
+	return this.proxy.Upload(host,body,vid,key,cookie,img,replication)
 }
 
 func (this *ProxyStorage) Get(host string,vid int32,key int64,cookie int32) ([]byte,error) {

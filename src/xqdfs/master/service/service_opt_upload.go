@@ -13,7 +13,6 @@ import (
 	"xqdfs/master/strategy"
 
 	"github.com/Jeffail/gabs"
-	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -30,13 +29,8 @@ func init() {
  * @apiError (失败返回参数) {int32} result 非0错误码
  * @apiError (失败返回参数) {string} info 信息
 * */
-type RequestOptUpload struct {
-	Img []byte `json:"img"`
-}
 func ServiceOptUpload(ctx context.Context,inv *plugin.Invocation) interface{}{
-	req:=&RequestOptUpload{}
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	err:=json.Unmarshal(inv.Body,req)
+	body,err:=gabs.ParseJSON(inv.Body)
 	if err!=nil {
 		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
@@ -51,11 +45,11 @@ func ServiceOptUpload(ctx context.Context,inv *plugin.Invocation) interface{}{
 	}
 
 	key:=helper.KeyGenerate()
-	url,err:=strategyServer.Write(key,constant.Cookie,req.Img)
+	url,err:=strategyServer.Write(key,constant.Cookie,body)
 	for err==errors.ErrNeedleExist {
 		log.Error(err," try again")
 		key=helper.KeyGenerate()
-		url,err=strategyServer.Write(key,constant.Cookie,req.Img)
+		url,err=strategyServer.Write(key,constant.Cookie,body)
 	}
 
 	if err!=nil{

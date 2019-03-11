@@ -42,7 +42,6 @@ func (this *HttpWrap) Handler(c *gin.Context) {
 	defer helper.HandleErr()
 	contentType := c.GetHeader("Content-Type")
 
-	m:= make(map[string]interface{})
 	if strings.Contains(contentType, "text/plain") || strings.Contains(contentType,"application/json"){
 		if strings.Contains(contentType, plugin.HttpTextPlain) {
 			contentType=plugin.HttpTextPlain
@@ -73,6 +72,7 @@ func (this *HttpWrap) Handler(c *gin.Context) {
 			c.JSON(http.StatusOK, ret.Data())
 		}
 	}else{
+		m:= make(map[string]interface{})
 		query := c.Request.URL.Query()
 		for k, v := range query {
 			m[k] = v[0]

@@ -12,6 +12,8 @@ import (
 	"xqdfs/utils/plugin"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
+
+	"github.com/Jeffail/gabs"
 )
 
 const(
@@ -110,9 +112,11 @@ func NewAllocOrder() (*AllocOrder,error) {
 	return s,nil
 }
 
-func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) {
+func (this *AllocOrder) Write(key int64,cookie int32,body *gabs.Container) (string,error) {
+	//大致算一下jason里面图片实际长度
+	imgLen:=int32(len(body.Bytes())*3/4)
 	removeVolumes:=make([]*defines.WritableVolume,0)
-	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,int32(len(img)),removeVolumes)
+	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,imgLen,removeVolumes)
 	if err!=nil {
 		log.Debug(err)
 		return "",err
@@ -120,7 +124,7 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 
 	vid:=volume.VolumeId
 	host:=volume.StorageAddr
-	err=this.proxyStorage.Upload(host,vid,key,cookie,img,true)
+	err=this.proxyStorage.Upload(host,body,vid,key,cookie,nil,true)
 	if err==errors.ErrRpc {
 		this.uploadErrorProcess.RollBack(host,vid,key)
 	}
@@ -131,14 +135,14 @@ func (this *AllocOrder) Write(key int64,cookie int32,img []byte) (string,error) 
 		removeVolumes=append(removeVolumes,volume)
 		count++
 		log.Debugf("[%s][%v] ErrSuperBlockNoSpace try[%d][%v] [%v]",host,vid,count,volume,removeVolumes)
-		volume,err=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,int32(len(img)),removeVolumes)
+		volume,err=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,imgLen,removeVolumes)
 		if err!=nil {
 			log.Debug(err)
 			return "",err
 		}
 		vid=volume.VolumeId
 		host=volume.StorageAddr
-		err=this.proxyStorage.Upload(host,vid,key,cookie,img,true)
+		err=this.proxyStorage.Upload(host,body,vid,key,cookie,nil,true)
 		if err==errors.ErrRpc {
 			this.uploadErrorProcess.RollBack(host,vid,key)
 		}

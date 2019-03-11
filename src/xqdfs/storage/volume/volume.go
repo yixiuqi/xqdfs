@@ -214,10 +214,16 @@ func (v *Volume) Open() (err error) {
 
 func (v *Volume) close() {
 	if v.Block != nil {
+		startTime:=helper.CurrentTime()
 		v.Block.Close()
+		endTime:=helper.CurrentTime()
+		log.Infof("block close elapse[%d]", endTime-startTime)
 	}
 	if v.Indexer != nil {
+		startTime:=helper.CurrentTime()
 		v.Indexer.Close()
+		endTime:=helper.CurrentTime()
+		log.Infof("indexer close elapse[%d]", endTime-startTime)
 	}
 	v.closed = true
 }

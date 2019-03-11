@@ -7,6 +7,8 @@ import (
 	"xqdfs/master/strategy/leader"
 	"xqdfs/master/strategy/defines"
 	"xqdfs/master/strategy/compact"
+
+	"github.com/Jeffail/gabs"
 )
 
 type AllocStrategyServer struct {
@@ -51,8 +53,8 @@ func NewAllocStrategyServer() (*AllocStrategyServer,error){
 	return s,nil
 }
 
-func (this *AllocStrategyServer) Write(key int64,cookie int32,img []byte) (string,error) {
-	return this.allocStrategy.Write(key,cookie,img)
+func (this *AllocStrategyServer) Write(key int64,cookie int32,body *gabs.Container) (string,error) {
+	return this.allocStrategy.Write(key,cookie,body)
 }
 
 func (this *AllocStrategyServer) Read(url string) ([]byte,error) {
