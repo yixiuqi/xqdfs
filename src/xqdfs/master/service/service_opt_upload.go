@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"strings"
-	"encoding/json"
 	"encoding/base64"
 
 	"xqdfs/errors"
@@ -14,6 +13,7 @@ import (
 	"xqdfs/master/strategy"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -35,6 +35,7 @@ type RequestOptUpload struct {
 }
 func ServiceOptUpload(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestOptUpload{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

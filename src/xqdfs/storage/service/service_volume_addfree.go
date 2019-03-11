@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -12,6 +11,7 @@ import (
 	"xqdfs/storage/store"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -25,6 +25,7 @@ type RequestVolumeAddFree struct {
 }
 func ServiceVolumeAddFree(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeAddFree{Count:1}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

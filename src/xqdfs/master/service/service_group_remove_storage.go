@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -11,6 +10,8 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/configure/defines"
+
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -23,6 +24,7 @@ type RequestGroupRemoveStorage struct {
 }
 func ServiceGroupRemoveStorage(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestGroupRemoveStorage{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

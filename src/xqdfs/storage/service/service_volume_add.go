@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -10,6 +9,8 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/store"
+
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -21,6 +22,7 @@ type RequestVolumeAdd struct {
 }
 func ServiceVolumeAdd(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeAdd{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

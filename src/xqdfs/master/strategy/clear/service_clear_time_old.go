@@ -2,7 +2,6 @@ package clear
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -11,6 +10,7 @@ import (
 	"xqdfs/utils/plugin"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 const(
@@ -47,6 +47,7 @@ type RequestClearTimeOldConfigSet struct {
 }
 func ServiceClearTimeOldConfigSet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestClearTimeOldConfigSet{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

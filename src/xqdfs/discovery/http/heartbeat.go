@@ -4,13 +4,13 @@ import (
 	"net"
 	"time"
 	"net/http"
-	"encoding/json"
 
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/discovery/defines"
 	
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 var httpClient *http.Client
@@ -48,6 +48,7 @@ func HeartBeat(addr string) (storage *defines.Storage,err error) {
 	}
 
 	storage=&defines.Storage{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err=json.Unmarshal(data,storage)
 	if err!=nil {
 		log.Warn(err)

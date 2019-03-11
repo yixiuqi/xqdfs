@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -12,6 +11,7 @@ import (
 	"xqdfs/master/strategy"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -34,6 +34,7 @@ type RequestOptGet struct {
 }
 func ServiceOptGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestOptGet{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

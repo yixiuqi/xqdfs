@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -11,6 +10,8 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/master/resource/usage"
+
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -36,6 +37,7 @@ type RequestUsageGroups struct {
 }
 func ServiceUsageGroups(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestUsageGroups{"null"}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

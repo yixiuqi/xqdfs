@@ -5,7 +5,6 @@ import (
 	"sort"
 	"math"
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -18,6 +17,7 @@ import (
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -31,6 +31,7 @@ type RequestGroupGetAll struct {
 func ServiceGroupGetAll(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestGroupGetAll{}
 	if inv.ContentType==plugin.HttpTextPlain||inv.ContentType==plugin.HttpApplicationJson {
+		var json = jsoniter.ConfigCompatibleWithStandardLibrary
 		err:=json.Unmarshal(inv.Body,req)
 		if err!=nil {
 			log.Warn(err)

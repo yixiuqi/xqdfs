@@ -7,6 +7,8 @@ import (
 	"xqdfs/utils/helper"
 	"xqdfs/configure/ssdb"
 	"xqdfs/configure/defines"
+
+	"github.com/json-iterator/go"
 )
 
 const(
@@ -82,6 +84,7 @@ func (this *ConfigureServer) StorageGet(sid int32) (*defines.StorageDal,error) {
 	}
 
 	s:=defines.NewStorageDal()
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err=json.Unmarshal([]byte(param),s)
 	if err!=nil {
 		log.Warn(err)
@@ -105,6 +108,7 @@ func (this *ConfigureServer) StorageGetAll() ([]*defines.StorageDal,error) {
 	s:=make([]*defines.StorageDal,0)
 	for _,v:=range items {
 		one:=defines.NewStorageDal()
+		var json = jsoniter.ConfigCompatibleWithStandardLibrary
 		e:=json.Unmarshal([]byte(v.Value),one)
 		if e==nil{
 			s=append(s,one)
@@ -152,6 +156,7 @@ func (this *ConfigureServer) GroupGet(gid int32) (*defines.GroupDal,error) {
 	}
 
 	g:=defines.NewGroupDal()
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err=json.Unmarshal([]byte(param),g)
 	if err!=nil {
 		log.Warn(err)
@@ -174,6 +179,7 @@ func (this *ConfigureServer) GroupGetAll() ([]*defines.GroupDal,error) {
 	g:=make([]*defines.GroupDal,0)
 	for _,v:=range items {
 		one:=defines.NewGroupDal()
+		var json = jsoniter.ConfigCompatibleWithStandardLibrary
 		e:=json.Unmarshal([]byte(v.Value),one)
 		if e==nil{
 			g=append(g,one)

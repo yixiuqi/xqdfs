@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -13,6 +12,8 @@ import (
 	"xqdfs/storage/store"
 	
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
+	jsonSys "encoding/json"
 )
 
 func init() {
@@ -25,6 +26,7 @@ type RequestVolumeNeedleInfo struct {
 }
 func ServiceVolumeNeedleInfo(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeNeedleInfo{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)
@@ -50,7 +52,7 @@ func ServiceVolumeNeedleInfo(ctx context.Context,inv *plugin.Invocation) interfa
 			b,err=json.Marshal(n)
 			if err==nil{
 				var item *gabs.Container
-				dec := json.NewDecoder(bytes.NewBuffer(b))
+				dec := jsonSys.NewDecoder(bytes.NewBuffer(b))
 				dec.UseNumber()
 				item,err=gabs.ParseJSONDecoder(dec)
 				if err==nil{

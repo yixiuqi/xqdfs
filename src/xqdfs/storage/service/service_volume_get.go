@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"net/http"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/Jeffail/gabs"
 	"github.com/gin-gonic/gin"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -28,6 +28,7 @@ type RequestVolumeGet struct {
 }
 func ServiceVolumeGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeGet{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

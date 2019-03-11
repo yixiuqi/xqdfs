@@ -3,7 +3,6 @@ package service
 import (
 	"sync"
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -15,6 +14,7 @@ import (
 	"xqdfs/storage/replication/process"
 
 	"github.com/Jeffail/gabs"
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -42,6 +42,7 @@ type RequestVolumeCompact struct {
 }
 func ServiceVolumeCompact(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeCompact{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)
@@ -128,6 +129,7 @@ type RequestVolumeCompactStatus struct {
 }
 func ServiceVolumeCompactStatus(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeCompactStatus{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

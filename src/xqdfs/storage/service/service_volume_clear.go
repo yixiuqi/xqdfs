@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/constant"
@@ -12,6 +11,8 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
+
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -34,6 +35,7 @@ type RequestVolumeClear struct {
 }
 func ServiceVolumeClear(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestVolumeClear{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)

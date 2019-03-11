@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"xqdfs/errors"
 	"xqdfs/utils/log"
@@ -12,6 +11,8 @@ import (
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication"
 	"xqdfs/storage/replication/process"
+
+	"github.com/json-iterator/go"
 )
 
 func init() {
@@ -23,6 +24,7 @@ type RequestStoreInit struct {
 }
 func ServiceStoreInit(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestStoreInit{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err:=json.Unmarshal(inv.Body,req)
 	if err!=nil {
 		log.Warn(err)
