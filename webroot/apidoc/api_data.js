@@ -269,7 +269,7 @@ define({ "api": [
     "type": "post",
     "url": "/store/stat",
     "title": "[Store]查询状态",
-    "description": "<p>[Store]查询状态</p>",
+    "description": "<p>[Store]查询当前存储节点状态信息</p>",
     "group": "Storage",
     "version": "1.0.0",
     "success": {
@@ -435,68 +435,6 @@ define({ "api": [
     "sampleRequest": [
       {
         "url": "http://ip:port/volume/compact"
-      }
-    ]
-  },
-  {
-    "type": "post",
-    "url": "/volume/compact/status",
-    "title": "[Volume]卷压缩状态查询",
-    "description": "<p>[Volume]卷压缩状态查询</p>",
-    "group": "Storage",
-    "version": "1.0.0",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "int32",
-            "optional": false,
-            "field": "vid",
-            "description": "<p>volume id</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "成功返回参数": [
-          {
-            "group": "成功返回参数",
-            "type": "int32",
-            "optional": false,
-            "field": "result",
-            "description": "<p>0表示成功</p>"
-          }
-        ]
-      }
-    },
-    "error": {
-      "fields": {
-        "失败返回参数": [
-          {
-            "group": "失败返回参数",
-            "type": "int32",
-            "optional": false,
-            "field": "result",
-            "description": "<p>非0错误码</p>"
-          },
-          {
-            "group": "失败返回参数",
-            "type": "string",
-            "optional": false,
-            "field": "info",
-            "description": "<p>信息</p>"
-          }
-        ]
-      }
-    },
-    "filename": "./storage/service/service_volume_compact.go",
-    "groupTitle": "Storage",
-    "name": "PostVolumeCompactStatus",
-    "sampleRequest": [
-      {
-        "url": "http://ip:port/volume/compact/status"
       }
     ]
   }
