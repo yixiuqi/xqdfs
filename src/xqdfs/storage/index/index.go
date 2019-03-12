@@ -58,7 +58,7 @@ type Indexer struct {
 	buf []byte
 	bn  int
 	//
-	File    string `json:"file"`
+	File    string `json:"-"`
 	LastErr error  `json:"-"`
 	Offset  int64  `json:"offset"`
 	conf    *conf.Config

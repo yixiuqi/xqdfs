@@ -56,7 +56,7 @@ type SuperBlock struct {
 	r       *os.File
 	w       *os.File
 	conf    *conf.Config
-	File    string `json:"file"`
+	File    string `json:"-"`
 	Offset  uint32 `json:"offset"`		//needle offset
 	Size    int64  `json:"size"`			//文件大小
 	LastErr error  `json:"-"`

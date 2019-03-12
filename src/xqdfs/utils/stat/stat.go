@@ -3,22 +3,22 @@ package stat
 import "encoding/json"
 
 type Stats struct {
-	TotalReadProcessed       	uint64 		`json:"totalRead"`
+	TotalReadProcessed       	uint64 		`json:"-"`	//`json:"totalRead"`
 	lastTotalReadProcessed   	uint64 		`json:"-"`
-	ReadQPS                  	uint64 		`json:"readQPS"`
+	ReadQPS                  	uint64 		`json:"readQPS,omitempty"`
 	TotalReadBytes           	uint64 		`json:"-"`
 	lastTotalReadBytes       	uint64 		`json:"-"`
-	ReadFlow                 	uint64 		`json:"readFlow"`
+	ReadFlow                 	uint64 		`json:"readFlow,omitempty"`
 
-	TotalWriteProcessed     	uint64 		`json:"totalWrite"`
+	TotalWriteProcessed     	uint64 		`json:"-"`	//`json:"totalWrite"`
 	lastTotalWriteProcessed 	uint64 		`json:"-"`
-	WriteTPS                	uint64 		`json:"writeTPS"`
+	WriteTPS                	uint64 		`json:"writeTPS,omitempty"`
 	TotalWriteBytes				uint64 		`json:"-"`
 	lastTotalWriteBytes			uint64 		`json:"-"`
-	WriteFlow					uint64 		`json:"writeFlow"`
+	WriteFlow					uint64 		`json:"writeFlow,omitempty"`
 	LastWriteTime				int64		`json:"lastWriteTime"`
 
-	TotalDelProcessed       	uint64 		`json:"totalDel"`
+	TotalDelProcessed       	uint64 		`json:"totalDel,omitempty"`
 }
 
 func (s *Stats) Calc() {

@@ -32,9 +32,9 @@ type Volume struct {
 	needles map[int64]int64
 	conf    *conf.Config
 	// compact
-	Compact       bool   		`json:"compact"`
-	CompactOffset uint32 		`json:"compactOffset"`
-	CompactTime   int64  		`json:"compactTime"`
+	Compact       bool   		`json:"compact,omitempty"`
+	CompactOffset uint32 		`json:"-"`	//`json:"compactOffset"`
+	CompactTime   int64  		`json:"-"`	//`json:"compactTime"`
 	// status
 	closed bool
 }
