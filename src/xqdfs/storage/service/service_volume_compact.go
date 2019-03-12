@@ -114,16 +114,6 @@ func ServiceVolumeCompact(ctx context.Context,inv *plugin.Invocation) interface{
 	return helper.ResultBuild(constant.Success)
 }
 
-/**
- * @api {post} /volume/compact/status [Volume]卷压缩状态查询
- * @apiDescription [Volume]卷压缩状态查询
- * @apiGroup Storage
- * @apiVersion 1.0.0
- * @apiParam {int32} vid volume id
- * @apiSuccess (成功返回参数) {int32} result 0表示成功
- * @apiError (失败返回参数) {int32} result 非0错误码
- * @apiError (失败返回参数) {string} info 信息
-* */
 type RequestVolumeCompactStatus struct {
 	Vid int32 `json:"vid"`
 }
