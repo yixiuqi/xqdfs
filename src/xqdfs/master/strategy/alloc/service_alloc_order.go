@@ -1,4 +1,4 @@
-package order
+package alloc
 
 import (
 	"context"
@@ -18,20 +18,15 @@ const(
 	CmdAllocOrderConfigSet 	= "/strategy/alloc/order/config/set"
 )
 
-var(
-	allocOrder *AllocOrder
-)
-
-func ServiceAllocOrderSetup(order *AllocOrder) {
-	allocOrder=order
+func setupService() {
 	plugin.PluginAddService(CmdAllocOrderConfigGet,ServiceAllocOrderConfigGet)
 	plugin.PluginAddService(CmdAllocOrderConfigSet,ServiceAllocOrderConfigSet)
 }
 
 func ServiceAllocOrderConfigGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
-	json.Set(allocOrder.AllocOrderConsumeCountGet(),"consumeCount")
-	json.Set(allocOrder.AllocOrderMinFreeSpaceGet(),"minFreeSpace")
+	json.Set(allocOrderConsumeCountGet(),"consumeCount")
+	json.Set(allocOrderMinFreeSpaceGet(),"minFreeSpace")
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 
@@ -48,12 +43,12 @@ func ServiceAllocOrderConfigSet(ctx context.Context,inv *plugin.Invocation) inte
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	err=allocOrder.AllocOrderConsumeCountSet(req.ConsumeCount)
+	err=allocOrderConsumeCountSet(req.ConsumeCount)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
-	err=allocOrder.AllocOrderMinFreeSpaceSet(req.MinFreeSpace)
+	err=allocOrderMinFreeSpaceSet(req.MinFreeSpace)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())

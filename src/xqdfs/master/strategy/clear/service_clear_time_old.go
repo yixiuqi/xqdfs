@@ -25,7 +25,7 @@ var(
 //服务类初始化安装
 //1.安装清除功能模块
 //2.安装服务接口
-func ServiceClearTimeOldSetup(timeold *ClearTimeOld) {
+func setupService(timeold *ClearTimeOld) {
 	clearTimeOld=timeold
 	plugin.PluginAddService(CmdClearTimeOldConfigGet,ServiceClearTimeOldConfigGet)
 	plugin.PluginAddService(CmdClearTimeOldConfigSet,ServiceClearTimeOldConfigSet)
@@ -33,7 +33,7 @@ func ServiceClearTimeOldSetup(timeold *ClearTimeOld) {
 
 func ServiceClearTimeOldConfigGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
-	json.Set(clearTimeOld.ClearTimeOldThreshold,"clearThreshold")
+	json.Set(clearTimeOldClearThresholdGet(),"clearThreshold")
 	json.Set(clearTimeOld.CurAvailableVolume,"curAvailableVolume")
 	json.Set(clearTimeOld.OldGroupId,"oldestGroupId")
 	json.Set(clearTimeOld.OldStorageId,"oldestStorageId")
@@ -54,7 +54,7 @@ func ServiceClearTimeOldConfigSet(ctx context.Context,inv *plugin.Invocation) in
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	err=clearTimeOld.ClearTimeOldClearThresholdSet(req.ClearThreshold)
+	err=clearTimeOldClearThresholdSet(req.ClearThreshold)
 	if err!=nil{
 		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())

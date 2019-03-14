@@ -2,8 +2,8 @@ package strategy
 
 import (
 	"xqdfs/utils/log"
-	"xqdfs/master/strategy/alloc"
 	"xqdfs/master/strategy/clear"
+	"xqdfs/master/strategy/alloc"
 	"xqdfs/master/strategy/leader"
 	"xqdfs/master/strategy/defines"
 	"xqdfs/master/strategy/compact"
@@ -25,7 +25,7 @@ func NewAllocStrategyServer() (*AllocStrategyServer,error){
 		return nil,err
 	}
 
-	alloc,err:=order.NewAllocOrder()
+	alloc,err:=alloc.NewAllocOrder()
 	if err!=nil{
 		log.Error(err)
 		return nil,err

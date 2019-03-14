@@ -8,7 +8,7 @@ import (
 	"xqdfs/proxy"
 	"xqdfs/channel"
 	"xqdfs/utils/log"
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/discovery"
 	"xqdfs/master/strategy"
 )

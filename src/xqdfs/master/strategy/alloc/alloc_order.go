@@ -1,4 +1,4 @@
-package order
+package alloc
 
 import (
 	"fmt"
@@ -6,28 +6,19 @@ import (
 	"xqdfs/proxy"
 	"xqdfs/errors"
 	"xqdfs/discovery"
-	"xqdfs/configure"
 	"xqdfs/utils/log"
-	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/master/configure"
 	"xqdfs/master/strategy/tool"
 	"xqdfs/master/strategy/defines"
 
 	"github.com/Jeffail/gabs"
 )
 
-const(
-	AllocOrderMinFreeSpace 	= 	"AllocOrderMinFreeSpace"			// 每个卷预留多少空间 default:104857600
-	AllocOrderConsumeCount 	= 	"AllocOrderConsumeCount"			// 同时default:3
-)
-
 type AllocOrder struct {
-	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	selectWritableVolume *SelectWritableVolume
-	orderMinFreeSpace int64
-	orderConsumeCount int
 
 	uploadErrorProcess *UploadErrorProcess
 }
@@ -57,58 +48,15 @@ func NewAllocOrder() (*AllocOrder,error) {
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	var orderMinFreeSpace int64=104857600
-	value,err:=conf.ConfigGet(AllocOrderMinFreeSpace)
-	if err!=nil{
-		if err==errors.ErrParamNotExist{
-			err=conf.ConfigSet(AllocOrderMinFreeSpace,"104857600")
-			if err!=nil{
-				return nil,err
-			}
-		}else{
-			log.Error(err)
-			return nil,err
-		}
-	}else{
-		orderMinFreeSpace,err=helper.StringToInt64(value)
-		if err!=nil{
-			log.Error(err)
-			return nil,err
-		}
-	}
-
-	orderConsumeCount:=3
-	value,err=conf.ConfigGet(AllocOrderConsumeCount)
-	if err!=nil{
-		if err==errors.ErrParamNotExist{
-			err=conf.ConfigSet(AllocOrderConsumeCount,"3")
-			if err!=nil{
-				return nil,err
-			}
-		}else{
-			log.Error(err)
-			return nil,err
-		}
-	}else{
-		orderConsumeCount,err=helper.StringToInt(value)
-		if err!=nil{
-			log.Error(err)
-			return nil,err
-		}
-	}
-
-	log.Infof("%s[%d]",AllocOrderMinFreeSpace,orderMinFreeSpace)
-	log.Infof("%s[%d]",AllocOrderConsumeCount,orderConsumeCount)
 	s:=&AllocOrder{
-		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		selectWritableVolume:NewSelectWritableVolume(discoveryServer),
-		orderMinFreeSpace:orderMinFreeSpace,
-		orderConsumeCount:orderConsumeCount,
 		uploadErrorProcess:NewUploadErrorProcess(proxyStorage),
 	}
-	ServiceAllocOrderSetup(s)
+
+	setupConfigureSvr(conf)
+	setupService()
 	return s,nil
 }
 
@@ -116,7 +64,7 @@ func (this *AllocOrder) Write(key int64,cookie int32,body *gabs.Container) (stri
 	//大致算一下jason里面图片实际长度
 	imgLen:=int32(len(body.Bytes())*3/4)
 	removeVolumes:=make([]*defines.WritableVolume,0)
-	volume,err:=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,imgLen,removeVolumes)
+	volume,err:=this.selectWritableVolume.SelectWritableVolume(imgLen,removeVolumes)
 	if err!=nil {
 		log.Debug(err)
 		return "",err
@@ -129,13 +77,13 @@ func (this *AllocOrder) Write(key int64,cookie int32,body *gabs.Container) (stri
 		this.uploadErrorProcess.RollBack(host,vid,key)
 	}
 
-	//try n times
+	//try 3 times
 	count:=0
-	for err==errors.ErrSuperBlockNoSpace&&count<this.orderConsumeCount*2 {
+	for err==errors.ErrSuperBlockNoSpace&&count< 3 {
 		removeVolumes=append(removeVolumes,volume)
 		count++
 		log.Debugf("[%s][%v] ErrSuperBlockNoSpace try[%d][%v] [%v]",host,vid,count,volume,removeVolumes)
-		volume,err=this.selectWritableVolume.SelectWritableVolume(this.orderMinFreeSpace,this.orderConsumeCount,imgLen,removeVolumes)
+		volume,err=this.selectWritableVolume.SelectWritableVolume(imgLen,removeVolumes)
 		if err!=nil {
 			log.Debug(err)
 			return "",err
@@ -214,36 +162,7 @@ func (this *AllocOrder) Delete(url string) error {
 }
 
 func (this *AllocOrder) Stop() {
-	log.Info("AllocOrder stop")
+	log.Info("AllocOrder stop->")
 	this.uploadErrorProcess.Stop()
-}
-
-func (this *AllocOrder) AllocOrderMinFreeSpaceGet() int64 {
-	return this.orderMinFreeSpace
-}
-
-func (this *AllocOrder) AllocOrderMinFreeSpaceSet(orderMinFreeSpace int64) error {
-	err:=this.configureServer.ConfigSet(AllocOrderMinFreeSpace,fmt.Sprintf("%d",orderMinFreeSpace))
-	if err!=nil{
-		log.Error(err)
-		return err
-	}else{
-		this.orderMinFreeSpace=orderMinFreeSpace
-		return nil
-	}
-}
-
-func (this *AllocOrder) AllocOrderConsumeCountGet() int {
-	return this.orderConsumeCount
-}
-
-func (this *AllocOrder) AllocOrderConsumeCountSet(orderConsumeCount int) error {
-	err:=this.configureServer.ConfigSet(AllocOrderConsumeCount,fmt.Sprintf("%d",orderConsumeCount))
-	if err!=nil{
-		log.Error(err)
-		return err
-	}else{
-		this.orderConsumeCount=orderConsumeCount
-		return nil
-	}
+	log.Info("AllocOrder stop-<")
 }

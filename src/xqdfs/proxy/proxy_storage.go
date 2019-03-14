@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"xqdfs/utils/log"
 	"xqdfs/proxy/http"
 	"xqdfs/proxy/defines"
 
@@ -47,5 +48,7 @@ func (this *ProxyStorage) StorageGetConfigure(host string) (*gabs.Container,erro
 }
 
 func (this *ProxyStorage) Stop() {
+	log.Info("ProxyStorage stop->")
 	this.proxy.Stop()
+	log.Info("ProxyStorage stop-<")
 }

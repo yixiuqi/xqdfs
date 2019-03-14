@@ -1,37 +1,27 @@
 package compact
 
 import (
-	"fmt"
 	"time"
 	"sync"
 
 	"xqdfs/proxy"
 	"xqdfs/errors"
-	"xqdfs/configure"
 	"xqdfs/discovery"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
+	"xqdfs/master/configure"
 	"xqdfs/master/resource/usage"
 	"xqdfs/master/strategy/defines"
 )
 
-const(
-	CompactExcessThresholdValue = "CompactExcessThresholdValue"
-	CompactExcessThresholdMinCount = "CompactExcessThresholdMinCount"
-	CompactExcessThresholdMinUtil = 0.5
-)
-
 type CompactExcessThreshold struct {
-	configureServer *configure.ConfigureServer
 	discoveryServer *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	leader defines.Leader
 	wg sync.WaitGroup
 	isRun bool
 	signal chan int
-	excessThreshold float64
-	minCount int64
 }
 
 func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,error) {
@@ -59,59 +49,16 @@ func NewCompactExcessThreshold(leader defines.Leader) (*CompactExcessThreshold,e
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	excessThreshold:=0.3
-	value,err:=conf.ConfigGet(CompactExcessThresholdValue)
-	if err!=nil{
-		if err==errors.ErrParamNotExist{
-			err=conf.ConfigSet(CompactExcessThresholdValue,"0.3")
-			if err!=nil{
-				return nil,err
-			}
-		}else{
-			log.Error(err)
-			return nil,err
-		}
-	}else{
-		excessThreshold,err=helper.StringToFloat64(value)
-		if err!=nil{
-			log.Error(err)
-			return nil,err
-		}
-	}
-	log.Infof("%s[%v]",CompactExcessThresholdValue,excessThreshold)
-
-	minCount:=int64(10000)
-	value,err=conf.ConfigGet(CompactExcessThresholdMinCount)
-	if err!=nil{
-		if err==errors.ErrParamNotExist{
-			err=conf.ConfigSet(CompactExcessThresholdMinCount,"10000")
-			if err!=nil{
-				return nil,err
-			}
-		}else{
-			log.Error(err)
-			return nil,err
-		}
-	}else{
-		minCount,err=helper.StringToInt64(value)
-		if err!=nil{
-			log.Error(err)
-			return nil,err
-		}
-	}
-	log.Infof("%s[%d]",CompactExcessThresholdMinCount,minCount)
-
 	c:=&CompactExcessThreshold{
-		configureServer:conf,
 		discoveryServer:discoveryServer,
 		proxyStorage:proxyStorage,
 		leader:leader,
 		signal:make(chan int, 1),
 		isRun:true,
-		excessThreshold:excessThreshold,
-		minCount:minCount,
 	}
-	ServiceCompactExcessThresholdSetup(c)
+
+	setupConfigureSvr(conf)
+	setupService()
 	go c.task()
 	return c,nil
 }
@@ -155,7 +102,7 @@ func (this *CompactExcessThreshold) process() {
 
 		su:=g.StorageUsage[0]
 		for _,v:=range su.VolumeUsage {
-			if v.Compact || v.ImageCount<uint64(this.minCount) || v.Util < CompactExcessThresholdMinUtil {
+			if v.Compact || v.ImageCount<uint64(compactExcessThresholdMinCountGet()) || v.Util < CompactExcessThresholdMinUtil {
 				continue
 			}
 
@@ -166,7 +113,7 @@ func (this *CompactExcessThreshold) process() {
 				util=float64(v.ImageDelCount)/float64(v.ImageCount)
 				//log.Debugf("storage[%s] volume[%d] del[%v][%v]",s.Addr,v.Id,util,this.excessThreshold)
 			}
-			if util>this.excessThreshold {
+			if util>compactExcessThresholdValueGet() {
 				log.Debugf("auto compact [%s] volume[%d] util[%v]",su.Addr,v.Id,util)
 				this.proxyStorage.StorageVolumeCompact(su.Addr,v.Id,true)
 			}
@@ -175,40 +122,11 @@ func (this *CompactExcessThreshold) process() {
 }
 
 func (this *CompactExcessThreshold) Stop() {
-	log.Info("CompactExcessThreshold stop")
+	log.Info("CompactExcessThreshold stop->")
 	this.wg.Add(1)
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
 	close(this.signal)
-}
-
-func (this *CompactExcessThreshold) CompactExcessThresholdValueGet() float64 {
-	return this.excessThreshold
-}
-
-func (this *CompactExcessThreshold) CompactExcessThresholdValueSet(excessThreshold float64) error {
-	err:=this.configureServer.ConfigSet(CompactExcessThresholdValue,fmt.Sprintf("%v",excessThreshold))
-	if err!=nil{
-		log.Error(err)
-		return err
-	}else{
-		this.excessThreshold=excessThreshold
-		return nil
-	}
-}
-
-func (this *CompactExcessThreshold) CompactExcessThresholdMinCountGet() int64 {
-	return this.minCount
-}
-
-func (this *CompactExcessThreshold) CompactExcessThresholdMinCountSet(minCount int64) error {
-	err:=this.configureServer.ConfigSet(CompactExcessThresholdMinCount,fmt.Sprintf("%d",minCount))
-	if err!=nil{
-		log.Error(err)
-		return err
-	}else{
-		this.minCount=minCount
-		return nil
-	}
+	log.Info("CompactExcessThreshold stop-<")
 }

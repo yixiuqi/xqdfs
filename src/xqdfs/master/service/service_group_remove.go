@@ -5,7 +5,7 @@ import (
 
 	"xqdfs/errors"
 	"xqdfs/constant"
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"

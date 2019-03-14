@@ -1,14 +1,14 @@
 package main
 
 import (
-	"os/signal"
-	"syscall"
 	"os"
+	"syscall"
+	"os/signal"
 
 	"xqdfs/channel"
 	"xqdfs/utils/log"
-	"xqdfs/configure"
 	"xqdfs/storage/store"
+	"xqdfs/master/configure"
 	"xqdfs/storage/replication"
 )
 

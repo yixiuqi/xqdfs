@@ -1,7 +1,6 @@
 package clear
 
 import (
-	"fmt"
 	"sync"
 	"time"
 	"math"
@@ -10,17 +9,12 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
-	"xqdfs/configure"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/block"
+	"xqdfs/master/configure"
 	"xqdfs/master/resource/usage"
 	"xqdfs/master/strategy/defines"
-)
-
-const(
-	ClearTimeOldClearThreshold 	= "ClearTimeOldClearThreshold"		// 最少预留多少卷 default:5
-	ClearTimeOldClearEnable 		= "ClearTimeOldClearEnable"			// 是否启动自动清除最老卷
 )
 
 type VolumeItem struct {
@@ -34,7 +28,6 @@ type VolumeItem struct {
 
 //自动回收最老的卷
 type ClearTimeOld struct {
-	configureSvr *configure.ConfigureServer
 	discoverySvr *discovery.DiscoveryServer
 	proxyStorage *proxy.ProxyStorage
 	leader defines.Leader
@@ -42,7 +35,6 @@ type ClearTimeOld struct {
 	isRun bool
 	signal chan int
 
-	ClearTimeOldThreshold int
 	CurAvailableVolume int
 	OldGroupId int32
 	OldStorageId int32
@@ -76,47 +68,24 @@ func NewClearTimeOld(leader defines.Leader) (*ClearTimeOld,error) {
 		proxyStorage=p.(*proxy.ProxyStorage)
 	}
 
-	clearTimeOldThreshold:=5
-	value,err:=conf.ConfigGet(ClearTimeOldClearThreshold)
-	if err!=nil{
-		if err==errors.ErrParamNotExist{
-			err=conf.ConfigSet(ClearTimeOldClearThreshold,"5")
-			if err!=nil{
-				return nil,err
-			}
-		}else{
-			log.Warn(err)
-			return nil,err
-		}
-	}else{
-		clearTimeOldThreshold,err=helper.StringToInt(value)
-		if err!=nil{
-			log.Warn(err)
-			return nil,err
-		}
-	}
-
-	log.Infof("%s[%d]",ClearTimeOldClearThreshold,clearTimeOldThreshold)
-	t:=&ClearTimeOld{
-		configureSvr:conf,
+	clearTimeOld:=&ClearTimeOld{
 		discoverySvr:discoveryServer,
 		proxyStorage:proxyStorage,
 		leader:leader,
 		signal:make(chan int, 1),
 		isRun:true,
-		ClearTimeOldThreshold:clearTimeOldThreshold,
 	}
 	//安装服务接口
-	ServiceClearTimeOldSetup(t)
-	go t.task()
-	return t,nil
+	setupConfigureSvr(conf)
+	setupService(clearTimeOld)
+	go clearTimeOld.task()
+	return clearTimeOld,nil
 }
 
 func (this *ClearTimeOld) task() {
 	for this.isRun {
 		if this.leader.IsLeader() {
-			enable,_:=this.configureSvr.ConfigGet(ClearTimeOldClearEnable)
-			if enable=="true"{
+			if clearTimeOldClearEnableGet() {
 				this.process()
 			}else{
 				log.Debug("disable automatic cleaning of old volumes")
@@ -135,12 +104,13 @@ func (this *ClearTimeOld) task() {
 }
 
 func (this *ClearTimeOld) Stop() {
-	log.Info("ClearTimeOld stop")
+	log.Info("ClearTimeOld stop->")
 	this.wg.Add(1)
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
 	close(this.signal)
+	log.Info("ClearTimeOld stop-<")
 }
 
 func (this *ClearTimeOld) process() {
@@ -189,7 +159,7 @@ func (this *ClearTimeOld) process() {
 	}
 
 	this.CurAvailableVolume=freeVolume
-	if freeVolume>=this.ClearTimeOldThreshold {
+	if freeVolume>=clearTimeOldClearThresholdGet() {
 		log.Debug("free volume's count is ",freeVolume)
 		return
 	}
@@ -202,14 +172,5 @@ func (this *ClearTimeOld) process() {
 	}
 }
 
-func (this *ClearTimeOld) ClearTimeOldClearThresholdSet(clearTimeOldThreshold int) error {
-	err:=this.configureSvr.ConfigSet(ClearTimeOldClearThreshold,fmt.Sprintf("%d",clearTimeOldThreshold))
-	if err!=nil{
-		log.Warn(err)
-		return err
-	}else{
-		this.ClearTimeOldThreshold=clearTimeOldThreshold
-		return nil
-	}
-}
+
 

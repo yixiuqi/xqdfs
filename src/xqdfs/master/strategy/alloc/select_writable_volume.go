@@ -1,4 +1,4 @@
-package order
+package alloc
 
 import (
 	"sync"
@@ -48,9 +48,12 @@ func (this *SelectWritableVolume) getGroupUsage() *usage.GroupsUsage {
 	return this.groupUsage
 }
 
-func (this *SelectWritableVolume) SelectWritableVolume(orderMinFreeSpace int64,orderConsumeCount int,fileSize int32,removeVolumes []*strategydef.WritableVolume) (*strategydef.WritableVolume,error) {
+func (this *SelectWritableVolume) SelectWritableVolume(fileSize int32,removeVolumes []*strategydef.WritableVolume) (*strategydef.WritableVolume,error) {
 	this.groupUsageLock.Lock()
 	defer this.groupUsageLock.Unlock()
+
+	orderMinFreeSpace:=allocOrderMinFreeSpaceGet()
+	orderConsumeCount:=allocOrderConsumeCountGet()
 
 	availableVolumeAll:=make([]*strategydef.WritableVolume,0)
 	u:=this.getGroupUsage()

@@ -6,14 +6,14 @@ import (
 	"fmt"
 
 	"xqdfs/proxy"
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/discovery"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/store"
 	"xqdfs/storage/replication/process"
-	configuredef "xqdfs/configure/defines"
+	configuredef "xqdfs/master/configure/defines"
 )
 
 type ReplicationServer struct {

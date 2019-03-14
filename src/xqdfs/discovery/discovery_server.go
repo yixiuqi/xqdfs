@@ -1,8 +1,9 @@
 package discovery
 
 import (
-	"xqdfs/configure"
+	"xqdfs/utils/log"
 	"xqdfs/discovery/http"
+	"xqdfs/master/configure"
 	"xqdfs/discovery/defines"
 )
 
@@ -32,5 +33,7 @@ func (this *DiscoveryServer) Storages() []*defines.Storage {
 }
 
 func (this *DiscoveryServer) Stop() {
+	log.Info("DiscoveryServer stop->")
 	this.discovery.Stop()
+	log.Info("DiscoveryServer stop-<")
 }

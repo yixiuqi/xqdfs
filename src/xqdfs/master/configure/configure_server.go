@@ -1,12 +1,14 @@
 package configure
 
 import (
+	"time"
 	"encoding/json"
 
+	"xqdfs/errors"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
-	"xqdfs/configure/ssdb"
-	"xqdfs/configure/defines"
+	"xqdfs/master/configure/ssdb"
+	"xqdfs/master/configure/defines"
 
 	"github.com/json-iterator/go"
 )
@@ -20,6 +22,9 @@ const(
 type ConfigureServer struct {
 	kv *ssdb.SSDBKV
 	hset *ssdb.SSDBHash
+	signal chan int
+	change chan int
+	params map[string]string
 }
 
 //param is remote config server's connection param
@@ -35,7 +40,11 @@ func NewConfigureServer(param string) (*ConfigureServer,error) {
 	server:=&ConfigureServer{
 		kv:ssdb.NewSSDBKV(connMgr),
 		hset:ssdb.NewSSDBHash(connMgr),
+		signal:make(chan int),
+		change:make(chan int),
+		params:make(map[string]string,0),
 	}
+	server.init()
 	return server,nil
 }
 
@@ -52,11 +61,24 @@ func (this *ConfigureServer) KVSetx(key string,value string,ttl int) error {
 }
 
 func (this *ConfigureServer) ConfigGet(key string) (string,error) {
-	return this.hset.HGet(HashXQDfsConfig,key)
+	value,ok:=this.params[key]
+	if ok {
+		return value,nil
+	}else{
+		return "",errors.ErrParamNotExist
+	}
 }
 
 func (this *ConfigureServer) ConfigSet(key string,value string) error {
-	return this.hset.HSet(HashXQDfsConfig,key,value)
+	err:=this.hset.HSet(HashXQDfsConfig,key,value)
+	if err!=nil {
+		log.Warn(err)
+		return err
+	}
+
+	defer helper.HandleErr()
+	this.change<-1
+	return nil
 }
 
 func (this *ConfigureServer) StorageAdd(s *defines.StorageDal) error {
@@ -191,6 +213,47 @@ func (this *ConfigureServer) GroupGetAll() ([]*defines.GroupDal,error) {
 	return g,nil
 }
 
+func (this *ConfigureServer) getConfigreParam() {
+	all,err:=this.hset.HGetAll(HashXQDfsConfig)
+	if err!=nil {
+		log.Warn(err)
+		this.params=make(map[string]string,0)
+		return
+	}
+	params:=make(map[string]string,0)
+	for _,v:=range all {
+		params[v.Key]=v.Value
+	}
+	this.params=params
+}
+
+func (this *ConfigureServer) init() {
+	this.getConfigreParam()
+	log.Info("------ Configure params ------")
+	for k,v:=range this.params {
+		log.Infof("%s:%s",k,v)
+	}
+	go func(){
+		for {
+			select {
+			case <-time.After(time.Second * 10):
+			case <-this.signal:
+				this.signal<-1
+				return
+			case <-this.change:
+				log.Debug("change params")
+			}
+
+			this.getConfigreParam()
+		}
+	}()
+}
+
 func (this *ConfigureServer) Stop() {
-	log.Info("ConfigureServer stop")
+	log.Info("ConfigureServer stop->")
+	this.signal<-1
+	<-this.signal
+	close(this.signal)
+	close(this.change)
+	log.Info("ConfigureServer stop-<")
 }

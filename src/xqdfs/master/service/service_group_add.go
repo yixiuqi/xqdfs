@@ -7,9 +7,9 @@ import (
 	"xqdfs/errors"
 	"xqdfs/utils/helper"
 	"xqdfs/constant"
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/utils/plugin"
-	"xqdfs/configure/defines"
+	"xqdfs/master/configure/defines"
 
 	"github.com/Jeffail/gabs"
 )

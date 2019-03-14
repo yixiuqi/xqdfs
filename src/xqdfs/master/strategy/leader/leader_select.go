@@ -3,11 +3,12 @@ package leader
 import (
 	"sync"
 	"time"
-	"xqdfs/utils/helper"
-	"xqdfs/utils/log"
-	"xqdfs/configure"
-	"xqdfs/utils/plugin"
+
 	"xqdfs/errors"
+	"xqdfs/utils/log"
+	"xqdfs/utils/helper"
+	"xqdfs/utils/plugin"
+	"xqdfs/master/configure"
 )
 
 const(
@@ -86,10 +87,11 @@ func (this *LeaderSelect) LeaderId() string {
 }
 
 func (this *LeaderSelect) Stop() {
-	log.Info("LeaderSelect stop")
+	log.Info("LeaderSelect stop->")
 	this.wg.Add(1)
 	this.isRun=false
 	this.signal<-1
 	this.wg.Wait()
 	close(this.signal)
+	log.Info("LeaderSelect stop-<")
 }

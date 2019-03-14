@@ -7,12 +7,12 @@ import (
 
 	"xqdfs/proxy"
 	"xqdfs/channel"
-	"xqdfs/configure"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
 	"xqdfs/master/conf"
 	"xqdfs/utils/plugin"
 	"xqdfs/master/strategy"
+	"xqdfs/master/configure"
 	_"xqdfs/master/service"
 )
 

@@ -8,12 +8,12 @@ import (
 
 	"xqdfs/errors"
 	"xqdfs/constant"
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/utils/log"
 	"xqdfs/discovery"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
-	"xqdfs/configure/defines"
+	"xqdfs/master/configure/defines"
 	"xqdfs/master/resource/usage"
 
 	"github.com/Jeffail/gabs"

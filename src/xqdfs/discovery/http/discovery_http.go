@@ -5,14 +5,14 @@ import (
 	"sync"
 	"time"
 
-	"xqdfs/configure"
+	"xqdfs/master/configure"
 	"xqdfs/utils/log"
 	"xqdfs/utils/stat"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/conf"
 	"xqdfs/discovery/defines"
-	configuredef "xqdfs/configure/defines"
+	configuredef "xqdfs/master/configure/defines"
 )
 
 const(

@@ -7,14 +7,14 @@ import (
 
 	"xqdfs/errors"
 	"xqdfs/channel"
-	"xqdfs/configure"
 	"xqdfs/utils/log"
 	"xqdfs/utils/helper"
 	"xqdfs/utils/plugin"
 	"xqdfs/storage/conf"
 	"xqdfs/storage/store"
-	"xqdfs/configure/defines"
+	"xqdfs/master/configure"
 	"xqdfs/storage/replication"
+	"xqdfs/master/configure/defines"
 	_"xqdfs/storage/service"
 )
 

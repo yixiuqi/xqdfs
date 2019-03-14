@@ -18,20 +18,15 @@ const(
 	CmdCompactExcessThresholdSet 	= "/strategy/compact/threshold/config/set"
 )
 
-var(
-	excessThreshold *CompactExcessThreshold
-)
-
-func ServiceCompactExcessThresholdSetup(excess *CompactExcessThreshold) {
-	excessThreshold=excess
+func setupService() {
 	plugin.PluginAddService(CmdCompactExcessThresholdGet,ServiceCompactExcessThresholdGet)
 	plugin.PluginAddService(CmdCompactExcessThresholdSet,ServiceCompactExcessThresholdSet)
 }
 
 func ServiceCompactExcessThresholdGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
-	json.Set(excessThreshold.CompactExcessThresholdMinCountGet(),"minCount")
-	json.Set(excessThreshold.CompactExcessThresholdValueGet(),"threshold")
+	json.Set(compactExcessThresholdMinCountGet(),"minCount")
+	json.Set(compactExcessThresholdValueGet(),"threshold")
 	return helper.ResultBuildWithBody(constant.Success,json)
 }
 
@@ -48,12 +43,12 @@ func ServiceCompactExcessThresholdSet(ctx context.Context,inv *plugin.Invocation
 		return helper.ResultBuildWithExtInfo(errors.RetParameterError,err.Error())
 	}
 
-	err=excessThreshold.CompactExcessThresholdMinCountSet(req.MinCount)
+	err=compactExcessThresholdMinCountSet(req.MinCount)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
-	err=excessThreshold.CompactExcessThresholdValueSet(req.Threshold)
+	err=compactExcessThresholdValueSet(req.Threshold)
 	if err!=nil{
 		log.Error(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
