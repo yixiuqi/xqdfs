@@ -265,7 +265,11 @@ func (s *Store) parseVolumeIndex() (err error) {
 	wait.Add(len(bfs))
 	for i = 0; i < len(bfs); i++ {
 		index, bfile, ifile:= ids[i], bfs[i], ifs[i]
-		if _, ok = s.Volumes[index]; ok {
+
+		lock.Lock()
+		_, ok = s.Volumes[index]
+		lock.Unlock()
+		if ok {
 			wait.Done()
 			continue
 		}
