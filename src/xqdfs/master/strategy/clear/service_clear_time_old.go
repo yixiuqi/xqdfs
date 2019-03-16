@@ -34,6 +34,7 @@ func setupService(timeold *ClearTimeOld) {
 func ServiceClearTimeOldConfigGet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	json:=gabs.New()
 	json.Set(clearTimeOldClearThresholdGet(),"clearThreshold")
+	json.Set(clearTimeOldClearEnableGet(),"clearEnable")
 	json.Set(clearTimeOld.CurAvailableVolume,"curAvailableVolume")
 	json.Set(clearTimeOld.OldGroupId,"oldestGroupId")
 	json.Set(clearTimeOld.OldStorageId,"oldestStorageId")
@@ -44,6 +45,7 @@ func ServiceClearTimeOldConfigGet(ctx context.Context,inv *plugin.Invocation) in
 
 type RequestClearTimeOldConfigSet struct {
 	ClearThreshold int `json:"clearThreshold"`
+	ClearEnable bool `json:"clearEnable"`
 }
 func ServiceClearTimeOldConfigSet(ctx context.Context,inv *plugin.Invocation) interface{}{
 	req:=&RequestClearTimeOldConfigSet{}
@@ -59,5 +61,11 @@ func ServiceClearTimeOldConfigSet(ctx context.Context,inv *plugin.Invocation) in
 		log.Warn(err)
 		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
 	}
+	err=clearTimeOldClearEnableSet(req.ClearEnable)
+	if err!=nil{
+		log.Warn(err)
+		return helper.ResultBuildWithExtInfo(errors.RetParamSet,err.Error())
+	}
+
 	return helper.ResultBuild(constant.Success)
 }

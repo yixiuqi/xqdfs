@@ -85,3 +85,17 @@ func clearTimeOldClearEnableGet() bool {
 
 	return clearTimeOldClearEnable
 }
+
+func clearTimeOldClearEnableSet(clearEnable bool) error {
+	if configureSvr==nil {
+		panic("configureSvr is null")
+	}
+
+	err:=configureSvr.ConfigSet(ClearTimeOldClearEnable,fmt.Sprintf("%v",clearEnable))
+	if err!=nil{
+		log.Warn(err)
+		return err
+	}else{
+		return nil
+	}
+}

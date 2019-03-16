@@ -152,6 +152,7 @@ func (this *ClearTimeOld) process() {
 					}
 				}
 			}
+			break
 		}
 	}
 	if availableGroup==0 {
