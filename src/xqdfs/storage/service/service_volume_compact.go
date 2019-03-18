@@ -88,6 +88,8 @@ func ServiceVolumeCompact(ctx context.Context,inv *plugin.Invocation) interface{
 	}
 
 	go func(replication bool,vid int32) {
+		defer helper.HandleErr()
+
 		if replication==true {
 			p:=&process.ReplicationStorageVolumeCompact{
 				Vid:vid,
@@ -95,11 +97,11 @@ func ServiceVolumeCompact(ctx context.Context,inv *plugin.Invocation) interface{
 			replicationServer.Replication(p)
 		}
 
-		defer helper.HandleErr()
+		log.Infof(">>> start compact volume[%v]",vid)
 		start:=helper.CurrentTime()
 		err:=storage.CompactVolume(vid)
 		end:=helper.CurrentTime()
-		log.Debugf("volume[%v] compact time[%d]",vid,end-start)
+		log.Infof("<<< finish volume[%v] compact,elapse[%d]",vid,end-start)
 
 		if err!=nil{
 			log.Infof("volume[%v] compact error",err)

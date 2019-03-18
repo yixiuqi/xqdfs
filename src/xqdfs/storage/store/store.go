@@ -574,7 +574,7 @@ func (s *Store) freeVolume(id int32) (v *volume.Volume, err error) {
 
 func (s *Store) CompactVolume(id int32) (err error) {
 	var (
-		v, nv      *volume.Volume
+		v, nv *volume.Volume
 		bdir, idir string
 	)
 	// try check volume
@@ -590,9 +590,10 @@ func (s *Store) CompactVolume(id int32) (err error) {
 	}
 	// find a free volume
 	if nv, err = s.freeVolume(id); err != nil {
+		log.Warn(err)
 		return
 	}
-	log.Infof("start compact volume: (%d) %s to %s", id, v.Block.File, nv.Block.File)
+	log.Infof("start compact volume[%d] %s to %s", id, v.Block.File, nv.Block.File)
 	// no lock here, Compact is no side-effect
 	if err = v.StartCompact(nv); err != nil {
 		log.Error(err)
@@ -606,12 +607,12 @@ func (s *Store) CompactVolume(id int32) (err error) {
 		if err = v.StopCompact(nv); err == nil {
 			err = s.saveVolumeIndex()
 		}else{
-			log.Warn(err)
+			log.Error(err)
 		}
 	} else {
 		// never happen
 		err = errors.ErrVolumeNotExist
-		log.Errorf("compact volume: %d not exist(may bug)", id)
+		log.Warnf("compact volume: %v not exist(may bug)", id)
 	}
 	s.vlock.Unlock()
 	nv.Destroy()
