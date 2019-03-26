@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>help_1_setup</title>
+<title>help_4_ssdb_help</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">
 /* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
@@ -291,72 +291,121 @@ img {
 </style>
 </head>
 <body>
-<h2>安装SSDB</h2>
-<p>解压ssdb.tar.gz，修改配置文件ssdb.conf</p>
-<pre><code>server:
-    ip: 0.0.0.0
-    port: 18888 改为打算使用的端口
+<h1>命令行工具 ssdb-cli</h1>
+<p>SSDB 的命令行工具 <code>ssdb-cli</code> 对于 SSDB 的管理非常有用,你可以用它来执行所有的命令,监控服务的状态,清除整个数据库,等等。</p>
+<h2>连接到 SSDB 服务器</h2>
+<pre><code>[root@xq25 ssdb]# ./ssdb-cli -p 16888
+ssdb (cli) - ssdb command line tool.
+Copyright (c) 2012-2016 ssdb.io
+
+'h' or 'help' for help, 'q' to quit.
+
+ssdb-server 1.9.4
+
+ssdb 127.0.0.1:16888&gt; 
 </code></pre>
 
-<p>启动SSDB </p>
-<pre><code>./start.sh
+<h1>常用命令</h1>
+<h2>info</h2>
+<p>返回服务器的信息</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; info
+version
+    1.9.4
+links
+    1
+total_calls
+    15220433
+dbsize
+    0
+binlogs
+        capacity : 20000000
+        min_seq  : 0
+        max_seq  : 335
+replication
+    client 192.168.10.90:12373
+        type     : mirror
+        status   : SYNC
+        last_seq : 335
+replication
+    slaveof 192.168.10.90:16888
+        id         : ssdb_1
+        type       : mirror
+        status     : OUT_OF_SYNC
+        last_seq   : 862505
+        copy_count : 72
+        sync_count : 0
+serv_key_range
+        kv  : &quot;&quot; - &quot;&quot;
+        hash: &quot;&quot; - &quot;&quot;
+        zset: &quot;&quot; - &quot;&quot;
+        list: &quot;&quot; - &quot;&quot;
+data_key_range
+        kv  : &quot;&quot; - &quot;&quot;
+        hash: &quot;HashCluster&quot; - &quot;HashServer&quot;
+        zset: &quot;&quot; - &quot;&quot;
+        list: &quot;&quot; - &quot;&quot;
+leveldb.stats
+                                   Compactions
+    Level  Files Size(MB) Time(sec) Read(MB) Write(MB)
 </code></pre>
 
-<p>启动后会打印 </p>
-<pre><code>ssdb-server 1.9.4
-Copyright (c) 2012-2015 ssdb.io
+<h2>Key-Value</h2>
+<p><strong>set key value</strong> 设置指定 key 的值内容</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; set key1 value1
+ok
+(0.001 sec)
 </code></pre>
 
-<p>停止SSDB </p>
-<pre><code>./stop.sh
+<p><strong>get key</strong> 获取指定 key 的值内容</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; get key1
+value1
+(0.001 sec) 
 </code></pre>
 
-<h2>启动Storage</h2>
-<p>解压Storage.tar.gz，修改配置文件xqdfs_storage.toml</p>
-<pre><code>[Log]
-Level = &quot;error&quot;            日志等级trace，debug，info，error
-
-[Server]
-Id = 1                     当前节点编号，编号必须唯一   
-Desc = &quot;test[25]&quot;          当前节点描述
-Host = &quot;192.168.10.25&quot;     本机IP地址
-Port = 10086               本地使用端口
-
-[Dir]
-Path = [&quot;volume_data&quot;]
-Capacity = [128]           本机用于存储的空间(单位G)，默认128G
-
-[Configure]
-Param = &quot;192.168.10.25:18888&quot;    SSDB地址
+<p><strong>del key</strong> 删除指定的 key</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; del key1
+ok
+(0.001 sec)
 </code></pre>
 
-<p>启动 </p>
-<pre><code>./Storage.sh start  
+<h2>Hashmap</h2>
+<p><strong>hset name key value</strong> 设置 hashmap 中指定 key 对应的值内容</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hset HashName1 key1 value1
+ok
+(0.001 sec)
 </code></pre>
 
-<p>停止 </p>
-<pre><code>./Storage.sh stop
+<p><strong>hget name key</strong> 获取 hashmap 中指定 key 的值内容</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hget HashName1 key1
+value1
+(0.001 sec)
 </code></pre>
 
-<h2>启动Master</h2>
-<p>解压Master.tar.gz，修改配置文件xqdfs_master.toml</p>
-<pre><code>[Log]
-Level = &quot;error&quot;                 日志等级trace，debug，info，error
-
-[Server]
-Host = &quot;192.168.10.25&quot;          本机IP地址                                    
-Port = 10087                    本地使用端口
-
-[Configure]
-Param = &quot;192.168.10.25:18888&quot;   SSDB地址
+<p><strong>hsize name</strong> 返回 hashmap 中的元素个数</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hsize HashName1 
+1
+(0.000 sec)
 </code></pre>
 
-<p>启动</p>
-<pre><code> ./Master.sh start**  
+<p><strong>hgetall name</strong> 返回整个 hashmap</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hgetall HashName1
+key             value
+-------------------------
+key1           : value1
+1 result(s) (0.000 sec)
+(0.000 sec)
 </code></pre>
 
-<p>停止</p>
-<pre><code> ./Master.sh stop**
+<p><strong>hdel name key</strong> 删除 hashmap 中的指定 key</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hdel HashName1 key1
+1
+(0.002 sec)
+</code></pre>
+
+<p><strong>hclear name</strong> 删除 hashmap 中的所有 key</p>
+<pre><code>ssdb 127.0.0.1:16888&gt; hclear HashName1
+0
+(0.003 sec)
 </code></pre>
 
 

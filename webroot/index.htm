@@ -11,13 +11,15 @@
     <div data-options="region:'north'" style="width:100%;height:80px;padding:0px 0px 0px 10px;">
     	<img src="image/logo.png" height="80"/>
     </div>
-    <div data-options="region:'west',split:true,title:'导航列表'" style="width:230px;">
+    <div data-options="region:'west',split:true,title:'导航列表'" style="width:235px;">
         <div class="easyui-accordion" data-options="fit:true,border:false">
             <div title="&nbsp;系统说明及使用帮助" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
                 <ul id="treeHelp" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'系统介绍',page:'help_0_desc.html',isOpen:1"><span>系统介绍</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'系统安装、启动、停止',page:'help_1_setup.html',isOpen:1"><span>系统安装、启动、停止</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'SSDB使用帮助',page:'help_2_ssdb.html',isOpen:1"><span>SSDB使用帮助</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'(配置中心)SSDB安装、启停说明',page:'help_1_ssdb_setup.html',isOpen:1"><span>(配置中心)SSDB安装、启停说明</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'(配置中心)导入系统预置参数',page:'help_2_ssdb_import.html',isOpen:1"><span>(配置中心)导入系统预置参数</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'系统安装、启动、停止',page:'help_3_setup.html',isOpen:1"><span>系统安装、启动、停止</span></li>
+                    <li data-options="iconCls:'icon-ok',title:'SSDB使用帮助',page:'help_4_ssdb_help.html',isOpen:1"><span>SSDB使用帮助</span></li>
                     <li data-options="iconCls:'icon-ok',title:'API说明',page:'apidoc/index.html',isOpen:1"><span>API说明</span></li>
                 </ul>
             </div>
@@ -27,11 +29,19 @@
                     <li data-options="iconCls:'icon-ok',title:'存储组配置',page:'group.htm',isOpen:1"><span>存储组配置</span></li>
                </ul>
             </div>
-            <div title="存储策略设置" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
-                <ul id="treeStrategy" class="easyui-tree">
+            <div title="存储卷分配策略" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeStrategyMalloc" class="easyui-tree">
                     <li data-options="iconCls:'icon-ok',title:'卷分配策略[顺序分配]',page:'alloc_order.htm',isOpen:1"><span>卷分配策略[顺序分配]</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'卷回收策略[最老时间]',page:'clear_time_old.htm',isOpen:1"><span>卷回收策略[最老时间]</span></li>
-                    <li data-options="iconCls:'icon-ok',title:'卷压缩策略[删除比超限]',page:'compact_excess_threshold.htm',isOpen:1"><span>卷压缩策略[删除比超限]</span></li>
+               </ul>
+            </div>
+            <div title="存储卷回收策略" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeStrategyClear" class="easyui-tree">
+                   <li data-options="iconCls:'icon-ok',title:'卷回收策略[最老时间]',page:'clear_time_old.htm',isOpen:1"><span>卷回收策略[最老时间]</span></li>
+               </ul>
+            </div>
+            <div title="存储卷压缩策略" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
+                <ul id="treeStrategyCompact" class="easyui-tree">
+                   <li data-options="iconCls:'icon-ok',title:'卷压缩策略[删除比超限]',page:'compact_excess_threshold.htm',isOpen:1"><span>卷压缩策略[删除比超限]</span></li>
                </ul>
             </div>
             <div title="系统信息查看" data-options="iconCls:'icon-search'" style="padding:10px;overflow:auto">
@@ -50,7 +60,7 @@
     <div data-options="region:'center',iconCls:'icon-ok'">
         <div id="tabMain" class="easyui-tabs" data-options="fit:true,border:false,plain:true">
             <div title="Home">
-                <iframe width="100%" height="100%" frameborder="0"  src="apidoc/index.html"></iframe>
+                <iframe width="100%" height="100%" frameborder="0"  src="help_0_desc.html"></iframe>
             </div>
         </div>
     </div>
@@ -79,7 +89,17 @@
             tabAdd(node.title,node.page,node.isOpen);
         }
     }); 
-    $('#treeStrategy').tree({
+    $('#treeStrategyMalloc').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeStrategyClear').tree({
+        onClick : function(node) {
+            tabAdd(node.title,node.page,node.isOpen);
+        }
+    }); 
+    $('#treeStrategyCompact').tree({
         onClick : function(node) {
             tabAdd(node.title,node.page,node.isOpen);
         }
