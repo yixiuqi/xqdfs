@@ -32,7 +32,7 @@ func main() {
 		channelSvr *channel.Server
 	)
 
-	flag.StringVar(&configFilePath, "-c", "./xqdfs_master.toml", " set master config file path")
+	flag.StringVar(&configFilePath, "c", "./xqdfs_master.toml", " set master config file path")
 	flag.Parse()
 	log.Infof("xqdfs master version[%s] start", Version)
 
