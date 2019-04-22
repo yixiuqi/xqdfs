@@ -74,6 +74,7 @@ func (this *AllocOrder) Write(key int64,cookie int32,body *gabs.Container) (stri
 	host:=volume.StorageAddr
 	err=this.proxyStorage.Upload(host,body,vid,key,cookie,nil,true)
 	if err==errors.ErrRpc {
+		log.Warnf("Upload[%s] error",host)
 		this.uploadErrorProcess.RollBack(host,vid,key)
 	}
 
@@ -92,6 +93,7 @@ func (this *AllocOrder) Write(key int64,cookie int32,body *gabs.Container) (stri
 		host=volume.StorageAddr
 		err=this.proxyStorage.Upload(host,body,vid,key,cookie,nil,true)
 		if err==errors.ErrRpc {
+			log.Warnf("Upload[%s] error",host)
 			this.uploadErrorProcess.RollBack(host,vid,key)
 		}
 	}

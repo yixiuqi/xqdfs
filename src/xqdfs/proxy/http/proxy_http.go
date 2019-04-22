@@ -35,6 +35,7 @@ func (this *ProxyHttp) Upload(host string,body *gabs.Container,vid int32,key int
 	url:="http://"+host+constant.CmdVolumeUpload
 	ret,err:=helper.HttpPost(httpClient,url,body.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return errors.ErrRpc
 	}
 
@@ -61,7 +62,7 @@ func (this *ProxyHttp) Get(host string,vid int32,key int64,cookie int32) ([]byte
 	url:="http://"+host+constant.CmdVolumeGet
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
-		log.Debug(err)
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return nil,errors.ErrRpc
 	}
 
@@ -93,6 +94,7 @@ func (this *ProxyHttp) Delete(host string,vid int32,key int64,replication bool) 
 	url:="http://"+host+constant.CmdVolumeDelete
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return errors.ErrRpc
 	}
 
@@ -116,6 +118,7 @@ func (this *ProxyHttp) StorageInit(host string,replication bool) error {
 	url:="http://"+host+constant.CmdStoreInit
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return errors.ErrRpc
 	}
 
@@ -140,6 +143,7 @@ func (this *ProxyHttp) StorageVolumeCompact(host string,vid int32,replication bo
 	url:="http://"+host+constant.CmdVolumeCompact
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return errors.ErrRpc
 	}
 
@@ -164,6 +168,7 @@ func (this *ProxyHttp) StorageVolumeClear(host string,vid int32,replication bool
 	url:="http://"+host+constant.CmdVolumeClear
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return errors.ErrRpc
 	}
 
@@ -186,6 +191,7 @@ func (this *ProxyHttp) StorageGetConfigure(host string) (*gabs.Container,error) 
 	url:="http://"+host+constant.CmdStoreConf
 	ret,err:=helper.HttpPost(httpClient,url,jsonSend.Bytes())
 	if err!=nil {
+		log.Warnf("HttpPost[%s] error[%v]",url,err)
 		return nil,errors.ErrRpc
 	}
 

@@ -72,6 +72,7 @@ func (this *UploadErrorProcess) process() bool {
 			err:=this.proxyStorage.Delete(item.host,item.vid,item.key,true)
 			log.Debugf("delete process[%v][%v]",item,err)
 			if err==errors.ErrRpc{
+				log.Warnf("Delete[%s] error",item.host)
 				break
 			}else{
 				v.Remove(e)
